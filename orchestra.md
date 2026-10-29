@@ -40,7 +40,7 @@ The orchestrator session plans, makes design and product decisions, does the mai
 - **Not in the public repo:** skills without a license file (`kien-thai`, `ui-ux-pro-max`, `web-design-guidelines`, `write-prose`) are git-ignored and stay local only. `.claude/skills` is ignored too; after cloning, run `Sync-CodexWorkspace.ps1 -Project <folder>`.
 - **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `README.md`, `.agents/skills/` (8 project skills, 4 published).
 - **Pending sessions:** "SIIT Map: presentation and context prep" (`local_860d1cec-b2e3-43c5-bdaf-688a920e35c3`), owner-driven. It writes only to `docs/context/` and `docs/presentation/`; plan-changing context comes back via `docs/context/proposed-plan-changes.md`.
-- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Awaiting owner review/approval** before the coding brief. A Pastel Mauve color variant of the same 10 screens is on a separate canvas for comparison: https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn (mauve neutrals, pink actions with dark labels for contrast, pastel sky/violet/teal departments, pill buttons). Owner to pick original or mauve.
+- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Awaiting owner review/approval** before the coding brief. A Pastel Mauve color variant of the same 10 screens is on a separate canvas for comparison: https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn (mauve neutrals, pink actions with dark labels for contrast, pastel sky/violet/teal departments, pill buttons). Owner to pick original or mauve. Mauve buttons were softened on request (pale pink `#FCCEE8` with a `#F9A8D4` edge, dark text; selected floor ring `#F9A8D4`, number `#A3155F`). A Motion section is proposed in `docs/design/ui-spec.md`, not yet approved.
 - **Live temporary changes:** none.
 
 ## Decisions log
@@ -60,6 +60,13 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 - Owner: create the GoatCounter account and give the site code (Claude must not create accounts).
 - Owner: choose the group name for the credit line; assign group roles.
 - In a new session, check which `design-taste-frontend` loads (project copy or older global copy).
+
+## Pending owner decisions (as of 2026-10-29)
+
+1. Original or Pastel Mauve colors for the Week 1 design (then update the Tokens table in `docs/design/ui-spec.md` if mauve).
+2. Approve the design (screens) and the proposed Motion section.
+3. GoatCounter site code, group name, group roles.
+4. Start Week 1 coding: owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
 
 ## Next steps
 

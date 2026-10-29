@@ -66,3 +66,15 @@ More departments will need more colors: run them through `/dataviz` before real 
 - The QR facing cone stays wide and is worded "when you scanned": the direction comes from the QR's wall, and people turn.
 - Real buttons, links and labels; icon-only buttons have `aria-label`.
 - No emoji, gradients or shadows.
+
+## Motion (proposed 2026-10-29, not yet approved)
+
+Not shown on the canvases (they are static). For the coding session once approved:
+
+- Camera glides to a search result or QR spot (0.6–0.8 s) instead of jumping.
+- Floor switch: from All to one floor, other floors slide apart and fade out (about 0.5 s); reverse when going back.
+- Selected room rises and its outline fades in (about 0.25 s); other rooms fade to grey.
+- "You are here" ring pulses softly every 2–3 s (the only looping animation).
+- Room card slides up into peek and follows the finger to the full card.
+- Buttons shrink to 98% when pressed; cross-floor banner slides down once.
+- Gentle ease-out curves (Pastel Mauve's ease-out-expo); with `prefers-reduced-motion`, jump instead of glide and stop the pulse; keep 3D moves cheap for low-end phones.

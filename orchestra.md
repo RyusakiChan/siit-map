@@ -32,11 +32,14 @@ The orchestrator session plans, makes design and product decisions, does the mai
 
 ## Current state
 
-- **Phase:** planning done; Week 1 not started (owner said "not yet" on 2026-10-29).
-- **Repo:** no git repo yet. No app code, no packages installed.
-- **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `.agents/skills/` (8 project skills, linked from `.claude/skills`).
-- **Live site:** none.
-- **Pending sessions or cards:** none.
+- **Phase:** planning done and base stack set up; Week 1 viewer not started.
+- **Repo:** https://github.com/Mint-BKL/siit-map (public, branch `main`). First commit `3ff8707` (plan, rules, skills, base stack).
+- **Base stack** (exact versions pinned in `package.json`): Vite 8.3.5, React 19.3.1, TypeScript 6.0.3 (held below 7 because typescript-eslint 8.72.1 supports <6.1), three 0.186.1, @react-three/fiber 9.8.2, @react-three/drei 10.7.9, zustand 5.0.16, Vitest 5.0.5, ESLint 10.13.0. No PWA, QR, router or i18n library yet (later weeks).
+- **App today:** placeholder scene: 5 floor slabs, sample rooms on floor 1 extruded from `src/data/building.json`, tap to highlight, SAMPLE DATA badge, OSM credit. Lint, 6 data tests and build pass. Build warns the JS bundle is ~1.15 MB (316 kB gzipped) because of three.js; code-splitting is deferred.
+- **Deploy:** `.github/workflows/deploy.yml` runs lint, tests, build, then deploys to GitHub Pages (Pages source set to Actions). Site: https://mint-bkl.github.io/siit-map/ First deploy (run 40858566689) succeeded on 2026-10-29; site returns 200.
+- **Not in the public repo:** skills without a license file (`kien-thai`, `ui-ux-pro-max`, `web-design-guidelines`, `write-prose`) are git-ignored and stay local only. `.claude/skills` is ignored too; after cloning, run `Sync-CodexWorkspace.ps1 -Project <folder>`.
+- **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `README.md`, `.agents/skills/` (8 project skills, 4 published).
+- **Pending sessions:** "SIIT Map: presentation and context prep" (`local_860d1cec-b2e3-43c5-bdaf-688a920e35c3`), owner-driven. It writes only to `docs/context/` and `docs/presentation/`; plan-changing context comes back via `docs/context/proposed-plan-changes.md`.
 - **Live temporary changes:** none.
 
 ## Decisions log
@@ -45,6 +48,7 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 
 - 2026-10-29: Taste Skill v2 (`design-taste-frontend`, app-screen run) copied into the project in place of the separate "minimalist" skill, which no longer exists in the repo.
 - 2026-10-29: Model routing set: Opus 5.5 for orchestration and UI/UX design, Sonnet 5.5 (medium to xhigh) for coding.
+- 2026-10-29: Repo created as `siit-map` (public) on the owner's request; base stack scaffolded by a Sonnet 5.5 agent (medium) and reviewed here. Workflow actions bumped to current majors (checkout v7, setup-node v7, upload-pages-artifact v5, deploy-pages v5). Line endings forced to LF via `.gitattributes`.
 
 ## Open items
 
@@ -54,5 +58,5 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 
 ## Next steps
 
-1. When the owner says go: Week 1. The orchestrator settles the UI/UX design first (phone layout, colors, panels), then briefs a Sonnet 5.5 coding session to set up the repo and build the 3D viewer on sample rooms inside the OSM outline.
+1. When the owner says go: Week 1. The orchestrator settles the UI/UX design first (phone layout, colors, panels), then briefs a Sonnet 5.5 coding session to build the 3D viewer on sample rooms inside the OSM outline, on top of the existing scaffold.
 2. Week 2: trace editor. Week 3: real data collection and tracing. Week 4: QR points, PWA, Thai/English polish, GitHub Pages deploy.

@@ -1,0 +1,20 @@
+name = "siit-map-ask"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+# No key here. The owner stores it as a secret:  npx wrangler secret put ANTHROPIC_API_KEY
+# With no key the Worker runs in mock mode (canned answers).
+
+# Per-IP rate limit: 10 requests a minute. The owner can change the numbers.
+[[ratelimits]]
+name = "MINUTE_LIMIT"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 10
+  period = 60
+
+# Optional daily cap (60 a day per IP): create a KV namespace, then uncomment.
+#   npx wrangler kv namespace create DAILY
+# [[kv_namespaces]]
+# binding = "DAILY"
+# id = "<id printed by the command above>"

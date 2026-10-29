@@ -4,6 +4,7 @@ import { deptById, roomById } from './data/lookup'
 import { useT } from './i18n'
 import { go, routePath, useRoute } from './router'
 import { useAppStore } from './state/store'
+import { AskButton, AssistantSheet } from './assistant/Assistant'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
 import { RoomSheet } from './ui/RoomSheet'
 import { SearchScreen } from './ui/SearchScreen'
@@ -64,6 +65,8 @@ export default function App() {
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}
       {route.name === 'about' && <AboutScreen />}
       {keyOpen && <KeySheet />}
+      <AskButton />
+      <AssistantSheet />
       <Toast />
     </div>
   )

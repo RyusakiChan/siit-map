@@ -1,0 +1,72 @@
+[
+  {
+    "id": "faq-tuition-fees",
+    "task": "Pay tuition fees",
+    "taskTh": "จ่ายค่าเล่าเรียน",
+    "answer": "Sample Finance Office handles sample fees. It is in Sample Office 1-05 on floor 1. This is dummy text until the group writes the real FAQ.",
+    "deptId": "sample-dept-c",
+    "roomId": "sample-off-1-05",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-student-id",
+    "task": "Get or replace a student ID card",
+    "taskTh": "ทำหรือขอบัตรนักศึกษาใหม่",
+    "answer": "Sample Student Card Desk issues sample ID cards. It is in Sample Office 1-01 on floor 1. Dummy text.",
+    "deptId": "sample-dept-a",
+    "roomId": "sample-off-1-01",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-transcripts",
+    "task": "Request a transcript or certificate",
+    "taskTh": "ขอใบรับรองผลการเรียน",
+    "answer": "Sample Registrar Desk handles sample transcript requests. It is in Sample Office 2-01 on floor 2. Dummy text.",
+    "deptId": "sample-dept-a",
+    "roomId": "sample-off-2-01",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-scholarships",
+    "task": "Ask about scholarships",
+    "taskTh": "สอบถามทุนการศึกษา",
+    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 3-02 on floor 3. Dummy text.",
+    "deptId": "sample-dept-a",
+    "roomId": "sample-off-3-02",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-it-help",
+    "task": "Get IT help (Wi-Fi, accounts)",
+    "taskTh": "ขอความช่วยเหลือด้านไอที (ไวไฟ บัญชีผู้ใช้)",
+    "answer": "Sample IT Help Desk fixes sample Wi-Fi and account problems. It is in Sample Lab 4-01 on floor 4. Dummy text.",
+    "deptId": "sample-dept-b",
+    "roomId": "sample-lab-4-01",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-lost-and-found",
+    "task": "Report or collect a lost item",
+    "taskTh": "แจ้งของหายหรือรับของที่ตกหล่น",
+    "answer": "Sample Lost and Found is kept at the Sample Lobby on floor 1. Dummy text.",
+    "roomId": "sample-f1-lobby",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-library",
+    "task": "Borrow books or study quietly",
+    "taskTh": "ยืมหนังสือหรือนั่งอ่านเงียบ ๆ",
+    "answer": "Sample Library is on floor 3. Borrowing rules here are dummy text.",
+    "roomId": "sample-f3-library",
+    "url": "https://www.siit.tu.ac.th/"
+  },
+  {
+    "id": "faq-advising",
+    "task": "Talk to an academic advisor",
+    "taskTh": "พบอาจารย์ที่ปรึกษา",
+    "answer": "Sample Advising Office books sample advisor visits. It is in Sample Office 5-03 on floor 5. Dummy text.",
+    "deptId": "sample-dept-a",
+    "roomId": "sample-off-5-03",
+    "url": "https://www.siit.tu.ac.th/"
+  }
+]

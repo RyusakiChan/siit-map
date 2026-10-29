@@ -3,7 +3,7 @@ import type { Point } from './types'
 type Seg = [Point, Point]
 
 function edges(poly: Point[]): Seg[] {
-  return poly.map((p, i) => [p, poly[(i + 1) % poly.length]])
+  return poly.map((p, i): Seg => [p, poly[(i + 1) % poly.length] ?? p])
 }
 
 function distToSegment(p: Point, [a, b]: Seg): number {
@@ -79,7 +79,7 @@ export function polygonCentroid(poly: Point[]): Point {
     cx += (p[0] + q[0]) * f
     cz += (p[1] + q[1]) * f
   }
-  return a === 0 ? poly[0] : [cx / (3 * a), cz / (3 * a)]
+  return a === 0 ? (poly[0] ?? [0, 0]) : [cx / (3 * a), cz / (3 * a)]
 }
 
 export function polygonArea(poly: Point[]): number {

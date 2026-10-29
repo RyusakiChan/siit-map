@@ -1,16 +1,14 @@
 :root {
-  color-scheme: light dark;
-  --bg: #eef0f3;
-  --fg: #1c1f24;
-  --chip: rgba(255, 255, 255, 0.85);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14171b;
-    --fg: #e6e8eb;
-    --chip: rgba(30, 34, 40, 0.85);
-  }
+  color-scheme: light;
+  --ground: #f3f1f3;
+  --surface: #ffffff;
+  --ink: #1d161e;
+  --muted: #594c5b;
+  --line: #e7e4e7;
+  --action-edge: #f9a8d4;
+  --selected-fill: #fce7f3;
+  --selected-label: #a3155f;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html,
@@ -19,9 +17,9 @@ body,
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: system-ui, sans-serif;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
 }
 
 .app {
@@ -29,35 +27,133 @@ body,
   inset: 0;
 }
 
+.scene,
 .app canvas {
   display: block;
   touch-action: none;
 }
 
-.badge,
-.selected,
-.credit {
+.badge {
   position: absolute;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: var(--chip);
+  top: max(12px, env(safe-area-inset-top));
+  left: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
   font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
   pointer-events: none;
 }
 
-.badge {
-  top: max(12px, env(safe-area-inset-top));
-  left: 12px;
-  font-weight: 600;
-}
-
 .selected {
-  top: max(12px, env(safe-area-inset-top));
-  right: 12px;
+  position: absolute;
+  left: 12px;
+  right: 72px;
+  bottom: calc(40px + env(safe-area-inset-bottom));
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 15px;
+  font-weight: 500;
+  pointer-events: none;
 }
 
 .credit {
+  position: absolute;
+  left: 12px;
   bottom: max(8px, env(safe-area-inset-bottom));
-  right: 8px;
   font-size: 11px;
+  color: var(--muted);
+}
+
+.credit a {
+  color: inherit;
+  padding: 6px 0;
+  display: inline-block;
+}
+
+.floor-picker {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.floor-btn {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-bottom: 1px solid var(--ground);
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 14px 'IBM Plex Sans', system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease);
+}
+
+.floor-btn:last-child {
+  border-bottom: 0;
+}
+
+.floor-btn:active {
+  transform: scale(0.98);
+}
+
+.floor-btn.on {
+  background: var(--selected-fill);
+  box-shadow: inset 0 0 0 2px var(--action-edge);
+  color: var(--selected-label);
+}
+
+.floor-btn:focus-visible,
+.credit a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+}
+
+/* Labels drawn over the 3D map */
+.map-badge,
+.map-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  box-sizing: border-box;
+}
+
+.map-badge {
+  border: 2px solid var(--muted);
+  font: 600 12px 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+.map-icon {
+  border: 1px solid var(--line);
+}
+
+.room-tag {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font: 500 12px 'IBM Plex Mono', ui-monospace, monospace;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floor-btn {
+    transition: none;
+  }
 }

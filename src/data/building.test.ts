@@ -55,7 +55,7 @@ describe('building.json', () => {
       const rooms = data.rooms.filter((r) => r.floor === floor.level)
       for (let i = 0; i < rooms.length; i++) {
         for (let j = i + 1; j < rooms.length; j++) {
-          expect(polygonsOverlap(rooms[i].polygon, rooms[j].polygon), `${rooms[i].id} / ${rooms[j].id}`).toBe(false)
+          expect(polygonsOverlap(rooms[i]!.polygon, rooms[j]!.polygon), `${rooms[i]!.id} / ${rooms[j]!.id}`).toBe(false)
         }
       }
     }

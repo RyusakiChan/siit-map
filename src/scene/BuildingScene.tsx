@@ -16,6 +16,7 @@ const ROOM_HEIGHT = 3
 const RISE = 0.3 // a selected room grows 30% taller
 const BIG_ROOM_AREA = 200 // m²: bigger rooms are always labelled in single-floor view
 const FOV = 40
+const PICKER_NUDGE = 0.16 // fraction of the view width
 
 const outline = data.building.outline
 const bounds = outline.reduce(
@@ -287,8 +288,8 @@ function Rig() {
   const view = useAppStore((s) => s.view)
   const ready = size.width > 0 && size.height > 0
   const aspect = ready ? size.width / size.height : 1
-  const allDist = fitDistance(halfWidth * 1.15 + 12, aspect)
-  const floorDist = fitDistance(halfWidth * 1.2 + 8, aspect)
+  const allDist = fitDistance(halfWidth * 1.3 + 10, aspect)
+  const floorDist = fitDistance(halfWidth * 1.35 + 8, aspect)
   const started = useRef(false)
   const zoomed = useRef(false)
 
@@ -310,7 +311,9 @@ function Rig() {
     c.dollyTo(single ? floorDist : allDist, animate)
     const y = single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
     c.moveTo(center.x, y, center.z, animate)
-  }, [attached, view, ready, allDist, floorDist])
+    // Nudge the building left so the floor picker on the right doesn't cover it.
+    void c.setFocalOffset(PICKER_NUDGE * (single ? floorDist : allDist) * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect, 0, 0, animate)
+  }, [attached, view, ready, allDist, floorDist, aspect])
 
   useFrame(() => {
     const c = ref.current

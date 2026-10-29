@@ -88,6 +88,49 @@ for (let f = 1; f <= 5; f++) {
     departmentId: null, type: 'stairs', polygon: slot.stairsE })
 }
 
+// Walkway graph: one corridor centre line along z = 0 between the bands. Each room's door node sits
+// on the corridor side of the room's edge, 0.25 m outside it (z = -5 north, z = 5 south).
+const DOOR_X = { S0: -34.5, S6L: 25.5, lobby: -10, library: 20.5 }
+const slotOf = (f, room) => plan[f].find(([s]) => slot[s] === room.polygon)?.[0]
+const doorSlot = { restroom: 'restroom', lift: 'lift', 'stairs-w': 'stairsW', 'stairs-e': 'stairsE' }
+const centreX = (poly) => {
+  const xs = poly.map((p) => p[0])
+  return Math.round(((Math.min(...xs) + Math.max(...xs)) / 2) * 100) / 100
+}
+const nodes = []
+const edges = []
+const connectors = [
+  { id: 'lift', kind: 'elevator', costPerFloor: 20, nodes: {} },
+  { id: 'stairs-w', kind: 'stairs', costPerFloor: 14, nodes: {} },
+  { id: 'stairs-e', kind: 'stairs', costPerFloor: 14, nodes: {} },
+]
+for (let f = 1; f <= 5; f++) {
+  const spine = new Map() // x -> corridor node id
+  const at = (x) => {
+    if (!spine.has(x)) {
+      const id = `f${f}-c${String(Math.round(x * 10)).replace('-', 'm')}`
+      spine.set(x, id)
+      nodes.push({ id, floor: f, position: [x, 0] })
+    }
+    return spine.get(x)
+  }
+  for (const room of rooms.filter((r) => r.floor === f)) {
+    const key = room.id.match(/-(restroom|lift|stairs-w|stairs-e)$/)?.[1]
+    const s = key ? doorSlot[key] : slotOf(f, room)
+    const north = room.polygon.every((p) => p[1] < 0)
+    const x = DOOR_X[s] ?? centreX(room.polygon)
+    const id = `f${f}-door-${room.id.replace(/^sample-/, '').replace(/^f\d-/, '')}`
+    nodes.push({ id, floor: f, position: [x, north ? -5 : 5] })
+    edges.push({ a: id, b: at(x) })
+    room.door = id
+    const c = connectors.find((k) => key === k.id)
+    if (c) c.nodes[f] = id
+  }
+  const xs = [...spine.keys()].sort((a, b) => a - b)
+  for (let i = 1; i < xs.length; i++) edges.push({ a: spine.get(xs[i - 1]), b: spine.get(xs[i]) })
+}
+json.walkways = { nodes, edges, connectors }
+
 json.departments = depts
 json.rooms = rooms
 json.qrPoints = [

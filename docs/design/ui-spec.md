@@ -1,8 +1,11 @@
 # SIIT Map: phone UI spec (Week 1, draft for owner review)
 
-Mockups: Claude Design canvas "SIIT Map – Phone UI" (private to the owner until shared): https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA
+Mockups (Claude Design canvases, private to the owner until shared):
 
-Status: **draft, not yet approved by the owner.** The coding session builds from this file plus the canvas once approved.
+- **Pastel Mauve (chosen colors, 2026-10-29):** https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn
+- Original colors (layout reference only): https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA
+
+Status: **approved by the owner 2026-10-29** (Pastel Mauve colors, the 10 screens and the Motion section). The coding session builds from this file plus the Pastel Mauve canvas. Where the canvas and this file differ, this file wins (for example, the canvas's font stack starts with Inter; the app uses IBM Plex as below).
 
 ## Screens (390 × 844 phone frames)
 
@@ -21,30 +24,36 @@ Revised 2026-10-29 after `docs/design/map-app-research.md`: vertical floor picke
 | Room selected · Thai | Same as Room selected in Thai, IBM Plex Sans Thai first, taller line height |
 | About | What it is; credit card "[GROUP NAME] · TU100 student project, SIIT, Thammasat University · Not an official SIIT service"; data note with SAMPLE, OSM/ODbL credit, last updated; report-a-problem link; "Visits are counted without cookies or personal data" |
 
-## Tokens
+## Tokens (Pastel Mauve, chosen 2026-10-29)
+
+Taken from the Pastel Mauve canvas. The original palette is kept in git history (commit `fb73861`).
 
 | Token | Value | Use |
 |---|---|---|
-| ground | `#F4F3EF` | Map background |
-| surface | `#FFFFFF` | Panels, sheets, buttons |
-| ink | `#15171C` | Text, primary buttons, selected floor, selection outline |
-| muted | `#565B66` | Secondary text (passes 4.5:1 on both grounds) |
-| line | `#DEDBD3` | Borders, dividers |
-| subtle line | `#EFEDE8` | List row dividers |
-| placeholder fill | `#ECEAE4` | Photo placeholders |
-| you-are-here | `#C2255C` | Pin, facing cone (22% fill), banner icon only |
-| floor slab | top `#EEECE6`, sides `#D3D0C8` / `#C3BFB6` | Unselected floors; upper floors at ~55% opacity in the stacked view |
-| dimmed room | top `#E3E0D9`, sides `#CCC8BF` / `#BCB8AE` | Rooms not selected |
+| ground | `#F3F1F3` | Map background |
+| surface | `#FFFFFF` | Panels, sheets, secondary buttons |
+| ink | `#1D161E` | Text, selection outline, room-number tag, SAMPLE badge |
+| muted | `#594C5B` | Secondary text (passes 4.5:1 on ground and surface) |
+| line | `#E7E4E7` | Borders, dividers, sheet grab handle |
+| subtle line | `#F3F1F3` | List row dividers, floor picker dividers |
+| placeholder fill | `#ECE7ED` | Photo placeholders |
+| action | fill `#FCCEE8`, 1 px inset edge `#F9A8D4`, ink label | Primary buttons ("Department details", "Find a room from here"); pill shape |
+| selected floor | fill `#FCE7F3`, 2 px inset ring `#F9A8D4`, label `#A3155F` | Current floor in the picker |
+| you-are-here | `#F6339A` | Pin (white edge), facing cone (22% fill), halo (18% fill), banner icon only |
+| floor slab | top `#F7F4F8` (viewed floor `#FFFFFF`), sides `#DDD5DE` / `#CBC1CC` | Floors; upper floors at ~55% opacity in the stacked view |
+| dimmed room | top `#EBE6EC`, sides `#D6CFD7` / `#C6BDC8` | Rooms not selected |
 
 Department and type colors (top / sides; sample names until real departments are known). Each differs in lightness as well as hue:
 
 | Category | Top | Sides |
 |---|---|---|
-| Dept A | `#3B6FD9` | `#2D57AD` / `#24488F` |
-| Dept B | `#E07B28` | `#B5611D` / `#934E17` |
-| Dept C | `#2E9E8F` | `#237C70` / `#1C655B` |
-| Restrooms, café, other facilities | `#D6D1C4` | `#B9B4A7` / `#A29D90` |
-| Stairs, lifts | `#8E95A1` | `#6F7682` / `#5C626D` |
+| Dept A (sky) | `#7CC8F8` | `#5AAEE0` / `#4796C4` |
+| Dept B (violet) | `#B9A3FF` | `#9B84E6` / `#8670CC` |
+| Dept C (teal) | `#5FDCC8` | `#3FC0AC` / `#2FA594` |
+| Restrooms, café, other facilities | `#EADFEB` | `#D2C4D3` / `#BCAEBD` |
+| Stairs, lifts | `#A89EA9` | `#8F8490` / `#7A6F7B` |
+
+Pastel fills are too light for text on them: room numbers and letters sit on white badges or the ink tag, never directly on a pastel fill.
 
 More departments will need more colors: run them through `/dataviz` before real data lands.
 
@@ -56,10 +65,10 @@ More departments will need more colors: run them through `/dataviz` before real 
 
 ## Rules
 
-- Color goes on data (rooms, department bars, the pin), not on chrome. Primary buttons are ink, not colored.
-- Touch targets at least 44 px; corner radius 12 for controls, 16 for sheets.
+- Strong color goes on data (rooms, department bars, the pin). Chrome stays white and mauve-grey; the only colored chrome is the pale pink action fill and the selected-floor ring, both much lighter than the pin so the pin still stands out.
+- Touch targets at least 44 px; corner radius 12 for square controls, 16 for sheets; primary buttons, the language button and chips are pills.
 - Selection: the chosen room is raised, outlined in ink and tagged with its number; other rooms on that floor turn grey.
-- Floor picker: vertical, right edge, 44 px buttons, current floor in ink; a raspberry dot marks the floor you came from.
+- Floor picker: vertical, right edge, 44 px buttons, current floor in the selected-floor style; a you-are-here pink dot marks the floor you came from.
 - Color is never the only cue: each department has a letter badge (outlined in its color, ink letter) on the map and in lists; facilities have icons.
 - Labels by zoom: in single-floor view big rooms always show their letter/name, small rooms and facility icons appear when zoomed in; the stacked view shows no room labels.
 - Search results on another floor switch the floor automatically and say how to get there.
@@ -67,9 +76,9 @@ More departments will need more colors: run them through `/dataviz` before real 
 - Real buttons, links and labels; icon-only buttons have `aria-label`.
 - No emoji, gradients or shadows.
 
-## Motion (proposed 2026-10-29, not yet approved)
+## Motion (approved 2026-10-29)
 
-Not shown on the canvases (they are static). For the coding session once approved:
+Not shown on the canvases (they are static). For the coding session:
 
 - Camera glides to a search result or QR spot (0.6–0.8 s) instead of jumping.
 - Floor switch: from All to one floor, other floors slide apart and fade out (about 0.5 s); reverse when going back.

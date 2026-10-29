@@ -40,7 +40,7 @@ The orchestrator session plans, makes design and product decisions, does the mai
 - **Not in the public repo:** skills without a license file (`kien-thai`, `ui-ux-pro-max`, `web-design-guidelines`, `write-prose`) are git-ignored and stay local only. `.claude/skills` is ignored too; after cloning, run `Sync-CodexWorkspace.ps1 -Project <folder>`.
 - **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `README.md`, `.agents/skills/` (8 project skills, 4 published).
 - **Pending sessions:** "SIIT Map: presentation and context prep" (`local_860d1cec-b2e3-43c5-bdaf-688a920e35c3`), owner-driven. It writes only to `docs/context/` and `docs/presentation/`; plan-changing context comes back via `docs/context/proposed-plan-changes.md`.
-- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Awaiting owner review/approval** before the coding brief. A Pastel Mauve color variant of the same 10 screens is on a separate canvas for comparison: https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn (mauve neutrals, pink actions with dark labels for contrast, pastel sky/violet/teal departments, pill buttons). Owner to pick original or mauve. Mauve buttons were softened on request (pale pink `#FCCEE8` with a `#F9A8D4` edge, dark text; selected floor ring `#F9A8D4`, number `#A3155F`). A Motion section is proposed in `docs/design/ui-spec.md`, not yet approved.
+- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Colors decided: Pastel Mauve** (owner, 2026-10-29), canvas https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn; its tokens are now in the Tokens table of `docs/design/ui-spec.md` (the canvas's Inter-first font stack is a canvas slip; the app uses IBM Plex). The original canvas stays as a layout reference. All 10 Mauve artboards use IBM Plex (canvas version 5). **Screens and the Motion section approved by the owner (2026-10-29)**; next is the Week 1 coding brief.
 - **Live temporary changes:** none.
 
 ## Decisions log
@@ -51,6 +51,8 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 - 2026-10-29: Model routing set: Opus 5.5 for orchestration and UI/UX design, Sonnet 5.5 (medium to xhigh) for coding.
 - 2026-10-29: Repo created as `siit-map` (public) on the owner's request; base stack scaffolded by a Sonnet 5.5 agent (medium) and reviewed here. Workflow actions bumped to current majors (checkout v7, setup-node v7, upload-pages-artifact v5, deploy-pages v5). Line endings forced to LF via `.gitattributes`.
 - 2026-10-29: TU100 course context (`docs/context/`) changed the plan; owner decided: 3-week schedule to the **Fri 20 Nov live demo**, group collects data now in parallel; **GoatCounter** for traffic (the instructor's KPI); go public with sample data by ~5 Nov; credit "TU100 student project, SIIT, Thammasat University" + group name, no student names; full trace editor cut to a minimal trace tool; offline PWA is a stretch goal. Applied in `PLAN.md`.
+- 2026-10-29: Owner chose **Pastel Mauve** colors over the original palette (orchestrator had recommended original, since pink chrome sits close to the pink pin). Tokens and the color rule in `docs/design/ui-spec.md` updated. Canvas font stack switched from Inter to IBM Plex.
+- 2026-10-29: Owner approved the 10 Week 1 screens and the Motion section.
 - 2026-10-29: After map-app research, owner chose a vertical floor picker on the right and approved adding category chips, search empty state, room peek state, cross-floor hint, department letter badges, facility icons and a Key button. Data model to add aliases (EN/TH) and optional point amenities (IMDF names).
 
 ## Open items
@@ -63,10 +65,8 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 
 ## Pending owner decisions (as of 2026-10-29)
 
-1. Original or Pastel Mauve colors for the Week 1 design (then update the Tokens table in `docs/design/ui-spec.md` if mauve).
-2. Approve the design (screens) and the proposed Motion section.
-3. GoatCounter site code, group name, group roles.
-4. Start Week 1 coding: owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
+1. GoatCounter site code, group name, group roles.
+2. Start Week 1 coding: owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
 
 ## Next steps
 

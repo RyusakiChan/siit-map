@@ -189,6 +189,10 @@ try {
       await page.getByRole('button', { name: 'Close directions' }).tap()
       await page.waitForTimeout(800)
       check((await page.locator('.sheet.peek').innerText()).includes('5-07'), `${size.name}: Close returns to the destination's peek card`)
+      await page.getByRole('button', { name: 'Floor 2', exact: true }).tap()
+      await page.evaluate(() => window.__store.getState().selectRoom('sample-lab-5-02', { focus: true, cross: true }))
+      await page.waitForTimeout(1200)
+      await shot('16-cross-floor-banner')
       await ctx.close()
     }
 

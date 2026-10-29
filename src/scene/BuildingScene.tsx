@@ -291,7 +291,22 @@ function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
         ref={(l) => { matRef.current = l ? (l.material as unknown as { opacity: number }) : null }}
       />
       {tagReady && (
-        <Html position={[cx, 0.6, cz]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+        <Html
+          position={[cx, 0.6, cz]}
+          center
+          zIndexRange={[20, 10]}
+          style={{ pointerEvents: 'none' }}
+          calculatePosition={(obj, camera, size) => {
+            // Same projection as drei's default, then kept at least 8 px inside the canvas.
+            const v = new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld).project(camera)
+            const w = (tagRef.current?.offsetWidth ?? 120) / 2
+            const h = (tagRef.current?.offsetHeight ?? 28) / 2
+            const x = (v.x * size.width) / 2 + size.width / 2
+            const y = (-v.y * size.height) / 2 + size.height / 2
+            const lo = (n: number, half: number, max: number) => Math.min(Math.max(n, 8 + half), Math.max(8 + half, max - 8 - half))
+            return [lo(x, w, size.width), lo(y, h, size.height)]
+          }}
+        >
           <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
         </Html>
       )}
@@ -412,6 +427,7 @@ function RouteLayer() {
   useEffect(() => () => ribbons.forEach((g) => g?.dispose()), [ribbons])
   const refs = useRef<(THREE.Group | null)[]>([])
   const links = useRef<(THREE.Group | null)[]>([])
+  const mats = useRef<(THREE.MeshBasicMaterial | null)[]>([])
   const startRef = useRef<THREE.Group>(null)
   const flagRef = useRef<THREE.Group>(null)
   const flag = useMemo(() => {
@@ -437,6 +453,10 @@ function RouteLayer() {
         grp.scale.set(1, 1, 1)
       }
     })
+    // The leg being read is at full strength; the others (seen in the "All" view) are faded.
+    const live = useAppStore.getState().route
+    const current = live?.plan.steps[live.step]?.leg ?? 0
+    mats.current.forEach((m, i) => { if (m) m.opacity = i === current ? 1 : 0.35 })
     // The dashed riser between floors shows only while both floors are on show (the "All" view).
     legs.forEach((leg, i) => {
       const grp = links.current[i]
@@ -473,7 +493,7 @@ function RouteLayer() {
           <group key={i} ref={(g) => { refs.current[i] = g }} visible={false}>
             {geo && (
               <mesh geometry={geo} renderOrder={4}>
-                <meshBasicMaterial color={RIBBON_COLOR} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+                <meshBasicMaterial ref={(m) => { mats.current[i] = m }} color={RIBBON_COLOR} transparent depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
               </mesh>
             )}
           </group>

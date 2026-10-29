@@ -6,12 +6,22 @@ import { useAppStore } from '../state/store'
 import { DeptBadge } from './DeptBadge'
 import { CloseIcon, PhotoIcon, ShareIcon } from './Icons'
 
+function Credit({ className = 'credit-line' }: { className?: string }) {
+  const t = useT()
+  return (
+    <a className={className} href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+      {t('osmCredit')}
+    </a>
+  )
+}
+
 export function RoomSheet() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const id = useAppStore((s) => s.selectedRoomId)
   const snap = useAppStore((s) => s.snap)
   const setSnap = useAppStore((s) => s.setSnap)
+  const setPeekHStore = useAppStore((s) => s.setPeekH)
   const selectRoom = useAppStore((s) => s.selectRoom)
   const showNotice = useAppStore((s) => s.showNotice)
   const room = id ? roomById.get(id) : undefined
@@ -24,12 +34,15 @@ export function RoomSheet() {
   useLayoutEffect(() => {
     const el = head.current
     if (!el) return
-    const measure = () => setPeekH(el.offsetHeight)
+    const measure = () => {
+      setPeekH(el.offsetHeight)
+      if (useAppStore.getState().snap === 'peek') setPeekHStore(el.offsetHeight)
+    }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [room?.id])
+  }, [room?.id, snap, setPeekHStore])
 
   // Scroll the full card back to the top when another room opens.
   useEffect(() => {
@@ -130,25 +143,28 @@ export function RoomSheet() {
         ) : (
           <span className="hint-btn spacer" aria-hidden="true" />
         )}
-        <a className="credit-line" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
-          {t('osmCredit')}
-        </a>
+        {snap === 'peek' && <Credit />}
       </div>
 
+      {snap === 'full' && <Credit className="credit-float" />}
       <div className="sheet-body" inert={snap === 'peek'}>
-        <div className="photo-ph">
-          <PhotoIcon />
-          <span>{t('noPhoto')}</span>
+        <div className="sheet-intro">
+          <div className="photo-ph">
+            <PhotoIcon />
+            <span>{t('noPhoto')}</span>
+          </div>
+          <div className="sheet-intro-text">
+            {other && <p className="room-other">{other}</p>}
+            <dl className="details">
+              {details.map(([k, v]) => v && (
+                <div key={k} className="detail">
+                  <dt>{k}</dt>
+                  <dd>{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
-        {other && <p className="room-other">{other}</p>}
-        <dl className="details">
-          {details.map(([k, v]) => v && (
-            <div key={k} className="detail">
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </div>
-          ))}
-        </dl>
         {room.description && <p className="body-text">{room.description}</p>}
         {dept && (
           <button type="button" className="action-btn" onClick={() => go(`/dept/${dept.id}`)}>

@@ -128,4 +128,34 @@ Scope: brief tasks 3 and 4, plus the orchestrator's additions: demand rendering,
 
 Real traced floors and department data, real photos, the review of the label threshold, a real-device performance and touch check, GoatCounter code, the report form link and the group name in `src/config.ts`, and the Thai polish with `kien-thai`.
 
+(Run B verdict: DONE. The fix round below follows.)
+
+## Run B fix round, 2026-10-29, Sonnet 5.5
+
+Four review points from the orchestrator. Same branch, not pushed.
+
+### What changed
+
+1. **Full room card keeps the map visible.** The sheet is now 53% of the screen height, so at full the card top sits at about 47% (398 px of 844, 348 px of 740). The body follows the Room artboard: 96 px photo thumbnail beside the details, then the description and the Department details button; long content scrolls inside the sheet. The OSM credit left the card header: while the card is full it floats just above the sheet edge on the map (always visible, still links to the copyright page); in peek it stays in the card. At full the floor picker packs tighter (36 px buttons, moved up) so floor 1 is not hidden behind the card. That is below the 44 px touch target, only while the full card is open.
+2. **Camera framing.** The old picker nudge is gone. The camera now uses a view offset that centres the map in the free area: below the top bar, chips and status row, above the bottom bar or the peek card or the full card, left of the picker. The offset eases when the card changes snap point. The fit distance is computed from the free width and height. Tapping a room on the map now also focuses it (as search does), so the room is framed in the free area above the card. The stacked view is tilted a little more from above (polar 0.85) and fills the free width; on a portrait phone the near-square building is width-limited, so a band of empty space above and below remains. I tried a lower azimuth to widen the fill, but the lower floors then ran off the left edge, so I kept 0.4. The room focus distance is a bit wider (0.72 of the floor distance) so more of the floor shows around the room.
+3. **Language default.** English unless a remembered choice is saved. Checked with a `th-TH` browser: first visit is English; after switching to Thai and a reload it stays Thai.
+4. **Empty rows.** Confirmed: Hours and Contact rows render only when the data has a value, and none of the sample rooms have one, so no `[HOURS]` placeholder can appear. The card shows only Where.
+
+### Bug found and fixed on the way
+
+The selected room's number tag (the black "2-06" label) was missing when a page opened directly on a room link (`#/room/<id>`), because drei's `Html` loses its content when it mounts in the very first commit. It now mounts one animation frame later. Tap and search selections were not affected.
+
+### Checks
+
+- `npm run lint`: pass. `npm test`: 22 pass. `npm run build`: pass (the 995 kB scene chunk warning remains).
+- Screenshots retaken at 390×844 and 360×740 for all 22 steps (`docs/ai-handoffs/week1/b01…b22`), including the changed ones: b01, b02, b03, b04, b07, b09, b13, b14, b15, b21. I looked at b01, b03, b04, b09, b13, b14, b15, b21 and the 360×740 pair of b01, b04, b14, b15.
+- Full card at 360×740: sheet top at 348 px, the picker ends at about 337 px.
+
+### Open problems
+
+- The room name can break at the hyphen ("Sample Meeting Room 2-" / "06") on a narrow card.
+- Still not tested on a real phone or GPU.
+- The picker's compact 36 px buttons below the 44 px target (full card only).
+
 Verdict: DONE
+

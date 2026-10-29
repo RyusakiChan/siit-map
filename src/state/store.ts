@@ -36,6 +36,8 @@ interface AppState {
   view: FloorView
   selectedRoomId: string | null
   snap: Snap
+  /** Height (px) of the peek card, so the map can be framed above it. */
+  peekH: number
   /** True when the camera is close enough to show small-room labels. */
   zoomedIn: boolean
   lang: Lang
@@ -54,6 +56,7 @@ interface AppState {
   /** Selecting a room also switches to its floor. */
   selectRoom: (id: string | null, opts?: { focus?: boolean; cross?: boolean; snap?: Snap }) => void
   setSnap: (snap: Snap) => void
+  setPeekH: (px: number) => void
   setZoomedIn: (zoomedIn: boolean) => void
   setLang: (lang: Lang) => void
   openSearch: (filter?: TypeFilter | null) => void
@@ -69,15 +72,15 @@ interface AppState {
 let tick = 0
 
 function loadLang(): Lang {
-  const saved = readStore('siit-map.lang')
-  if (saved === 'th' || saved === 'en') return saved
-  return typeof navigator !== 'undefined' && navigator.language?.toLowerCase().startsWith('th') ? 'th' : 'en'
+  // English by default (PLAN.md); only a remembered choice changes it.
+  return readStore('siit-map.lang') === 'th' ? 'th' : 'en'
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
   view: 'all',
   selectedRoomId: null,
   snap: 'peek',
+  peekH: 130,
   zoomedIn: false,
   lang: loadLang(),
   searchOpen: false,
@@ -119,6 +122,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   setSnap: (snap) => set({ snap }),
+  setPeekH: (peekH) => set({ peekH }),
   setZoomedIn: (zoomedIn) => set({ zoomedIn }),
   setLang: (lang) => {
     writeStore('siit-map.lang', lang)

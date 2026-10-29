@@ -16,7 +16,12 @@ const ROOM_HEIGHT = 3
 const RISE = 0.3 // a selected room grows 30% taller
 const BIG_ROOM_AREA = 200 // m²: bigger rooms are always labelled in single-floor view
 const FOV = 40
-const PICKER_NUDGE = 0.16 // fraction of the view width
+// Screen space (px) taken by the chrome; the map is framed in what is left.
+const INSET_TOP = 150 // top bar, chips and status row
+const INSET_BOTTOM = 100 // bottom bar
+const INSET_LEFT = 8
+const INSET_RIGHT = 64 // floor picker
+const FULL_SHEET = 0.53 // the full room card covers the bottom 53% of the screen
 
 const outline = data.building.outline
 const bounds = outline.reduce(
@@ -165,7 +170,7 @@ function FloorLayer({ level }: { level: number }) {
               if (e.delta > 6 || anim.current.vis < 0.5) return // a drag, or a faded-out floor
               e.stopPropagation()
               const { selectedRoomId, selectRoom } = useAppStore.getState()
-              selectRoom(selectedRoomId === it.room.id ? null : it.room.id)
+              selectRoom(selectedRoomId === it.room.id ? null : it.room.id, { focus: selectedRoomId !== it.room.id })
             }}
           />
         </group>
@@ -209,6 +214,17 @@ function Selection() {
   const lineRef = useRef<THREE.Group>(null)
   const matRef = useRef<{ opacity: number } | null>(null)
   const tagRef = useRef<HTMLDivElement>(null)
+  // drei's Html drops its content when it mounts in the very first commit (a deep link opens
+  // with a room already chosen), so the tag waits one animation frame.
+  const invalidate = useThree((s) => s.invalidate)
+  const [tagReady, setTagReady] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      setTagReady(true)
+      invalidate()
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [invalidate])
   useFrame((_, dt) => {
     const s = state.current
     s.raise = ease(s.raise, current ? 1 : 0, 12, dt)
@@ -236,9 +252,11 @@ function Selection() {
         transparent
         ref={(l) => { matRef.current = l ? (l.material as unknown as { opacity: number }) : null }}
       />
-      <Html position={[cx, 0.6, cz]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
-        <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
-      </Html>
+      {tagReady && (
+        <Html position={[cx, 0.6, cz]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+          <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
+        </Html>
+      )}
     </group>
   )
 }
@@ -335,10 +353,13 @@ function Labels() {
   )
 }
 
-function fitDistance(radius: number, aspect: number) {
-  const vHalf = THREE.MathUtils.degToRad(FOV / 2)
-  const hHalf = Math.atan(Math.tan(vHalf) * aspect)
-  return radius / Math.tan(Math.min(vHalf, hHalf))
+/** Camera distance that fits a footprint of half-extents rx and ry (metres) into the free screen area. */
+function fitDistance(rx: number, ry: number, w: number, h: number) {
+  const tv = Math.tan(THREE.MathUtils.degToRad(FOV / 2))
+  const th = tv * (w / h)
+  const freeW = Math.max(120, w - INSET_LEFT - INSET_RIGHT)
+  const freeH = Math.max(160, h - INSET_TOP - INSET_BOTTOM)
+  return Math.max(rx / (th * (freeW / w)), ry / (tv * (freeH / h)))
 }
 
 function Rig() {
@@ -348,8 +369,8 @@ function Rig() {
   const view = useAppStore((s) => s.view)
   const ready = size.width > 0 && size.height > 0
   const aspect = ready ? size.width / size.height : 1
-  const allDist = fitDistance(halfWidth * 1.3 + 10, aspect)
-  const floorDist = fitDistance(halfWidth * 1.35 + 8, aspect)
+  const allDist = fitDistance(halfWidth * 1.15 + 1, 34, size.width || 1, size.height || 1)
+  const floorDist = fitDistance(halfWidth * 1.15 + 1, 26, size.width || 1, size.height || 1)
   const started = useRef(false)
   const zoomed = useRef(false)
 
@@ -371,7 +392,6 @@ function Rig() {
     c.minPolarAngle = 0.12
     c.maxPolarAngle = 1.5
     c.setBoundary(new THREE.Box3(new THREE.Vector3(bounds.minX - 10, -3, bounds.minZ - 10), new THREE.Vector3(bounds.maxX + 10, topElevation + 8, bounds.maxZ + 10)))
-    const nudge = (dist: number) => PICKER_NUDGE * dist * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect
     const newFocus = focus !== null && focus.tick !== lastFocus.current
     // A resize re-runs this effect; it then repeats the last pose instead of picking a new one.
     const useFocus = newFocus || (kind.current === 'focus' && view === lastView.current)
@@ -380,30 +400,40 @@ function Rig() {
       // Glide to a search result or QR spot.
       lastFocus.current = focus.tick
       kind.current = 'focus'
-      const dist = floorDist * 0.6
+      const dist = floorDist * 0.72
       void c.rotateTo(focus.azimuth ?? (first ? 0.4 : c.azimuthAngle), 0.85, animate)
       void c.dollyTo(dist, animate)
       void c.moveTo(focus.x, elevationOf(focus.floor) + 1, focus.z, animate)
-      void c.setFocalOffset(nudge(dist), 0, 0, animate)
       return
     }
     kind.current = 'view'
     const single = view !== ('all' as FloorView)
-    void c.rotateTo(first ? 0.4 : c.azimuthAngle, single ? 0.8 : 1.0, animate)
+    void c.rotateTo(first ? 0.4 : c.azimuthAngle, single ? 0.8 : 0.85, animate)
     void c.dollyTo(single ? floorDist : allDist, animate)
     void c.moveTo(center.x, single ? elevationOf(view as number) + 1 : topElevation / 2 + 1, center.z, animate)
-    // Nudge the building left so the floor picker on the right doesn't cover it.
-    void c.setFocalOffset(nudge(single ? floorDist : allDist), 0, 0, animate)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- floorDist and allDist follow aspect
   }, [attached, view, ready, aspect, focus])
 
-  useFrame(() => {
+  const offset = useRef({ x: 0, y: 0 })
+  useFrame(({ camera, size: sz }, dt) => {
     const c = ref.current
     if (!c) return
-    const near = c.distance < floorDist * 0.7
+    const near = c.distance < floorDist * 0.8
     if (near !== zoomed.current) {
       zoomed.current = near
       useAppStore.getState().setZoomedIn(near)
+    }
+    // Shift the picture so the map's centre is the centre of the free area (clear of the
+    // chrome, the sheet and the picker); eases when the sheet changes snap point.
+    const { selectedRoomId, snap, peekH } = useAppStore.getState()
+    const bottom = selectedRoomId ? (snap === 'full' ? sz.height * FULL_SHEET : peekH) : INSET_BOTTOM
+    const o = offset.current
+    const x = ease(o.x, (INSET_LEFT - INSET_RIGHT) / 2, 9, dt)
+    const y = ease(o.y, (INSET_TOP - bottom) / 2, 9, dt)
+    if ((x !== o.x || y !== o.y || !camera.view?.enabled) && camera instanceof THREE.PerspectiveCamera) {
+      o.x = x
+      o.y = y
+      camera.setViewOffset(sz.width, sz.height, -x, -y, sz.width, sz.height)
     }
   })
 

@@ -59,7 +59,7 @@ More departments will need more colors: run them through `/dataviz` before real 
 
 ## Type
 
-- IBM Plex Sans (English) and IBM Plex Sans Thai (Thai), weights 400/500/600; IBM Plex Mono 500 for room numbers. Google Fonts.
+- IBM Plex Sans (English) and IBM Plex Sans Thai (Thai), weights 400/500/600; IBM Plex Mono 500 for room numbers. Self-hosted with `@fontsource` packages in the app (no Google Fonts: no third-party requests, works offline); the canvases load them from Google Fonts only for the mockups.
 - Thai screens put Plex Sans Thai first and use line height 1.35–1.6.
 - Sizes: screen title 28, room name 22 (Thai 21), body 14–15, labels 12 uppercase with 0.06em tracking.
 

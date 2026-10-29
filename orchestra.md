@@ -40,7 +40,7 @@ The orchestrator session plans, makes design and product decisions, does the mai
 - **Not in the public repo:** skills without a license file (`kien-thai`, `ui-ux-pro-max`, `web-design-guidelines`, `write-prose`) are git-ignored and stay local only. `.claude/skills` is ignored too; after cloning, run `Sync-CodexWorkspace.ps1 -Project <folder>`.
 - **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `README.md`, `.agents/skills/` (8 project skills, 4 published).
 - **Pending sessions:** "SIIT Map: presentation and context prep" (`local_860d1cec-b2e3-43c5-bdaf-688a920e35c3`), owner-driven. It writes only to `docs/context/` and `docs/presentation/`; plan-changing context comes back via `docs/context/proposed-plan-changes.md`.
-- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Colors decided: Pastel Mauve** (owner, 2026-10-29), canvas https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn; its tokens are now in the Tokens table of `docs/design/ui-spec.md` (the canvas's Inter-first font stack is a canvas slip; the app uses IBM Plex). The original canvas stays as a layout reference. All 10 Mauve artboards use IBM Plex (canvas version 5). **Screens and the Motion section approved by the owner (2026-10-29)**; next is the Week 1 coding brief.
+- **Week 1 design:** draft phone mockups (10 screens, revised after map-app research in `docs/design/map-app-research.md`) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Colors decided: Pastel Mauve** (owner, 2026-10-29), canvas https://claude.ai/artifact/Hv8GVgX8PZwLZjjNkwg7bn; its tokens are now in the Tokens table of `docs/design/ui-spec.md` (the canvas's Inter-first font stack is a canvas slip; the app uses IBM Plex). The original canvas stays as a layout reference. All 10 Mauve artboards use IBM Plex (canvas version 5). **Screens and the Motion section approved by the owner (2026-10-29).** Week 1 coding brief written: `docs/ai-handoffs/week1-viewer-brief.md` (two runs on branch `week1-viewer`: Run A data + 3D map at xhigh, review, then Run B screens + search + GoatCounter at high). **Not started**; the owner starts it.
 - **Live temporary changes:** none.
 
 ## Decisions log
@@ -66,7 +66,8 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 ## Pending owner decisions (as of 2026-10-29)
 
 1. GoatCounter site code, group name, group roles.
-2. Start Week 1 coding: owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
+2. Confirm two schedule shifts in the Week 1 brief: the Thai switch and a draft Thai string table move into Week 1 (`PLAN.md` puts Thai in Week 3), and the full "You are here" sheet waits for Week 3 with the QR work (Week 1 only does the `#/at/` route and the pin).
+3. Start Week 1 coding (Run A of the brief): owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
 
 ## Next steps
 

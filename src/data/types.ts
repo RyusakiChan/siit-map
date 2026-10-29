@@ -18,6 +18,8 @@ export interface Floor {
   label: string
   labelTh?: string
   elevation: number
+  /** True once the group has traced this floor from real sources (set by the trace tool). */
+  traced?: boolean
 }
 
 export interface Department {
@@ -125,4 +127,6 @@ export interface BuildingData {
   qrPoints: QrPoint[]
   amenities: Amenity[]
   walkways: Walkways
+  /** Room and QR ids that ever existed, including deleted ones, so none is reused (kept by the trace tool). */
+  usedIds?: string[]
 }

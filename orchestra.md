@@ -40,6 +40,7 @@ The orchestrator session plans, makes design and product decisions, does the mai
 - **Not in the public repo:** skills without a license file (`kien-thai`, `ui-ux-pro-max`, `web-design-guidelines`, `write-prose`) are git-ignored and stay local only. `.claude/skills` is ignored too; after cloning, run `Sync-CodexWorkspace.ps1 -Project <folder>`.
 - **Files:** `PLAN.md` (agreed plan), `AGENTS.md` (project rules and skill guide), `CLAUDE.md` (imports AGENTS.md), `orchestra.md` (this file), `README.md`, `.agents/skills/` (8 project skills, 4 published).
 - **Pending sessions:** "SIIT Map: presentation and context prep" (`local_860d1cec-b2e3-43c5-bdaf-688a920e35c3`), owner-driven. It writes only to `docs/context/` and `docs/presentation/`; plan-changing context comes back via `docs/context/proposed-plan-changes.md`.
+- **Week 1 design:** draft phone mockups (7 screens) on the Claude Design canvas https://claude.ai/artifact/7efu23pMgeHkUzourZdjoA (private to the owner until shared); tokens and rules in `docs/design/ui-spec.md`. **Awaiting owner review/approval** before the coding brief.
 - **Live temporary changes:** none.
 
 ## Decisions log
@@ -61,7 +62,7 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 
 ## Next steps
 
-1. **Week 1 (30 Oct – 5 Nov):** the orchestrator settles the UI/UX design (phone layout, colors, panels, About), then briefs a Sonnet 5.5 coding session to build the viewer on sample rooms inside the real OSM outline, plus GoatCounter. Share the link publicly by ~5 Nov.
+1. **Week 1 (30 Oct – 5 Nov):** owner reviews the design draft (canvas + `docs/design/ui-spec.md`); after approval the orchestrator then briefs a Sonnet 5.5 coding session to build the viewer on sample rooms inside the real OSM outline, plus GoatCounter. Share the link publicly by ~5 Nov.
 2. **Week 2 (6 – 12 Nov):** minimal trace tool; enter real floors as the group's data arrives.
 3. **Week 3 (13 – 19 Nov):** QR points and printable sheet, Thai, polish, accessibility check, rehearsal. PWA only if time allows.
 4. **Fri 20 Nov:** live demo with traffic numbers.

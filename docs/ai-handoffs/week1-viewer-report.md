@@ -157,5 +157,18 @@ The selected room's number tag (the black "2-06" label) was missing when a page 
 - Still not tested on a real phone or GPU.
 - The picker's compact 36 px buttons below the 44 px target (full card only).
 
+### Second pass on framing (after the orchestrator's review of the first fix)
+
+The first fit used fixed padding, so single-floor views still ran under the picker. It is now measured:
+
+- `fitPose` in `BuildingScene.tsx` projects the building outline (the one floor, or the whole stack) through the real camera at the current angles and searches for the camera distance at which its screen bounding box fits the free rectangle; then it shifts the picture so the box is centred in that rectangle.
+- Free rectangle: left 16 px; right = screen width − 62 px (picker plus 8 px gap); top 158 px (below top bar, chips, status row and banner); bottom = bottom bar, or the top of the peek card minus 8 px, or the top of the full card minus 24 px (room for the floating OSM credit).
+- A selected room no longer zooms in: the whole floor is fitted above the card, with the room outlined and tagged. Search, tap, route and QR all use this. QR keeps its facing direction. The fit re-runs when the card changes between none, peek and full, and on resize, keeping the user's current angles.
+- Tilt is a little more top-down (0.6 stacked, 0.65 single floor) and the start azimuth is 0.15, which the exact fit now allows without clipping the lower floors.
+- Fixed a bug in the first fix: the full-card bottom was measured as 53% of the screen height instead of from the card's top.
+- Checked in b01, b02, b03, b04, b07, b09, b13, b14, b15 at both sizes: the whole outline sits inside the rectangle, no badge is cut off, nothing under the picker.
+- The stacked view is still width-limited: on a 390 px phone the near-square building fills the 312 px free width and about 260 px of the 580 px free height. It cannot grow further without cropping.
+- Retaken: all 22 screenshots at both sizes. `npm run lint`, `npm test` (22) and `npm run build` pass.
+
 Verdict: DONE
 

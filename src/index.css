@@ -1,0 +1,63 @@
+:root {
+  color-scheme: light dark;
+  --bg: #eef0f3;
+  --fg: #1c1f24;
+  --chip: rgba(255, 255, 255, 0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171b;
+    --fg: #e6e8eb;
+    --chip: rgba(30, 34, 40, 0.85);
+  }
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, sans-serif;
+}
+
+.app {
+  position: fixed;
+  inset: 0;
+}
+
+.app canvas {
+  display: block;
+  touch-action: none;
+}
+
+.badge,
+.selected,
+.credit {
+  position: absolute;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--chip);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.badge {
+  top: max(12px, env(safe-area-inset-top));
+  left: 12px;
+  font-weight: 600;
+}
+
+.selected {
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+}
+
+.credit {
+  bottom: max(8px, env(safe-area-inset-bottom));
+  right: 8px;
+  font-size: 11px;
+}

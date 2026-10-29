@@ -1,0 +1,28 @@
+# Dependencies and builds
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# Test and tool output
+playwright-report/
+test-results/
+.taste-skill/
+
+# Local Claude settings; .claude/skills is a junction to .agents/skills,
+# recreated by Sync-CodexWorkspace.ps1 -Project after cloning
+.claude/settings.local.json
+.claude/skills
+
+# Skills without a license file: kept locally, not published
+.agents/skills/kien-thai/
+.agents/skills/ui-ux-pro-max/
+.agents/skills/web-design-guidelines/
+.agents/skills/write-prose/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.log

@@ -1,0 +1,3 @@
+Source: https://github.com/Leonxlnx/taste-skill (skills/taste-skill)
+Commit: 12af471f627f866411b4bd785b19646d3672784c (2026-10-25)
+Copied: 2026-10-29. Reviewed: scripts only call public image APIs (Openverse, Wikimedia, museums, NASA), Google Fonts, and a local headless Chrome for screenshots; draw history goes to ~/.taste-skill.

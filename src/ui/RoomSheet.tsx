@@ -23,6 +23,7 @@ export function RoomSheet() {
   const setSnap = useAppStore((s) => s.setSnap)
   const setPeekHStore = useAppStore((s) => s.setPeekH)
   const selectRoom = useAppStore((s) => s.selectRoom)
+  const requestRoute = useAppStore((s) => s.requestRoute)
   const showNotice = useAppStore((s) => s.showNotice)
   const room = id ? roomById.get(id) : undefined
   const sheet = useRef<HTMLDivElement>(null)
@@ -127,6 +128,9 @@ export function RoomSheet() {
               )}
             </span>
           </div>
+          <button type="button" className="directions-btn" onClick={() => requestRoute(null, room.id)}>
+            {t('directions')}
+          </button>
           <button type="button" className="square-btn" aria-label={t('share')} onClick={share}>
             <ShareIcon />
           </button>

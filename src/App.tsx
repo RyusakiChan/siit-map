@@ -8,7 +8,9 @@ import { useAppStore } from './state/store'
 import { AskButton, AssistantSheet } from './assistant/Assistant'
 import { useChatStore } from './assistant/chatStore'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
+import { FromPicker } from './ui/FromPicker'
 import { RoomSheet } from './ui/RoomSheet'
+import { StepsCard } from './ui/StepsCard'
 import { SearchScreen } from './ui/SearchScreen'
 import { AboutScreen, DepartmentScreen, KeySheet } from './ui/Screens'
 
@@ -62,6 +64,8 @@ export default function App() {
   const searchOpen = useAppStore((s) => s.searchOpen)
   const keyOpen = useAppStore((s) => s.keyOpen)
   const banner = useAppStore((s) => s.banner)
+  const routing = useAppStore((s) => s.route !== null)
+  const picking = useAppStore((s) => s.fromPicker !== null)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -77,8 +81,9 @@ export default function App() {
       {banner ? <Banner /> : <Chips />}
       <StatusRow />
       <FloorPicker />
-      {selected ? <RoomSheet /> : <BottomBar />}
+      {routing ? <StepsCard /> : selected ? <RoomSheet /> : <BottomBar />}
       {searchOpen && <SearchScreen />}
+      {picking && <FromPicker />}
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}
       {route.name === 'about' && <AboutScreen />}
       {keyOpen && <KeySheet />}

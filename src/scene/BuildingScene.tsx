@@ -373,6 +373,122 @@ function HerePin() {
   )
 }
 
+const RIBBON_HALF = 0.3 // the ribbon is 0.6 m wide
+const RIBBON_COLOR = new THREE.Color(tokens.youAreHere).lerp(new THREE.Color(tokens.slabTopViewed), 0.15) // 85% pink over the floor
+
+/** Flat triangle strip along a polyline; every segment is a quad, joined by overlapping end caps. */
+function ribbonGeometry(points: Point[]): THREE.BufferGeometry | null {
+  if (points.length < 2) return null
+  const pos: number[] = []
+  for (let i = 1; i < points.length; i++) {
+    const [ax, az] = points[i - 1]!
+    const [bx, bz] = points[i]!
+    const len = Math.hypot(bx - ax, bz - az)
+    if (len < 0.01) continue
+    const dx = (bx - ax) / len
+    const dz = (bz - az) / len
+    const nx = -dz * RIBBON_HALF
+    const nz = dx * RIBBON_HALF
+    const sx = dx * RIBBON_HALF
+    const sz = dz * RIBBON_HALF
+    const p: Point[] = [
+      [ax - sx + nx, az - sz + nz], [ax - sx - nx, az - sz - nz],
+      [bx + sx + nx, bz + sz + nz], [bx + sx - nx, bz + sz - nz],
+    ]
+    for (const k of [0, 1, 2, 2, 1, 3]) pos.push(p[k]![0], 0, p[k]![1])
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  return g
+}
+
+/** The route: a pink ribbon per floor (shown with that floor), the start pin, the end flag and the lift or stairs outlined. */
+function RouteLayer() {
+  const route = useAppStore((s) => s.route)
+  const legs = route?.plan.legs
+  const ribbons = useMemo(() => (legs ?? []).map((l) => ribbonGeometry(l.points)), [legs])
+  useEffect(() => () => ribbons.forEach((g) => g?.dispose()), [ribbons])
+  const refs = useRef<(THREE.Group | null)[]>([])
+  const startRef = useRef<THREE.Group>(null)
+  const flagRef = useRef<THREE.Group>(null)
+  const flag = useMemo(() => {
+    const shape = new THREE.Shape([new THREE.Vector2(0, 3.2), new THREE.Vector2(2.6, 2.6), new THREE.Vector2(0, 2)])
+    return { pole: new THREE.CylinderGeometry(0.12, 0.12, 3.4, 8), cloth: new THREE.ShapeGeometry(shape), dot: new THREE.CircleGeometry(0.9, 24), ring: new THREE.RingGeometry(0.9, 1.3, 24) }
+  }, [])
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => invalidate(), [invalidate, route])
+
+  const at = (i: number, last: boolean) => {
+    const leg = legs![i]!
+    return last ? leg.points[leg.points.length - 1]! : leg.points[0]!
+  }
+  useFrame(() => {
+    if (!legs) return
+    legs.forEach((leg, i) => {
+      const f = floorState.get(leg.floor)
+      const g = f?.g ?? 0
+      const grp = refs.current[i]
+      if (grp) {
+        grp.visible = g > 0.01
+        grp.position.y = elevationOf(leg.floor) + 0.2 + (f?.offset ?? 0)
+        grp.scale.set(1, 1, 1)
+      }
+    })
+    const place = (grp: THREE.Group | null, leg: number, y: number) => {
+      if (!grp) return
+      const f = floorState.get(legs[leg]!.floor)
+      const g = f?.g ?? 0
+      grp.visible = g > 0.01
+      grp.position.y = elevationOf(legs[leg]!.floor) + y + (f?.offset ?? 0)
+      grp.scale.setScalar(Math.max(g, 0.001))
+    }
+    place(startRef.current, 0, 0.25)
+    place(flagRef.current, legs.length - 1, ROOM_HEIGHT * (1 + RISE) + 0.1)
+  })
+
+  if (!route || !legs) return null
+  const start = at(0, false)
+  const end = at(legs.length - 1, true)
+  // The lift or stairs of each leg: the room it leaves by, and the room it arrives in.
+  const connectorRooms = new Set(legs.flatMap((l, i) => [l.ride ? l.endRoomId : null, i > 0 ? l.startRoomId : null]).filter((x): x is string => !!x))
+  return (
+    <>
+      {legs.map((_leg, i) => {
+        const geo = ribbons[i]
+        return (
+          <group key={i} ref={(g) => { refs.current[i] = g }} visible={false}>
+            {geo && (
+              <mesh geometry={geo} renderOrder={4}>
+                <meshBasicMaterial color={RIBBON_COLOR} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+              </mesh>
+            )}
+          </group>
+        )
+      })}
+      <group ref={startRef} position={[start[0], 0.25, start[1]]}>
+        <mesh geometry={flag.ring} rotation={[-Math.PI / 2, 0, 0]} renderOrder={7}>
+          <meshBasicMaterial color="#ffffff" depthTest={false} toneMapped={false} />
+        </mesh>
+        <mesh geometry={flag.dot} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={8}>
+          <meshBasicMaterial color={tokens.youAreHere} depthTest={false} toneMapped={false} />
+        </mesh>
+      </group>
+      <group ref={flagRef} position={[end[0], 0, end[1]]}>
+        <mesh geometry={flag.pole} position={[0, 1.7, 0]} renderOrder={9}>
+          <meshBasicMaterial color={tokens.ink} depthTest={false} toneMapped={false} />
+        </mesh>
+        <mesh geometry={flag.cloth} renderOrder={9}>
+          <meshBasicMaterial color={tokens.youAreHere} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+      </group>
+      {[...connectorRooms].map((id) => {
+        const room = data.rooms.find((r) => r.id === id)
+        return room && id !== route.toId ? <Outline key={`route-${id}`} room={room} role="in" /> : null
+      })}
+    </>
+  )
+}
+
 /** Badges for one floor; they fade with that floor's rooms and ride its slide. */
 function FloorLabels({ floor }: { floor: number }) {
   const zoomedIn = useAppStore((s) => s.zoomedIn)
@@ -689,6 +805,7 @@ export default function BuildingScene() {
       ))}
       <Selection />
       <HerePin />
+      <RouteLayer />
       <Labels />
       <Rig />
     </Canvas>

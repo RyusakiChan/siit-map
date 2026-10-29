@@ -7,5 +7,6 @@ export default defineConfig(({ command }) => ({
   plugins: [react()],
   define: { __BUILD_DATE__: JSON.stringify(new Date().toISOString().slice(0, 10)) },
   server: { port: 5173, strictPort: true },
-  test: { environment: 'node' },
+  // Skip copies of the tests in Claude Code worktrees
+  test: { environment: 'node', exclude: ['**/node_modules/**', '.claude/**'] },
 }))

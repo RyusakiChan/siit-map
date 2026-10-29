@@ -1705,3 +1705,63 @@ a {
     transition: none;
   }
 }
+
+/* The step line opens the list of all steps */
+.route-step {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+
+.route-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 32dvh;
+  overflow-y: auto;
+}
+
+.route-list button {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  text-align: left;
+}
+
+.route-list .current button {
+  background: var(--selected-fill);
+  font-weight: 600;
+}
+
+.route-list-glyph {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+  color: var(--selected-label);
+}
+
+.route-list-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* With the step list open the card is tall: the Ask button steps aside */
+.app:has(.route-list) .ask-btn {
+  opacity: 0;
+  pointer-events: none;
+}

@@ -5,7 +5,7 @@ import type { Room } from '../data/types'
 import { useT } from '../i18n'
 import { go, routeHashPath } from '../router'
 import { search } from '../search'
-import { useAppStore } from '../state/store'
+import { recentScanId, useAppStore } from '../state/store'
 import { roomColor } from '../theme/colors'
 import { SearchIcon } from './Icons'
 
@@ -14,7 +14,6 @@ export function FromPicker() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const picker = useAppStore((s) => s.fromPicker)
-  const view = useAppStore((s) => s.view)
   const closeFromPicker = useAppStore((s) => s.closeFromPicker)
   const [query, setQuery] = useState('')
   const dest = picker ? roomById.get(picker.toId) : undefined
@@ -26,8 +25,9 @@ export function FromPicker() {
     go(routeHashPath(room.id, dest.id)) // RouteEffects plans it; the picker closes with the route
   }
   const entrance = data.rooms.find((r) => r.type === 'lobby' && r.floor === 1)
-  const liftFloor = typeof view === 'number' ? view : dest.floor
-  const lift = data.rooms.find((r) => r.type === 'elevator' && r.floor === liftFloor)
+  const lift = data.rooms.find((r) => r.type === 'elevator' && r.floor === 1)
+  const scanId = recentScanId()
+  const scan = scanId ? data.qrPoints.find((q) => q.id === scanId) : undefined
   const popular = data.rooms.filter((r) => r.popular)
   const list = (query.trim() ? results : popular).filter((r) => r.id !== dest.id)
 
@@ -49,6 +49,11 @@ export function FromPicker() {
           <>
             <h2 className="section">{t('fromQuick')}</h2>
             <div className="chips wrap">
+              {scan && (
+                <button type="button" className="chip" onClick={() => go(routeHashPath(`@${scan.id}`, dest.id))}>
+                  {t('quickScanned', { n: scan.floor })}
+                </button>
+              )}
               {entrance && entrance.id !== dest.id && (
                 <button type="button" className="chip" onClick={() => choose(entrance)}>
                   {t('quickEntrance')}
@@ -56,7 +61,7 @@ export function FromPicker() {
               )}
               {lift && lift.id !== dest.id && (
                 <button type="button" className="chip" onClick={() => choose(lift)}>
-                  {t('quickLift', { n: liftFloor })}
+                  {t('quickLift', { n: 1 })}
                 </button>
               )}
             </div>

@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { buildingData as data } from '../data'
+import { roomById } from '../data/lookup'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
@@ -405,10 +406,12 @@ function ribbonGeometry(points: Point[]): THREE.BufferGeometry | null {
 /** The route: a pink ribbon per floor (shown with that floor), the start pin, the end flag and the lift or stairs outlined. */
 function RouteLayer() {
   const route = useAppStore((s) => s.route)
+  const routeTap = useAppStore((s) => s.routeTap)
   const legs = route?.plan.legs
   const ribbons = useMemo(() => (legs ?? []).map((l) => ribbonGeometry(l.points)), [legs])
   useEffect(() => () => ribbons.forEach((g) => g?.dispose()), [ribbons])
   const refs = useRef<(THREE.Group | null)[]>([])
+  const links = useRef<(THREE.Group | null)[]>([])
   const startRef = useRef<THREE.Group>(null)
   const flagRef = useRef<THREE.Group>(null)
   const flag = useMemo(() => {
@@ -433,6 +436,12 @@ function RouteLayer() {
         grp.position.y = elevationOf(leg.floor) + 0.2 + (f?.offset ?? 0)
         grp.scale.set(1, 1, 1)
       }
+    })
+    // The dashed riser between floors shows only while both floors are on show (the "All" view).
+    legs.forEach((leg, i) => {
+      const grp = links.current[i]
+      if (!grp || !leg.ride) return
+      grp.visible = (floorState.get(leg.floor)?.g ?? 0) > 0.99 && (floorState.get(leg.ride.toFloor)?.g ?? 0) > 0.99
     })
     const place = (grp: THREE.Group | null, leg: number, y: number, size = 1) => {
       if (!grp) return
@@ -470,6 +479,17 @@ function RouteLayer() {
           </group>
         )
       })}
+      {legs.map((leg, i) => {
+        const next = legs[i + 1]
+        if (!leg.ride || !next) return null
+        const [x, z] = leg.points[leg.points.length - 1]!
+        const pts = [new THREE.Vector3(x, elevationOf(leg.floor) + 0.2, z), new THREE.Vector3(x, elevationOf(leg.ride.toFloor) + 0.2, z)]
+        return (
+          <group key={`link-${i}`} ref={(g) => { links.current[i] = g }} visible={false}>
+            <Line points={pts} color={tokens.youAreHere} lineWidth={2} dashed dashSize={1.2} gapSize={0.8} depthTest={false} renderOrder={6} />
+          </group>
+        )
+      })}
       <group ref={startRef} position={[start[0], 0.25, start[1]]}>
         <mesh geometry={flag.ring} rotation={[-Math.PI / 2, 0, 0]} renderOrder={7}>
           <meshBasicMaterial color="#ffffff" depthTest={false} toneMapped={false} />
@@ -486,6 +506,9 @@ function RouteLayer() {
           <meshBasicMaterial color={tokens.youAreHere} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
         </mesh>
       </group>
+      {routeTap && !connectorRooms.has(routeTap.id) && roomById.get(routeTap.id) ? (
+        <Outline key={`tap-${routeTap.tick}`} room={roomById.get(routeTap.id)!} role="in" />
+      ) : null}
       {[...connectorRooms].map((id) => {
         const room = data.rooms.find((r) => r.id === id)
         return room && id !== route.toId ? <Outline key={`route-${id}`} room={room} role="in" /> : null

@@ -91,6 +91,8 @@ interface AppState {
   /** The QR point last scanned and when (remembered on this phone for 30 minutes). */
   lastScan: { id: string; at: number } | null
   route: ActiveRoute | null
+  /** During a route, a tap on another room only flashes its number tag (no card, the route stays). */
+  routeTap: { id: string; tick: number } | null
   /** "Avoid stairs": routes use lifts only. Remembered on this phone. */
   avoidStairs: boolean
   /** Set while the From picker is open: the destination the person is choosing a start for. */
@@ -153,11 +155,20 @@ export const useAppStore = create<AppState>((set, get) => ({
   notice: null,
   lastScan: loadScan(),
   route: null,
+  routeTap: null,
   avoidStairs: readStore(STAIRS_KEY) === '1',
   fromPicker: null,
 
   setView: (view) => {
     const { selectedRoomId, route } = get()
+    if (route && typeof view === 'number') {
+      // Tapping a floor during a route shows that floor's leg and jumps to its first step.
+      const at = route.plan.steps.findIndex((st) => st.floor === view)
+      if (at >= 0) {
+        if (route.plan.steps[route.step]!.floor !== view) get().setRouteStep(at)
+        return
+      }
+    }
     const sel = data.rooms.find((r) => r.id === selectedRoomId)
     // Leaving a floor clears a selection that would no longer be on show.
     const keep = !sel || view === 'all' || sel.floor === view || route !== null
@@ -168,10 +179,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     const room = id ? data.rooms.find((r) => r.id === id) : undefined
     const active = get().route
     if (active) {
-      // In route mode a tap on empty map keeps the route; choosing another room ends it.
-      if (!room || room.id === active.toId) return
-      set({ route: null })
-      go('/', true)
+      // In route mode no tap ends the route: another room only shows its number tag for a moment.
+      if (room && room.id !== active.toId) {
+        const mark = { id: room.id, tick: ++tick }
+        set({ routeTap: mark })
+        setTimeout(() => {
+          if (get().routeTap?.tick === mark.tick) set({ routeTap: null })
+        }, 1600)
+      }
+      return
     }
     if (!room) {
       set({ selectedRoomId: null, snap: 'peek' })

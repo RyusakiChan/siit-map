@@ -157,6 +157,41 @@ try {
       await ctx.close()
     }
 
+    // 6. Step list, floor picker during a route, "All" view, and stray room taps.
+    {
+      const { ctx, page } = await newPage()
+      const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
+      await page.goto(`${base}#/route/sample-f1-lobby/sample-off-5-07`)
+      await page.getByTestId('route-header').waitFor()
+      await page.waitForTimeout(1200)
+      await page.getByTestId('route-step').tap()
+      await page.locator('.route-list').waitFor()
+      const items = await page.locator('.route-list li').count()
+      check(items >= 5 && (await page.locator('.route-list li[aria-current="step"]').count()) === 1, `${size.name}: step list shows all steps with the current one marked`)
+      const btn = await page.getByRole('button', { name: 'Next', exact: true }).boundingBox()
+      check(btn.height >= 44, `${size.name}: Next is at least 44 px tall`)
+      await shot('14-step-list')
+      await page.locator('.route-list li').last().getByRole('button').tap()
+      await page.waitForTimeout(800)
+      check((await floorText(page)).includes('Floor 5'), `${size.name}: picking a step jumps to its floor`)
+      await page.getByTestId('route-step').tap()
+      await page.waitForTimeout(300)
+      check((await page.locator('.route-list').count()) === 0, `${size.name}: tapping the step line closes the list`)
+      await page.getByRole('button', { name: 'Floor 1', exact: true }).tap()
+      await page.waitForTimeout(800)
+      check((await stepText(page)).startsWith('Leave Sample Lobby'), `${size.name}: floor picker jumps to that floor's first step`)
+      await page.evaluate(() => window.__store.getState().selectRoom('sample-lab-5-02', { focus: true }))
+      await page.waitForTimeout(500)
+      check((await page.getByTestId('route-header').count()) === 1 && (await page.locator('.sheet').count()) === 0, `${size.name}: a room tap keeps the route and opens no card`)
+      await page.getByRole('button', { name: 'All floors' }).tap()
+      await page.waitForTimeout(1200)
+      await shot('15-all-floors-route')
+      await page.getByRole('button', { name: 'Close directions' }).tap()
+      await page.waitForTimeout(800)
+      check((await page.locator('.sheet.peek').innerText()).includes('5-07'), `${size.name}: Close returns to the destination's peek card`)
+      await ctx.close()
+    }
+
     // 5. A route started by the assistant's action (mock Worker).
     {
       const { ctx, page } = await newPage()

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { roomById, roomName } from '../data/lookup'
 import { useT } from '../i18n'
 import { routeUrl } from '../router'
@@ -19,6 +19,8 @@ export function StepsCard() {
   const showNotice = useAppStore((s) => s.showNotice)
   const setPeekH = useAppStore((s) => s.setPeekH)
   const card = useRef<HTMLDivElement>(null)
+  const [open, setOpen] = useState(false)
+  const touchY = useRef<number | null>(null)
 
   // The map frames itself above the card, so the card reports its height.
   useLayoutEffect(() => {
@@ -29,7 +31,7 @@ export function StepsCard() {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [setPeekH, route?.toId])
+  }, [setPeekH, route?.toId, open])
 
   if (!route) return null
   const { plan, step: index } = route
@@ -59,7 +61,18 @@ export function StepsCard() {
   }
 
   return (
-    <div ref={card} className="route-card" role="dialog" aria-label={t('directions')}>
+    <div
+      ref={card}
+      className="route-card"
+      role="dialog"
+      aria-label={t('directions')}
+      onTouchStart={(e) => { touchY.current = e.touches[0]?.clientY ?? null }}
+      onTouchEnd={(e) => {
+        const dy = (e.changedTouches[0]?.clientY ?? 0) - (touchY.current ?? 0)
+        if (touchY.current !== null && Math.abs(dy) > 40 && !(e.target as HTMLElement).closest('.route-list')) setOpen(dy < 0)
+        touchY.current = null
+      }}
+    >
       <div className="route-head">
         <div className="route-title">
           <h2 className="route-header" data-testid="route-header">{header}</h2>
@@ -78,7 +91,7 @@ export function StepsCard() {
         </button>
       </div>
 
-      <div className="route-step" aria-live="polite">
+      <button type="button" className="route-step" aria-live="polite" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span className="route-glyph" aria-hidden="true">{stepGlyph(step)}</span>
         <div className="route-step-text">
           <p className="route-line" data-testid="route-step">{stepText(step, t, lang)}</p>
@@ -86,7 +99,20 @@ export function StepsCard() {
             {t('routeStepOf', { i: index + 1, n: plan.steps.length })} · {t('floor', { n: step.floor })}
           </span>
         </div>
-      </div>
+      </button>
+
+      {open && (
+        <ol className="route-list" aria-label={t('routeAllSteps')}>
+          {plan.steps.map((st, i) => (
+            <li key={i} className={i === index ? 'current' : undefined} aria-current={i === index ? 'step' : undefined}>
+              <button type="button" onClick={() => setRouteStep(i)}>
+                <span className="route-list-glyph" aria-hidden="true">{stepGlyph(st)}</span>
+                <span className="route-list-text">{stepText(st, t, lang)}</span>
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
 
       <button type="button" role="switch" aria-checked={avoidStairs} className="route-switch" onClick={() => setAvoidStairs(!avoidStairs)}>
         <span className="switch-track" aria-hidden="true"><span className="switch-thumb" /></span>

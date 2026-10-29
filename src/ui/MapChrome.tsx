@@ -79,8 +79,8 @@ export function FloorPicker() {
   const view = useAppStore((s) => s.view)
   const previous = useAppStore((s) => s.previousFloor)
   const setView = useAppStore((s) => s.setView)
-  // The full room card covers the lower part of the screen, so the picker packs tighter above it.
-  const compact = useAppStore((s) => s.snap === 'full' && s.selectedRoomId !== null)
+  // The full room card and the steps card cover the lower part of the screen, so the picker packs tighter above it.
+  const compact = useAppStore((s) => (s.snap === 'full' && s.selectedRoomId !== null) || s.route !== null)
   const options: { value: FloorView; label: string; aria: string }[] = [
     { value: 'all', label: t('all'), aria: t('allFloors') },
     ...[...data.floors].reverse().map((f) => ({

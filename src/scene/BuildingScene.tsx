@@ -9,7 +9,7 @@ import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
 import { useAppStore, type FloorView } from '../state/store'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
-import { ease, reducedMotion, setFrameRequester } from './motion'
+import { clamp01, ease, easeOutExpo, floorState, reducedMotion, roomState, setFrameRequester, startTransition, stepTransition, transition } from './motion'
 
 const SLAB_THICKNESS = 0.3
 const ROOM_HEIGHT = 3
@@ -65,24 +65,32 @@ interface RoomItem {
   colors: { top: THREE.Color; side: THREE.Color }
 }
 
-/** Per-room animation state, mutated every frame. */
 interface RoomLive {
   group: THREE.Group | null
-  raise: number
-  dim: number
+  from: { raise: number; dim: number }
+  to: { raise: number; dim: number }
+  cur: { raise: number; dim: number }
 }
 
-interface FloorAnim {
-  vis: number // 0 = faded out, 1 = shown
-  offset: number // vertical slide while fading out
-  slabAlpha: number
+interface FloorVals {
+  offset: number
+  slab: number // slab opacity
+  g: number // 0 = rooms flat inside the slab, 1 = full height
   viewed: number // 1 when this is the single floor on show
 }
+
+const lerp = THREE.MathUtils.lerp
 
 function FloorLayer({ level }: { level: number }) {
   const elevation = elevationOf(level)
   const root = useRef<THREE.Group>(null)
-  const anim = useRef<FloorAnim>({ vis: 1, offset: 0, slabAlpha: level === 1 ? 0.95 : 0.55, viewed: 0 })
+  const allSlab = level === 1 ? 0.95 : 0.55
+  const anim = useRef({
+    epoch: -1,
+    from: { offset: 0, slab: allSlab, g: 1, viewed: 0 } as FloorVals,
+    to: { offset: 0, slab: allSlab, g: 1, viewed: 0 } as FloorVals,
+    cur: { offset: 0, slab: allSlab, g: 1, viewed: 0 } as FloorVals,
+  })
   const slabGeometry = useMemo(() => extrude(outline, SLAB_THICKNESS), [])
   const slab = useMemo(() => makeMaterials(), [])
   const items = useMemo<RoomItem[]>(
@@ -116,39 +124,68 @@ function FloorLayer({ level }: { level: number }) {
     [slabGeometry, slab, items],
   )
 
-  useFrame((_, dt) => {
-    const { view, selectedRoomId, highlightDeptId } = useAppStore.getState()
+  useFrame(() => {
     const a = anim.current
-    const shown = view === 'all' || view === level
-    const viewedTarget = view === level ? 1 : 0
-    const slabTarget = !shown ? 0 : view === 'all' ? (level === 1 ? 0.95 : 0.55) : 1
-    const slideDir = view === 'all' ? 0 : Math.sign(level - view)
-    a.vis = ease(a.vis, shown ? 1 : 0, 7, dt)
-    a.offset = ease(a.offset, shown ? 0 : slideDir * 5, 5, dt)
-    a.slabAlpha = ease(a.slabAlpha, slabTarget, 7, dt)
-    a.viewed = ease(a.viewed, viewedTarget, 7, dt)
+    if (a.epoch !== transition.epoch) {
+      // A new transition: remember where everything is now and where it has to go.
+      const { view, selectedRoomId, highlightDeptId } = useAppStore.getState()
+      const selected = data.rooms.find((r) => r.id === selectedRoomId)
+      const shown = view === 'all' || view === level
+      const first = a.epoch === -1
+      a.epoch = transition.epoch
+      a.from = { ...a.cur }
+      a.to = {
+        offset: shown ? 0 : Math.sign(level - (view as number)) * 5,
+        slab: !shown ? 0 : view === 'all' ? allSlab : 1,
+        g: shown ? 1 : 0,
+        viewed: view === level ? 1 : 0,
+      }
+      if (first) a.from = { ...a.to }
+      for (const it of items) {
+        const l = live.current.get(it.room.id)
+        if (!l) continue
+        const isSel = it.room.id === selectedRoomId
+        const dim = !isSel && ((selected && selected.floor === level) || (highlightDeptId && it.room.departmentId !== highlightDeptId))
+        l.from = { ...l.cur }
+        l.to = { raise: isSel ? 1 : 0, dim: dim ? 1 : 0 }
+        if (first) l.from = { ...l.to }
+      }
+    }
+    const p = transition.p
+    const k = easeOutExpo(p)
+    // Rooms finish first (about two thirds of the time); a leaving slab fades after them, an arriving slab is solid early.
+    const kRoom = easeOutExpo(clamp01(p / 0.66))
+    const slabIn = a.to.slab > a.from.slab
+    const kSlab = slabIn ? easeOutExpo(clamp01(p / 0.4)) : easeOutExpo(clamp01((p - 0.15) / 0.85))
+    const c = a.cur
+    c.offset = lerp(a.from.offset, a.to.offset, k)
+    c.g = lerp(a.from.g, a.to.g, kRoom)
+    c.slab = lerp(a.from.slab, a.to.slab, kSlab)
+    c.viewed = lerp(a.from.viewed, a.to.viewed, k)
 
     if (root.current) {
-      root.current.visible = a.vis > 0.01 || a.slabAlpha > 0.01
-      root.current.position.y = a.offset
+      root.current.visible = c.g > 0.002 || c.slab > 0.01
+      root.current.position.y = c.offset
     }
-    scratch.lerpColors(slabTop.a, slabTop.b, a.viewed)
+    floorState.set(level, { offset: c.offset, g: c.g })
+    scratch.lerpColors(slabTop.a, slabTop.b, c.viewed)
     slab[0].color.copy(scratch)
     slab[1].color.copy(slabSide)
-    setAlpha(slab, a.slabAlpha)
+    setAlpha(slab, c.slab)
 
-    const selected = data.rooms.find((r) => r.id === selectedRoomId)
     for (const it of items) {
-      const isSel = it.room.id === selectedRoomId
       const l = live.current.get(it.room.id)
       if (!l) continue
-      l.raise = ease(l.raise, isSel ? 1 : 0, 12, dt)
-      const dimmedNow = !isSel && ((selected && selected.floor === level) || (highlightDeptId && it.room.departmentId !== highlightDeptId))
-      l.dim = ease(l.dim, dimmedNow ? 1 : 0, 12, dt)
-      it.top.color.lerpColors(it.colors.top, dimmed.top, l.dim)
-      it.side.color.lerpColors(it.colors.side, dimmed.side, l.dim)
-      setAlpha([it.top, it.side], a.vis)
-      if (l.group) l.group.scale.y = 1 + RISE * l.raise
+      l.cur.raise = lerp(l.from.raise, l.to.raise, k)
+      l.cur.dim = lerp(l.from.dim, l.to.dim, k)
+      it.top.color.lerpColors(it.colors.top, dimmed.top, l.cur.dim)
+      it.side.color.lerpColors(it.colors.side, dimmed.side, l.cur.dim)
+      const sy = c.g * (1 + RISE * l.cur.raise)
+      if (l.group) {
+        l.group.visible = c.g > 0.002
+        l.group.scale.y = Math.max(sy, 0.001)
+      }
+      roomState.set(it.room.id, { top: c.offset + elevation + ROOM_HEIGHT * sy, g: c.g })
     }
   })
 
@@ -157,7 +194,7 @@ function FloorLayer({ level }: { level: number }) {
       <mesh geometry={slabGeometry} material={slab} position={[0, elevation - SLAB_THICKNESS, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1} />
       {items.map((it) => (
         <group key={it.room.id} ref={(g) => {
-          const l = live.current.get(it.room.id) ?? { group: null, raise: 0, dim: 0 }
+          const l = live.current.get(it.room.id) ?? { group: null, from: { raise: 0, dim: 0 }, to: { raise: 0, dim: 0 }, cur: { raise: 0, dim: 0 } }
           l.group = g
           live.current.set(it.room.id, l)
         }} position={[0, elevation, 0]}>
@@ -166,7 +203,7 @@ function FloorLayer({ level }: { level: number }) {
             material={[it.top, it.side]}
             rotation={[-Math.PI / 2, 0, 0]}
             onClick={(e) => {
-              if (e.delta > 6 || anim.current.vis < 0.5) return // a drag, or a faded-out floor
+              if (e.delta > 6 || anim.current.cur.g < 0.5) return // a drag, or a floor that is leaving
               e.stopPropagation()
               const { selectedRoomId, selectRoom } = useAppStore.getState()
               selectRoom(selectedRoomId === it.room.id ? null : it.room.id, { focus: selectedRoomId !== it.room.id })
@@ -183,34 +220,35 @@ function BaseSlab() {
   const ref = useRef<THREE.Mesh>(null)
   const geometry = useMemo(() => extrude(outline, 0.15), [])
   const mats = useMemo(() => makeMaterials(), [])
-  const state = useRef({ alpha: 0, y: 0 })
-  useFrame((_, dt) => {
-    const { view } = useAppStore.getState()
-    const s = state.current
-    const targetY = (view === 'all' ? 0 : elevationOf(view)) - 0.9
-    s.y = view === 'all' || s.alpha < 0.05 ? targetY : ease(s.y, targetY, 7, dt)
-    s.alpha = ease(s.alpha, view === 'all' ? 0 : 1, 7, dt)
+  const s = useRef({ epoch: -1, from: { alpha: 0, y: 0 }, to: { alpha: 0, y: 0 }, cur: { alpha: 0, y: 0 } })
+  useFrame(() => {
+    const a = s.current
+    if (a.epoch !== transition.epoch) {
+      const { view } = useAppStore.getState()
+      const first = a.epoch === -1
+      a.epoch = transition.epoch
+      a.from = { ...a.cur }
+      a.to = { alpha: view === 'all' ? 0 : 1, y: (view === 'all' ? 0 : elevationOf(view)) - 0.9 }
+      // It is invisible while the whole stack shows, so it never needs to slide into place.
+      if (first) a.from = { ...a.to }
+      else if (a.from.alpha < 0.05) a.from.y = a.to.y
+    }
+    const k = easeOutExpo(transition.p)
+    a.cur = { alpha: lerp(a.from.alpha, a.to.alpha, k), y: lerp(a.from.y, a.to.y, k) }
     mats[0].color.set(tokens.slabTop)
     mats[1].color.set(tokens.slabSide)
-    setAlpha(mats, s.alpha)
+    setAlpha(mats, a.cur.alpha)
     if (ref.current) {
-      ref.current.visible = s.alpha > 0.01
-      ref.current.position.y = s.y
+      ref.current.visible = a.cur.alpha > 0.01
+      ref.current.position.y = a.cur.y
     }
   })
   return <mesh ref={ref} geometry={geometry} material={mats} rotation={[-Math.PI / 2, 0, 0]} />
 }
 
-/** Ink outline and number tag on the chosen room; fades in and out. */
-function Selection() {
-  const id = useAppStore((s) => s.selectedRoomId)
-  const current = data.rooms.find((r) => r.id === id)
-  // Keep showing the last room while its outline fades out.
-  const [shown, setShown] = useState<Room | undefined>(current)
-  if (current && current.id !== shown?.id) setShown(current)
-  const room = current ?? shown
-  const state = useRef({ raise: 0, alpha: 0 })
-  const lineRef = useRef<THREE.Group>(null)
+/** One ink outline and number tag, riding the top of its room. */
+function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
+  const group = useRef<THREE.Group>(null)
   const matRef = useRef<{ opacity: number } | null>(null)
   const tagRef = useRef<HTMLDivElement>(null)
   // drei's Html drops its content when it mounts in the very first commit (a deep link opens
@@ -224,26 +262,26 @@ function Selection() {
     })
     return () => cancelAnimationFrame(raf)
   }, [invalidate])
-  useFrame((_, dt) => {
-    const s = state.current
-    s.raise = ease(s.raise, current ? 1 : 0, 12, dt)
-    s.alpha = ease(s.alpha, current ? 1 : 0, 12, dt)
-    const y = elevationOf(room?.floor ?? 1) + ROOM_HEIGHT * (1 + RISE * s.raise) + 0.05
-    if (lineRef.current) {
-      lineRef.current.position.y = y
-      lineRef.current.visible = s.alpha > 0.01
+  useEffect(() => invalidate(), [invalidate])
+  useFrame(() => {
+    const r = roomState.get(room.id)
+    const g = r?.g ?? 0
+    const k = easeOutExpo(transition.p)
+    const alpha = role === 'in' ? (transition.selChanged ? k : 1) * g : transition.selChanged ? (1 - k) * g : 0
+    if (group.current) {
+      group.current.position.y = (r?.top ?? 0) + 0.05
+      group.current.visible = alpha > 0.01
     }
-    if (matRef.current) matRef.current.opacity = s.alpha
-    if (tagRef.current) tagRef.current.style.opacity = String(s.alpha)
+    if (matRef.current) matRef.current.opacity = alpha
+    if (tagRef.current) tagRef.current.style.opacity = String(alpha)
   })
   const points = useMemo(
-    () => (room ? [...room.polygon, ...room.polygon.slice(0, 1)].map(([x, z]) => new THREE.Vector3(x, 0, z)) : []),
+    () => [...room.polygon, ...room.polygon.slice(0, 1)].map(([x, z]) => new THREE.Vector3(x, 0, z)),
     [room],
   )
-  if (!room) return null
   const [cx, cz] = polygonCentroid(room.polygon)
   return (
-    <group ref={lineRef} key={room.id}>
+    <group ref={group}>
       <Line
         points={points}
         color={tokens.ink}
@@ -260,11 +298,26 @@ function Selection() {
   )
 }
 
+/** The chosen room's outline fades in while the previous room's fades out; both follow their rooms. */
+function Selection() {
+  const id = useAppStore((s) => s.selectedRoomId)
+  const current = data.rooms.find((r) => r.id === id)
+  const [pair, setPair] = useState<{ cur: Room | undefined; prev: Room | undefined }>({ cur: current, prev: undefined })
+  if (current?.id !== pair.cur?.id) setPair({ cur: current, prev: pair.cur })
+  const { cur, prev } = pair
+  return (
+    <>
+      {cur && <Outline key={cur.id} room={cur} role="in" />}
+      {prev && prev.id !== cur?.id && <Outline key={`out-${prev.id}`} room={prev} role="out" />}
+    </>
+  )
+}
+
 /** The "you are here" pin, wide facing cone and a soft pulsing halo (the only looping motion). */
 function HerePin() {
   const here = useAppStore((s) => s.here)
-  const view = useAppStore((s) => s.view)
   const halo = useRef<THREE.Mesh>(null)
+  const group = useRef<THREE.Group>(null)
   const geo = useMemo(() => {
     if (!here) return null
     const dir = THREE.MathUtils.degToRad(here.facingDeg) // clockwise from north (-z)
@@ -282,6 +335,14 @@ function HerePin() {
   }, [here])
   const invalidate = useThree((s) => s.invalidate)
   useFrame(({ clock }) => {
+    // The pin rides its floor and grows and shrinks with it.
+    if (group.current && here) {
+      const f = floorState.get(here.floor)
+      const g = f?.g ?? 0
+      group.current.visible = g > 0.01
+      group.current.position.y = elevationOf(here.floor) + 0.15 + (f?.offset ?? 0)
+      group.current.scale.setScalar(Math.max(g, 0.001))
+    }
     if (!halo.current) return
     if (reducedMotion()) {
       halo.current.scale.setScalar(1.6)
@@ -293,10 +354,9 @@ function HerePin() {
     ;(halo.current.material as THREE.MeshBasicMaterial).opacity = 0.18 * (1 - p)
     invalidate()
   })
-  if (!here || !geo || (view !== 'all' && view !== here.floor)) return null
-  const y = elevationOf(here.floor) + 0.15
+  if (!here || !geo) return null
   return (
-    <group position={[here.x, y, here.z]}>
+    <group ref={group} position={[here.x, elevationOf(here.floor) + 0.15, here.z]}>
       <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
         <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.22} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
@@ -313,34 +373,47 @@ function HerePin() {
   )
 }
 
-function Labels() {
-  const view = useAppStore((s) => s.view)
+/** Badges for one floor; they fade with that floor's rooms and ride its slide. */
+function FloorLabels({ floor }: { floor: number }) {
   const zoomedIn = useAppStore((s) => s.zoomedIn)
   const selectedId = useAppStore((s) => s.selectedRoomId)
+  const group = useRef<THREE.Group>(null)
+  const els = useRef(new Set<HTMLElement>())
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => invalidate(), [invalidate, zoomedIn, selectedId])
   const rooms = useMemo(
     () =>
-      view === 'all'
-        ? []
-        : data.rooms
-            .filter((r) => r.floor === view)
-            .map((room) => ({
-              room,
-              big: polygonArea(room.polygon) >= BIG_ROOM_AREA,
-              at: polygonCentroid(room.polygon),
-              letter: data.departments.find((d) => d.id === room.departmentId)?.letter,
-            })),
-    [view],
+      data.rooms
+        .filter((r) => r.floor === floor)
+        .map((room) => ({
+          room,
+          big: polygonArea(room.polygon) >= BIG_ROOM_AREA,
+          at: polygonCentroid(room.polygon),
+          letter: data.departments.find((d) => d.id === room.departmentId)?.letter,
+        })),
+    [floor],
   )
-  if (view === 'all') return null
-  const y = elevationOf(view) + ROOM_HEIGHT + 0.1
+  useFrame(() => {
+    const f = floorState.get(floor)
+    if (group.current) group.current.position.y = f?.offset ?? 0
+    const o = String(f?.g ?? 0)
+    for (const el of els.current) {
+      if (el.isConnected) el.style.opacity = o
+      else els.current.delete(el)
+    }
+  })
+  const y = elevationOf(floor) + ROOM_HEIGHT + 0.1
   return (
-    <>
+    <group ref={group}>
       {rooms.map(({ room, big, at, letter }) => {
         if (room.id === selectedId || !(big || zoomedIn)) return null
+        const keep = (e: HTMLElement | null) => {
+          if (e) els.current.add(e)
+        }
         const badge = letter ? (
-          <span className="map-badge" style={{ borderColor: departmentBadgeColor(room.departmentId) }}>{letter}</span>
+          <span ref={keep} className="map-badge" style={{ borderColor: departmentBadgeColor(room.departmentId), opacity: 0 }}>{letter}</span>
         ) : hasIcon(room.type) ? (
-          <span className="map-icon"><FacilityIcon type={room.type} /></span>
+          <span ref={keep} className="map-icon" style={{ opacity: 0 }}><FacilityIcon type={room.type} /></span>
         ) : null
         return badge && (
           <Html key={room.id} position={[at[0], y, at[1]]} center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
@@ -348,6 +421,22 @@ function Labels() {
           </Html>
         )
       })}
+    </group>
+  )
+}
+
+/** Labels of the floor on show; the floor just left keeps its labels until they have faded with its rooms. */
+function Labels() {
+  const view = useAppStore((s) => s.view)
+  const [pair, setPair] = useState<{ cur: FloorView; prev: FloorView | null }>({ cur: view, prev: null })
+  if (view !== pair.cur) setPair({ cur: view, prev: pair.cur })
+  useFrame(() => {
+    if (pair.prev !== null && transition.p >= 1) setPair((s) => (s.prev === null ? s : { ...s, prev: null }))
+  })
+  return (
+    <>
+      {pair.prev !== null && pair.prev !== 'all' && <FloorLabels key={pair.prev} floor={pair.prev} />}
+      {pair.cur !== 'all' && <FloorLabels key={pair.cur} floor={pair.cur} />}
     </>
   )
 }
@@ -416,6 +505,7 @@ function Rig() {
   const ref = useRef<CameraControlsImpl | null>(null)
   const [attached, setAttached] = useState(false)
   const size = useThree((s) => s.size)
+  const invalidate = useThree((s) => s.invalidate)
   const view = useAppStore((s) => s.view)
   const hasRoom = useAppStore((s) => s.selectedRoomId !== null)
   const snap = useAppStore((s) => s.snap)
@@ -429,7 +519,14 @@ function Rig() {
   const started = useRef(false)
   const zoomed = useRef(false)
   const shift = useRef({ x: 0, y: 0, jump: true })
+  const offset = useRef({ x: 0, y: 0 })
 
+  // A glide driven by the shared transition value; null when the camera moves on its own.
+  const glide = useRef<null | {
+    az: number; polar: number; dist: number; tx: number; ty: number; tz: number
+    from: { az: number; polar: number; dist: number; tx: number; ty: number; tz: number }
+    k0: number; sx0: number; sy0: number
+  }>(null)
   const focus = useAppStore((s) => s.focus)
   const lastFocus = useRef(0)
   const lastView = useRef<FloorView | null>(null)
@@ -438,7 +535,9 @@ function Rig() {
     const c = ref.current
     if (!c || !ready) return
     // Dev-only handle so browser tests can read the camera.
-    if (import.meta.env.DEV) (window as unknown as { __rig?: CameraControlsImpl }).__rig = c
+    if (import.meta.env.DEV) {
+      Object.assign(window, { __rig: c, __store: useAppStore })
+    }
     const animate = started.current && !reducedMotion()
     const first = !started.current
     started.current = true
@@ -457,14 +556,34 @@ function Rig() {
     const polar = first || viewChanged || newFocus ? (single ? 0.65 : 0.6) : c.polarAngle
     const card = !hasRoom ? 'none' : snap === 'full' ? 'full' : 'peek'
     const fit = fitPose(view, azimuth, polar, w, h, freeRect(w, h, card, peekH))
+    const ty = single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
     shift.current = { x: fit.shiftX, y: fit.shiftY, jump: !animate }
-    void c.rotateTo(azimuth, polar, animate)
-    void c.dollyTo(fit.dist, animate)
-    void c.moveTo(center.x, single ? elevationOf(view as number) + 1 : topElevation / 2 + 1, center.z, animate)
+    if (animate && transition.p < 0.5) {
+      // Same frame, same curve as the floors and the room: the camera reads the shared progress too.
+      const t = c.getTarget(new THREE.Vector3())
+      glide.current = {
+        az: azimuth, polar, dist: fit.dist, tx: center.x, ty, tz: center.z,
+        from: { az: c.azimuthAngle, polar: c.polarAngle, dist: c.distance, tx: t.x, ty: t.y, tz: t.z },
+        k0: easeOutExpo(transition.p), sx0: offset.current.x, sy0: offset.current.y,
+      }
+      invalidate()
+    } else {
+      glide.current = null
+      void c.rotateTo(azimuth, polar, animate)
+      void c.dollyTo(fit.dist, animate)
+      void c.moveTo(center.x, ty, center.z, animate)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- allDist follows the size
   }, [attached, view, ready, w, h, focus, hasRoom, snap, peekH])
 
-  const offset = useRef({ x: 0, y: 0 })
+  useEffect(() => {
+    const c = ref.current
+    if (!c) return
+    const stop = () => { glide.current = null }
+    c.addEventListener('controlstart', stop)
+    return () => c.removeEventListener('controlstart', stop)
+  }, [attached])
+
   useFrame(({ camera, size: sz }, dt) => {
     const c = ref.current
     if (!c) return
@@ -476,8 +595,21 @@ function Rig() {
     // Shift the picture so the fitted map sits in the free area; eases when the card moves.
     const o = offset.current
     const t = shift.current
-    const x = t.jump ? t.x : ease(o.x, t.x, 9, dt)
-    const y = t.jump ? t.y : ease(o.y, t.y, 9, dt)
+    let x = t.jump ? t.x : ease(o.x, t.x, 9, dt)
+    let y = t.jump ? t.y : ease(o.y, t.y, 9, dt)
+    const g = glide.current
+    if (g) {
+      const k = clamp01((easeOutExpo(transition.p) - g.k0) / (1 - g.k0 || 1))
+      const f = g.from
+      let da = g.az - f.az
+      da = Math.atan2(Math.sin(da), Math.cos(da)) // the short way round
+      void c.rotateTo(f.az + da * k, lerp(f.polar, g.polar, k), false)
+      void c.dollyTo(lerp(f.dist, g.dist, k), false)
+      void c.moveTo(lerp(f.tx, g.tx, k), lerp(f.ty, g.ty, k), lerp(f.tz, g.tz, k), false)
+      x = lerp(g.sx0, t.x, k)
+      y = lerp(g.sy0, t.y, k)
+      if (transition.p >= 1) glide.current = null
+    }
     if ((x !== o.x || y !== o.y || !camera.view?.enabled) && camera instanceof THREE.PerspectiveCamera) {
       o.x = x
       o.y = y
@@ -508,6 +640,9 @@ function Rig() {
 function FrameBridge() {
   const invalidate = useThree((s) => s.invalidate)
   const clock = useThree((s) => s.clock)
+  const getThree = useThree((s) => s.get)
+  // Dev-only: lets browser tests render a frame and read the canvas back right away.
+  if (import.meta.env.DEV) Object.assign(window, { __getThree: getThree })
   useEffect(() => {
     // After an idle spell the first frame would see a huge delta and finish every glide at once;
     // consuming the clock here makes it see only the time since this wake-up.
@@ -516,13 +651,22 @@ function FrameBridge() {
       invalidate()
     }
     setFrameRequester(wake)
-    const unsub = useAppStore.subscribe(wake)
+    // A change of floor, room, department highlight or camera target starts one shared transition.
+    const unsub = useAppStore.subscribe((s, prev) => {
+      const viewChanged = s.view !== prev.view
+      const selChanged = s.selectedRoomId !== prev.selectedRoomId
+      if (viewChanged || selChanged || s.highlightDeptId !== prev.highlightDeptId || s.focus !== prev.focus) {
+        startTransition(viewChanged ? 0.45 : 0.3, viewChanged, selChanged)
+      }
+      wake()
+    })
     wake()
     return () => {
       unsub()
       setFrameRequester(() => {})
     }
   }, [invalidate, clock])
+  useFrame((_, dt) => stepTransition(dt))
   return null
 }
 

@@ -83,3 +83,10 @@ export function snapPoint(p: Point, ctx: SnapContext): Snap {
   }
   return { point: p, kind: 'none' }
 }
+
+/** Where the tip of a QR arrow is: 28 screen pixels from the point, clockwise from north. */
+export function qrTip(position: Point, facingDeg: number, scale: number): Point {
+  const r = (facingDeg * Math.PI) / 180
+  const len = 28 / scale
+  return [position[0] + Math.sin(r) * len, position[1] - Math.cos(r) * len]
+}

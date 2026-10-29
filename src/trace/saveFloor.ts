@@ -9,8 +9,6 @@ export interface FloorSlice {
   qrPoints: QrPoint[]
   /** This floor's entry in each connector: connector id -> door node id. A connector missing here does not serve the floor. */
   connectors: { id: string; kind: 'stairs' | 'elevator'; costPerFloor: number; node: string }[]
-  /** Connector ids that exist in the draft but may not serve this floor. */
-  retiredIds?: string[]
 }
 
 /** Cut one floor out of the full draft. */
@@ -31,9 +29,9 @@ export function sliceFloor(data: BuildingData, floor: number): FloorSlice {
 /**
  * Replace one floor's rooms, walkways (nodes, edges and that floor's connector entries) and QR
  * points inside `data`. Other floors are left alone. Marks the floor traced and keeps the list of
- * ids that were ever used. Throws when the slice reuses an id owned by another floor or a retired id.
+ * ids that were ever used. `markTraced` false is for restoring a draft. Throws when the slice reuses an id owned by another floor or a retired id.
  */
-export function replaceFloor(data: BuildingData, slice: FloorSlice): BuildingData {
+export function replaceFloor(data: BuildingData, slice: FloorSlice, markTraced = true): BuildingData {
   const { floor } = slice
   if (!data.floors.some((f) => f.level === floor)) throw new Error(`Floor ${floor} does not exist`)
   const oldRooms = data.rooms.filter((r) => r.floor === floor)
@@ -69,7 +67,7 @@ export function replaceFloor(data: BuildingData, slice: FloorSlice): BuildingDat
     } else connectors.push({ id: s.id, kind: s.kind, costPerFloor: s.costPerFloor, nodes: { [key]: s.node } })
   }
 
-  const floors = data.floors.map((f) => (f.level === floor ? { ...f, traced: true } : f))
+  const floors = data.floors.map((f) => (f.level === floor && markTraced ? { ...f, traced: true } : f))
   return {
     ...data,
     building: { ...data.building, sampleData: floors.some((f) => !f.traced) },

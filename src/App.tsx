@@ -5,6 +5,7 @@ import { useT } from './i18n'
 import { go, routePath, useRoute } from './router'
 import { useAppStore } from './state/store'
 import { AskButton, AssistantSheet } from './assistant/Assistant'
+import { useChatStore } from './assistant/chatStore'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
 import { RoomSheet } from './ui/RoomSheet'
 import { SearchScreen } from './ui/SearchScreen'
@@ -20,8 +21,12 @@ function RouteEffects() {
   useEffect(() => {
     const s = useAppStore.getState()
     if (route.name === 'room') {
-      if (roomById.has(route.id)) s.selectRoom(route.id, { focus: true, snap: 'full' })
-      else {
+      // A room opened from the assistant keeps the peek card (one-shot); links open the full card.
+      const peek = useChatStore.getState().peekArrival
+      useChatStore.setState({ peekArrival: false })
+      if (roomById.has(route.id)) {
+        s.selectRoom(route.id, { focus: true, snap: peek ? 'peek' : 'full', cross: peek })
+      } else {
         s.showNotice('roomGone')
         go('/', true)
       }

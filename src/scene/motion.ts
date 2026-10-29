@@ -13,7 +13,7 @@ export function setFrameRequester(fn: () => void): void {
 /** Frame-rate independent ease-out toward `target`; jumps when motion is reduced. */
 export function ease(current: number, target: number, lambda: number, dt: number): number {
   if (reducedMotion()) return target
-  const next = MathUtils.damp(current, target, lambda, dt)
+  const next = MathUtils.damp(current, target, lambda, Math.min(dt, 0.05))
   if (Math.abs(next - target) < 0.002) return target
   requestFrame()
   return next

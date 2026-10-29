@@ -281,7 +281,7 @@ function HerePin() {
   return (
     <group position={[here.x, y, here.z]}>
       <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
-        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.22} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.22} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
       <mesh ref={halo} geometry={geo.halo} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={6}>
         <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.18} depthWrite={false} toneMapped={false} />
@@ -355,6 +355,8 @@ function Rig() {
 
   const focus = useAppStore((s) => s.focus)
   const lastFocus = useRef(0)
+  const lastView = useRef<FloorView | null>(null)
+  const kind = useRef<'focus' | 'view'>('view')
 
   useEffect(() => {
     const c = ref.current
@@ -370,9 +372,14 @@ function Rig() {
     c.maxPolarAngle = 1.5
     c.setBoundary(new THREE.Box3(new THREE.Vector3(bounds.minX - 10, -3, bounds.minZ - 10), new THREE.Vector3(bounds.maxX + 10, topElevation + 8, bounds.maxZ + 10)))
     const nudge = (dist: number) => PICKER_NUDGE * dist * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect
-    if (focus && focus.tick !== lastFocus.current) {
+    const newFocus = focus !== null && focus.tick !== lastFocus.current
+    // A resize re-runs this effect; it then repeats the last pose instead of picking a new one.
+    const useFocus = newFocus || (kind.current === 'focus' && view === lastView.current)
+    lastView.current = view
+    if (focus && useFocus) {
       // Glide to a search result or QR spot.
       lastFocus.current = focus.tick
+      kind.current = 'focus'
       const dist = floorDist * 0.6
       void c.rotateTo(focus.azimuth ?? (first ? 0.4 : c.azimuthAngle), 0.85, animate)
       void c.dollyTo(dist, animate)
@@ -380,6 +387,7 @@ function Rig() {
       void c.setFocalOffset(nudge(dist), 0, 0, animate)
       return
     }
+    kind.current = 'view'
     const single = view !== ('all' as FloorView)
     void c.rotateTo(first ? 0.4 : c.azimuthAngle, single ? 0.8 : 1.0, animate)
     void c.dollyTo(single ? floorDist : allDist, animate)
@@ -421,15 +429,22 @@ function Rig() {
 /** Demand rendering: any store change or unfinished ease asks for another frame. */
 function FrameBridge() {
   const invalidate = useThree((s) => s.invalidate)
+  const clock = useThree((s) => s.clock)
   useEffect(() => {
-    setFrameRequester(invalidate)
-    const unsub = useAppStore.subscribe(() => invalidate())
-    invalidate()
+    // After an idle spell the first frame would see a huge delta and finish every glide at once;
+    // consuming the clock here makes it see only the time since this wake-up.
+    const wake = () => {
+      clock.getDelta()
+      invalidate()
+    }
+    setFrameRequester(wake)
+    const unsub = useAppStore.subscribe(wake)
+    wake()
     return () => {
       unsub()
       setFrameRequester(() => {})
     }
-  }, [invalidate])
+  }, [invalidate, clock])
   return null
 }
 

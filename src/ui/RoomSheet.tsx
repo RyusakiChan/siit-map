@@ -38,7 +38,7 @@ export function RoomSheet() {
 
   if (!room) return null
   const dept = deptOf(room)
-  const other = lang === 'th' ? room.name : room.nameTh
+  const other = lang === 'th' ? (room.nameTh ? room.name : undefined) : room.nameTh
 
   const onDown = (e: ReactPointerEvent) => {
     if ((e.target as HTMLElement).closest('button, a')) return

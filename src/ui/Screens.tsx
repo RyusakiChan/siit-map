@@ -141,7 +141,7 @@ export function KeySheet() {
   const setKeyOpen = useAppStore((s) => s.setKeyOpen)
   return (
     <div className="modal" role="dialog" aria-label={t('keyTitle')}>
-      <button type="button" className="backdrop" aria-label={t('close')} onClick={() => setKeyOpen(false)} />
+      <button type="button" className="backdrop" tabIndex={-1} aria-hidden="true" onClick={() => setKeyOpen(false)} />
       <div className="key-sheet">
         <div className="key-head">
           <h2 className="screen-title">{t('keyTitle')}</h2>

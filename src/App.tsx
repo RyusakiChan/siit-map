@@ -63,7 +63,6 @@ export default function App() {
   const selected = useAppStore((s) => s.selectedRoomId)
   const searchOpen = useAppStore((s) => s.searchOpen)
   const keyOpen = useAppStore((s) => s.keyOpen)
-  const banner = useAppStore((s) => s.banner)
   const routing = useAppStore((s) => s.route !== null)
   const picking = useAppStore((s) => s.fromPicker !== null)
 
@@ -78,7 +77,8 @@ export default function App() {
       </Suspense>
       <RouteEffects />
       <TopBar />
-      {banner ? <Banner /> : <Chips />}
+      <Banner />
+      <Chips />
       <StatusRow />
       <FloorPicker />
       {routing ? <StepsCard /> : selected ? <RoomSheet /> : <BottomBar />}

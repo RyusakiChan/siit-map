@@ -5,7 +5,7 @@ import { useAppStore } from '../state/store'
 import { ChevronIcon, CloseIcon, ExternalIcon } from '../ui/Icons'
 import { assistantEnabled, MAX_CHARS, type AssistantAction } from './api'
 import { useChatStore, type ChatItem } from './chatStore'
-import { EASE_BACK, EASE_IN, EASE_OUT, LINE_MS, play, reduced, revealStep, revealTotal, setFlip, shouldCloseDrag, smoothScroll, takeFlip } from './sheetMotion'
+import { EASE_BACK, EASE_IN, EASE_OUT, LINE_MS, play, reduced, revealStep, revealTotal, setFlip, shouldCloseDrag, sheetFrame, smoothScroll, takeFlip } from './sheetMotion'
 
 const BubbleIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -331,6 +331,21 @@ function Failed() {
   )
 }
 
+/** Pins the sheet to the visual viewport (see `sheetFrame`); the newest message stays in view when it shrinks. */
+function fitSheet(sh: HTMLElement, list: HTMLElement | null) {
+  const vv = window.visualViewport
+  if (!vv) return
+  const f = sheetFrame(window.innerHeight, vv.height, vv.offsetTop)
+  const top = `${f.top}px`
+  const height = `${f.height}px`
+  if (sh.style.top === top && sh.style.height === height) return
+  const stick = list ? list.scrollHeight - list.scrollTop - list.clientHeight < 80 : false
+  sh.style.top = top
+  sh.style.height = height
+  sh.style.bottom = 'auto'
+  if (stick && list) list.scrollTop = list.scrollHeight
+}
+
 export function AssistantSheet() {
   const t = useT()
   const open = useChatStore((s) => s.open)
@@ -358,8 +373,8 @@ export function AssistantSheet() {
     const stored = useChatStore.getState().btnRect
     const x = btn ? btn.left + btn.width / 2 : (stored?.x ?? window.innerWidth - 44)
     const y = btn ? btn.top + btn.height / 2 : (stored?.y ?? window.innerHeight - 100)
-    const host = (sh.offsetParent ?? document.body).getBoundingClientRect()
-    sh.style.transformOrigin = `${x - host.left - sh.offsetLeft}px ${y - host.top - sh.offsetTop}px`
+    const box = getComputedStyle(sh)
+    sh.style.transformOrigin = `${x - parseFloat(box.left)}px ${y - parseFloat(box.top)}px`
   }
 
   // Grow out of the Ask button.
@@ -367,6 +382,7 @@ export function AssistantSheet() {
     const sh = sheet.current
     if (!mounted || !sh) return
     closing.current = false
+    fitSheet(sh, list.current)
     aimAtButton(sh, false)
     // The scale takes 420 ms but the sheet is solid after 120 ms: it never reads as see-through.
     play(sh, [{ transform: 'scale(0.4)' }, { transform: 'scale(1)' }], { duration: 420, easing: EASE_OUT })
@@ -406,18 +422,22 @@ export function AssistantSheet() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open, setOpen])
 
-  // The composer stays above the on-screen keyboard.
+  // The sheet follows the visual viewport frame by frame, so the composer stays above the keyboard
+  // however Chrome pans the page; the page itself never scrolls while the sheet is open.
   useEffect(() => {
-    const vv = window.visualViewport
     const sh = sheet.current
-    if (!mounted || !vv || !sh) return
-    const update = () => sh.style.setProperty('--ask-kb', `${Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))}px`)
-    update()
-    vv.addEventListener('resize', update)
-    vv.addEventListener('scroll', update)
+    if (!mounted || !sh) return
+    document.documentElement.classList.add('ask-open')
+    let raf = 0
+    const tick = () => {
+      fitSheet(sh, list.current)
+      if (window.scrollX || window.scrollY) window.scrollTo(0, 0)
+      raf = requestAnimationFrame(tick)
+    }
+    tick()
     return () => {
-      vv.removeEventListener('resize', update)
-      vv.removeEventListener('scroll', update)
+      cancelAnimationFrame(raf)
+      document.documentElement.classList.remove('ask-open')
     }
   }, [mounted])
 

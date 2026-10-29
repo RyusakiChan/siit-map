@@ -39,8 +39,9 @@ export function TopBar() {
 export function Chips() {
   const t = useT()
   const openSearch = useAppStore((s) => s.openSearch)
+  const away = useAppStore((s) => s.banner !== null) // the banner takes their place
   return (
-    <div className="chips">
+    <div className={away ? 'chips is-away' : 'chips'}>
       {categories.slice(0, 4).map((c) => (
         <button key={c.id} type="button" className="chip" onClick={() => openSearch(toFilter(c))}>
           {c.id !== 'study' && c.icon}
@@ -57,8 +58,9 @@ export function StatusRow() {
   const hl = useAppStore((s) => (s.highlightDeptId ? deptById.get(s.highlightDeptId) : undefined))
   const lang = useAppStore((s) => s.lang)
   const highlightDept = useAppStore((s) => s.highlightDept)
+  const away = useAppStore((s) => s.banner !== null)
   return (
-    <div className="status-row">
+    <div className={away ? 'status-row is-away' : 'status-row'}>
       {data.building.sampleData && <span className="sample-badge">{t('sampleData')}</span>}
       <span className="status-text">
         {t('buildingName')} · {view === 'all' ? t('allFloors') : t('floor', { n: view })}

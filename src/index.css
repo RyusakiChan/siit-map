@@ -206,6 +206,15 @@ a {
   padding: 0 16px;
   overflow-x: auto;
   scrollbar-width: none;
+  transition: opacity 0.15s linear;
+}
+
+/* While the banner is up it takes the chips' place: they fade out and stop taking taps. */
+.chips.is-away,
+.status-row.is-away {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s linear, visibility 0s linear 0.15s;
 }
 
 .chips.wrap {
@@ -248,6 +257,7 @@ a {
   gap: 8px;
   align-items: center;
   pointer-events: none;
+  transition: opacity 0.15s linear;
 }
 
 .status-row .chip {
@@ -276,10 +286,10 @@ a {
   top: calc(190px + env(safe-area-inset-top));
   display: flex;
   flex-direction: column;
+  padding: 3px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
-  overflow: hidden;
 }
 
 .floor-picker.compact {
@@ -295,15 +305,31 @@ a {
   width: 44px;
   height: 44px;
   border: 0;
-  border-top: 1px solid var(--subtle);
+  border-radius: 9px;
   background: var(--surface);
   font-size: 15px;
   font-weight: 500;
   transition: transform 0.15s var(--ease);
 }
 
+/* Dividers sit only between two unselected buttons, so the selected ring stays whole. */
+.floor-btn::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: 0;
+  height: 1px;
+  background: var(--subtle);
+}
+
+.floor-btn:first-child::before,
+.floor-btn.on::before,
+.floor-btn.on + .floor-btn::before {
+  display: none;
+}
+
 .floor-btn:first-child {
-  border-top: 0;
   font-size: 13px;
 }
 
@@ -1123,26 +1149,25 @@ a {
 }
 
 .ask-scrim {
-  position: absolute;
+  position: fixed;
   z-index: 79;
   inset: 0;
   background: rgba(29, 22, 30, 0.2);
 }
 
 .ask-sheet {
-  position: absolute;
+  position: fixed;
   z-index: 80;
   left: 8px;
   right: 8px;
-  top: 56px;
-  bottom: calc(8px + var(--ask-kb, 0px));
+  top: 56px; /* the script pins top and height to the visual viewport; this is the fallback */
+  bottom: 8px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   background: var(--surface);
   border-radius: var(--radius-sheet);
   box-shadow: var(--shadow-chat);
-  transition: bottom 0.2s var(--ease-out-expo);
   will-change: transform, opacity;
 }
 
@@ -1764,4 +1789,10 @@ a {
 .app:has(.route-list) .ask-btn {
   opacity: 0;
   pointer-events: none;
+}
+
+html.ask-open,
+html.ask-open body {
+  overflow: hidden;
+  overscroll-behavior: none;
 }

@@ -145,6 +145,8 @@ interface TraceState {
 }
 
 const HISTORY = 200
+/** Every placed point is kept to the nearest centimetre. */
+const rnd = (p: Point): Point => [Math.round(p[0] * 100) / 100, Math.round(p[1] * 100) / 100]
 
 export const useTrace = create<TraceState>((set, get) => {
   const empty = null as unknown as BuildingData
@@ -269,7 +271,7 @@ export const useTrace = create<TraceState>((set, get) => {
       const d = get().drawing
       const last = d[d.length - 1]
       if (last && Math.hypot(last[0] - p[0], last[1] - p[1]) < 0.02) return
-      set({ drawing: [...d, p] })
+      set({ drawing: [...d, rnd(p)] })
     },
     popDrawPoint: () => set({ drawing: get().drawing.slice(0, -1) }),
     cancelDrawing: () => set({ drawing: [], edgeFrom: null, pendingQr: null, selection: null }),
@@ -282,9 +284,9 @@ export const useTrace = create<TraceState>((set, get) => {
       set({ drawing: [], selection: { kind: 'room', id } })
     },
     updateRoom: (id, patch) => edit((d) => ({ ...d, rooms: d.rooms.map((r) => (r.id === id ? { ...r, ...patch } : r)) }), `room:${id}:${Object.keys(patch).join()}`),
-    moveVertex: (id, i, p) => get().live((d) => ({ ...d, rooms: d.rooms.map((r) => (r.id === id ? { ...r, polygon: r.polygon.map((q, k) => (k === i ? p : q)) } : r)) })),
+    moveVertex: (id, i, p) => get().live((d) => ({ ...d, rooms: d.rooms.map((r) => (r.id === id ? { ...r, polygon: r.polygon.map((q, k) => (k === i ? rnd(p) : q)) } : r)) })),
     insertVertex: (id, i, p) => {
-      edit((d) => ({ ...d, rooms: d.rooms.map((r) => (r.id === id ? { ...r, polygon: [...r.polygon.slice(0, i + 1), p, ...r.polygon.slice(i + 1)] } : r)) }))
+      edit((d) => ({ ...d, rooms: d.rooms.map((r) => (r.id === id ? { ...r, polygon: [...r.polygon.slice(0, i + 1), rnd(p), ...r.polygon.slice(i + 1)] } : r)) }))
       set({ selection: { kind: 'room', id, vertex: i + 1 } })
     },
     deleteVertex: (id, i) => {
@@ -314,7 +316,7 @@ export const useTrace = create<TraceState>((set, get) => {
       const nodes = draft.walkways.nodes.filter((n) => n.floor === floor)
       const hit = nearestEdge(p, nodes, draft.walkways.edges, radius)
       const id = nextNodeId(draft, floor, 'c')
-      const position: Point = hit ? hit.point : p
+      const position: Point = rnd(hit ? hit.point : p)
       edit((d) => {
         const edges = hit ? splitEdge(d.walkways.edges, hit.edge, id) : d.walkways.edges
         return withNodes(d, [...d.walkways.nodes, { id, floor, position }], edges)
@@ -328,7 +330,7 @@ export const useTrace = create<TraceState>((set, get) => {
       edit((d) => withNodes(d, d.walkways.nodes, addEdge(d.walkways.edges, from, nodeId)))
       set({ edgeFrom: nodeId })
     },
-    moveNode: (id, p) => get().live((d) => withNodes(d, d.walkways.nodes.map((n) => (n.id === id ? { ...n, position: p } : n)), d.walkways.edges)),
+    moveNode: (id, p) => get().live((d) => withNodes(d, d.walkways.nodes.map((n) => (n.id === id ? { ...n, position: rnd(p) } : n)), d.walkways.edges)),
     placeDoor: (roomId, click) => {
       const { draft, floor } = get()
       const r = room(roomId)
@@ -346,7 +348,7 @@ export const useTrace = create<TraceState>((set, get) => {
         }
         let edges = base.walkways.edges
         if (plan.linkTo) edges = addEdge(edges, id, plan.linkTo)
-        const next = withNodes(base, [...base.walkways.nodes, { id, floor, position: plan.position }], edges)
+        const next = withNodes(base, [...base.walkways.nodes, { id, floor, position: rnd(plan.position) }], edges)
         const connectors = next.walkways.connectors.map((c) => {
           const key = Object.entries(c.nodes).find(([, n]) => n === old)?.[0]
           return key && old ? { ...c, nodes: { ...c.nodes, [key]: id } } : c
@@ -373,7 +375,7 @@ export const useTrace = create<TraceState>((set, get) => {
     removeConnectorFloor: (id, floor) =>
       edit((d) => ({ ...d, walkways: { ...d.walkways, connectors: d.walkways.connectors.map((c) => (c.id === id ? { ...c, nodes: Object.fromEntries(Object.entries(c.nodes).filter(([k]) => k !== String(floor))) } : c)) } })),
 
-    startQr: (position) => set({ pendingQr: { position, facingDeg: 0 }, selection: null }),
+    startQr: (position) => set({ pendingQr: { position: rnd(position), facingDeg: 0 }, selection: null }),
     setPendingQrFacing: (facingDeg) => {
       const q = get().pendingQr
       if (q) set({ pendingQr: { ...q, facingDeg } })

@@ -47,9 +47,10 @@ button.link { border: 0; background: none; padding: 0; text-align: left; color: 
 .list li.active { background: #f4f0ff; }
 
 /* drawing */
-.outline { fill: #fff; stroke: #333; stroke-width: 1.6; }
+.outline-bg { fill: #fff; }
+.outline { fill: none; stroke: #333; stroke-width: 1.6; }
 .ghost { fill: none; stroke: #9a93a5; stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
-.room { fill: #e6e1ee; fill-opacity: 0.7; stroke: #4a4455; stroke-width: 1.2; }
+.room { fill: #e6e1ee; fill-opacity: 0.45; stroke: #4a4455; stroke-width: 1.2; }
 .room.t-restroom { fill: #cfe8ee; } .room.t-stairs { fill: #f1dfc4; } .room.t-elevator { fill: #f1dfc4; }
 .room.t-lobby { fill: #dfeed3; } .room.t-foodservice, .room.t-library { fill: #f5d9dc; }
 .room.sel { stroke: var(--accent); stroke-width: 2.4; fill-opacity: 0.9; }

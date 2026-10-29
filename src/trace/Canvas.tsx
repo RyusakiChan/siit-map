@@ -186,7 +186,7 @@ export function Canvas() {
     } else if (cur?.type === 'node') {
       st.moveNode(cur.id, p)
     } else if (cur?.type === 'qr') {
-      st.live((d) => ({ ...d, qrPoints: d.qrPoints.map((q) => (q.id === cur.id ? { ...q, position: snapPoint(p, snapCtx({ cornersOnly: true })).point } : q)) }))
+      st.live((d) => ({ ...d, qrPoints: d.qrPoints.map((q) => (q.id === cur.id ? { ...q, position: snapPoint(p, snapCtx({ cornersOnly: true })).point.map((v) => Math.round(v * 100) / 100) as Point } : q)) }))
     } else if (cur?.type === 'facing') {
       const q = st.draft.qrPoints.find((z) => z.id === cur.id)
       if (q) st.live((d) => ({ ...d, qrPoints: d.qrPoints.map((z) => (z.id === cur.id ? { ...z, facingDeg: Math.round(facingFrom(q.position, p)) } : z)) }))
@@ -309,6 +309,7 @@ export function Canvas() {
         onContextMenu={(e) => e.preventDefault()}
       >
         <g transform={`translate(${view.tx} ${view.ty}) scale(${view.s})`}>
+          <polygon className="outline-bg" points={ptsToStr(outline)} />
           {photo && (
             <image href={photo.url} width={photo.w} height={photo.h} opacity={photo.opacity} transform={`matrix(${photo.matrix.join(' ')})`} preserveAspectRatio="none" />
           )}

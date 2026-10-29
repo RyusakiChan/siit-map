@@ -2,7 +2,7 @@
 
 Running state of the coordinator session ("SIIT Main Orchestra"). Read this file first at the start of every session with the orchestrator role and after every `/clear`, before doing anything else. Keep it current: nothing important may live only in chat.
 
-Last updated: 2026-10-29
+Last updated: 2026-10-29 (after TU100 context)
 
 ## Role
 
@@ -32,7 +32,7 @@ The orchestrator session plans, makes design and product decisions, does the mai
 
 ## Current state
 
-- **Phase:** planning done and base stack set up; Week 1 viewer not started.
+- **Phase:** base stack set up; plan revised to 3 weeks for the 20 Nov demo; Week 1 viewer not started.
 - **Repo:** https://github.com/Mint-BKL/siit-map (public, branch `main`). First commit `3ff8707` (plan, rules, skills, base stack).
 - **Base stack** (exact versions pinned in `package.json`): Vite 8.3.5, React 19.3.1, TypeScript 6.0.3 (held below 7 because typescript-eslint 8.72.1 supports <6.1), three 0.186.1, @react-three/fiber 9.8.2, @react-three/drei 10.7.9, zustand 5.0.16, Vitest 5.0.5, ESLint 10.13.0. No PWA, QR, router or i18n library yet (later weeks).
 - **App today:** placeholder scene: 5 floor slabs, sample rooms on floor 1 extruded from `src/data/building.json`, tap to highlight, SAMPLE DATA badge, OSM credit. Lint, 6 data tests and build pass. Build warns the JS bundle is ~1.15 MB (316 kB gzipped) because of three.js; code-splitting is deferred.
@@ -49,14 +49,19 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 - 2026-10-29: Taste Skill v2 (`design-taste-frontend`, app-screen run) copied into the project in place of the separate "minimalist" skill, which no longer exists in the repo.
 - 2026-10-29: Model routing set: Opus 5.5 for orchestration and UI/UX design, Sonnet 5.5 (medium to xhigh) for coding.
 - 2026-10-29: Repo created as `siit-map` (public) on the owner's request; base stack scaffolded by a Sonnet 5.5 agent (medium) and reviewed here. Workflow actions bumped to current majors (checkout v7, setup-node v7, upload-pages-artifact v5, deploy-pages v5). Line endings forced to LF via `.gitattributes`.
+- 2026-10-29: TU100 course context (`docs/context/`) changed the plan; owner decided: 3-week schedule to the **Fri 20 Nov live demo**, group collects data now in parallel; **GoatCounter** for traffic (the instructor's KPI); go public with sample data by ~5 Nov; credit "TU100 student project, SIIT, Thammasat University" + group name, no student names; full trace editor cut to a minimal trace tool; offline PWA is a stretch goal. Applied in `PLAN.md`.
 
 ## Open items
 
 - Confirm on site that the Main Building has 5 floors and the OSM outline (way 195958489) matches it.
-- Get SIIT staff approval before posting QR codes on walls.
+- Get SIIT staff approval before posting QR codes on walls (through the instructor).
+- Owner: create the GoatCounter account and give the site code (Claude must not create accounts).
+- Owner: choose the group name for the credit line; assign group roles.
 - In a new session, check which `design-taste-frontend` loads (project copy or older global copy).
 
 ## Next steps
 
-1. When the owner says go: Week 1. The orchestrator settles the UI/UX design first (phone layout, colors, panels), then briefs a Sonnet 5.5 coding session to build the 3D viewer on sample rooms inside the OSM outline, on top of the existing scaffold.
-2. Week 2: trace editor. Week 3: real data collection and tracing. Week 4: QR points, PWA, Thai/English polish, GitHub Pages deploy.
+1. **Week 1 (30 Oct – 5 Nov):** the orchestrator settles the UI/UX design (phone layout, colors, panels, About), then briefs a Sonnet 5.5 coding session to build the viewer on sample rooms inside the real OSM outline, plus GoatCounter. Share the link publicly by ~5 Nov.
+2. **Week 2 (6 – 12 Nov):** minimal trace tool; enter real floors as the group's data arrives.
+3. **Week 3 (13 – 19 Nov):** QR points and printable sheet, Thai, polish, accessibility check, rehearsal. PWA only if time allows.
+4. **Fri 20 Nov:** live demo with traffic numbers.

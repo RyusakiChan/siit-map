@@ -1091,6 +1091,7 @@ a {
 
 /* Ask assistant */
 .ask-btn {
+  border: 0;
   position: absolute;
   z-index: 45;
   right: 16px;
@@ -1213,6 +1214,7 @@ a {
 }
 
 .ask-action {
+  border: 0;
   min-height: 44px;
   padding: 0 14px;
   display: inline-flex;
@@ -1273,6 +1275,7 @@ a {
 }
 
 .ask-send {
+  border: 0;
   height: 48px;
   min-width: 64px;
   padding: 0 18px;

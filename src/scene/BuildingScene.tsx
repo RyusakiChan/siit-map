@@ -434,21 +434,26 @@ function RouteLayer() {
         grp.scale.set(1, 1, 1)
       }
     })
-    const place = (grp: THREE.Group | null, leg: number, y: number) => {
+    const place = (grp: THREE.Group | null, leg: number, y: number, size = 1) => {
       if (!grp) return
       const f = floorState.get(legs[leg]!.floor)
       const g = f?.g ?? 0
       grp.visible = g > 0.01
       grp.position.y = elevationOf(legs[leg]!.floor) + y + (f?.offset ?? 0)
-      grp.scale.setScalar(Math.max(g, 0.001))
+      grp.scale.setScalar(Math.max(g, 0.001) * size)
     }
     place(startRef.current, 0, 0.25)
-    place(flagRef.current, legs.length - 1, ROOM_HEIGHT * (1 + RISE) + 0.1)
+    place(flagRef.current, legs.length - 1, ROOM_HEIGHT * (1 + RISE) + 0.1, 1.6)
   })
 
   if (!route || !legs) return null
   const start = at(0, false)
-  const end = at(legs.length - 1, true)
+  const last = legs[legs.length - 1]!.points
+  const tip = last[last.length - 1]!
+  const before = last[last.length - 2] ?? tip
+  const back = Math.hypot(before[0] - tip[0], before[1] - tip[1]) || 1
+  // The flag stands a little toward the door, so the room's number tag does not cover it.
+  const end: Point = [tip[0] + ((before[0] - tip[0]) / back) * 3, tip[1] + ((before[1] - tip[1]) / back) * 3]
   // The lift or stairs of each leg: the room it leaves by, and the room it arrives in.
   const connectorRooms = new Set(legs.flatMap((l, i) => [l.ride ? l.endRoomId : null, i > 0 ? l.startRoomId : null]).filter((x): x is string => !!x))
   return (

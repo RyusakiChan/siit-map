@@ -1501,3 +1501,7 @@ a {
     transform: scale(1.5);
   }
 }
+
+.ask-sheet:focus {
+  outline: none;
+}

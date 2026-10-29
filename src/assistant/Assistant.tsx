@@ -368,9 +368,13 @@ export function AssistantSheet() {
     if (!mounted || !sh) return
     closing.current = false
     aimAtButton(sh, false)
-    play(sh, [{ opacity: 0, transform: 'scale(0.4)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 420, easing: EASE_OUT })
+    // The scale takes 420 ms but the sheet is solid after 120 ms: it never reads as see-through.
+    play(sh, [{ transform: 'scale(0.4)' }, { transform: 'scale(1)' }], { duration: 420, easing: EASE_OUT })
+    play(sh, [{ opacity: 0 }, { opacity: 1 }], { duration: 120, easing: 'linear' })
     if (scrim.current) play(scrim.current, [{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease-out' })
-    input.current?.focus({ preventScroll: true })
+    // A phone would pop the keyboard over the starter chips: focus the sheet itself there.
+    const touch = window.matchMedia?.('(pointer: coarse)').matches
+    ;(touch ? sh : input.current)?.focus({ preventScroll: true })
     if (list.current) list.current.scrollTop = list.current.scrollHeight
   }, [mounted])
 
@@ -383,7 +387,9 @@ export function AssistantSheet() {
     dragY.current = 0
     sh.style.transform = ''
     aimAtButton(sh, true)
-    const a = play(sh, [{ opacity: 1, transform: `translateY(${y}px) scale(1)` }, { opacity: 0, transform: 'translateY(0) scale(0.4)' }], { duration: 260, easing: EASE_IN, fill: 'forwards' })
+    const a = play(sh, [{ transform: `translateY(${y}px) scale(1)` }, { transform: 'translateY(0) scale(0.4)' }], { duration: 260, easing: EASE_IN, fill: 'forwards' })
+    // Solid until the last 100 ms of the shrink.
+    play(sh, [{ opacity: 1 }, { opacity: 0 }], { duration: 100, delay: 160, easing: 'linear', fill: 'both' })
     if (scrim.current) play(scrim.current, [{ opacity: Number(scrim.current.style.opacity || 1) }, { opacity: 0 }], { duration: 260, easing: 'linear', fill: 'forwards' })
     const done = () => {
       closing.current = false
@@ -502,14 +508,14 @@ export function AssistantSheet() {
   return (
     <>
       <div ref={scrim} className="ask-scrim" aria-hidden="true" onClick={() => setOpen(false)} />
-      <div ref={sheet} className="ask-sheet" role="dialog" aria-label={t('askTitle')}>
+      <div ref={sheet} className="ask-sheet" role="dialog" aria-labelledby="ask-title" tabIndex={-1}>
         <div className="ask-grab" aria-hidden="true" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
           <span />
         </div>
         <div className="ask-head">
           <Mark size="md" />
           <div className="ask-head-text">
-            <h2 className="ask-title">{t('askTitle')}</h2>
+            <h2 className="ask-title" id="ask-title">{t('askTitle')}</h2>
             <p className="ask-note">{t('askDisclaimer')}</p>
           </div>
           <button type="button" className="ask-close" aria-label={t('close')} onClick={() => setOpen(false)}>

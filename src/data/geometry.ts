@@ -1,6 +1,6 @@
 import type { Point } from './types'
 
-type Seg = [Point, Point]
+export type Seg = [Point, Point]
 
 function edges(poly: Point[]): Seg[] {
   return poly.map((p, i): Seg => [p, poly[(i + 1) % poly.length] ?? p])
@@ -27,7 +27,7 @@ export function pointInPolygon(p: Point, poly: Point[], tol = 0): boolean {
 }
 
 /** True when the segments cross at a single interior point (touching ends do not count). */
-function segmentsCross([a, b]: Seg, [c, d]: Seg): boolean {
+export function segmentsCross([a, b]: Seg, [c, d]: Seg): boolean {
   const cross = (o: Point, p: Point, q: Point) => (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0])
   const d1 = cross(a, b, c)
   const d2 = cross(a, b, d)
@@ -37,7 +37,7 @@ function segmentsCross([a, b]: Seg, [c, d]: Seg): boolean {
 }
 
 /** Distance from a point to the polygon's boundary. */
-function boundaryDistance(p: Point, poly: Point[]): number {
+export function boundaryDistance(p: Point, poly: Point[]): number {
   return Math.min(...edges(poly).map((e) => distToSegment(p, e)))
 }
 

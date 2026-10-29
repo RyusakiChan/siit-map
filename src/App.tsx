@@ -3,11 +3,14 @@ import { countView } from './analytics'
 import { deptById, roomById } from './data/lookup'
 import { useT } from './i18n'
 import { go, routePath, useRoute } from './router'
+import { parseFrom } from './state/store'
 import { useAppStore } from './state/store'
 import { AskButton, AssistantSheet } from './assistant/Assistant'
 import { useChatStore } from './assistant/chatStore'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
+import { FromPicker } from './ui/FromPicker'
 import { RoomSheet } from './ui/RoomSheet'
+import { StepsCard } from './ui/StepsCard'
 import { SearchScreen } from './ui/SearchScreen'
 import { AboutScreen, DepartmentScreen, KeySheet } from './ui/Screens'
 
@@ -20,14 +23,25 @@ function RouteEffects() {
   const key = routePath(route)
   useEffect(() => {
     const s = useAppStore.getState()
+    if (route.name !== 'route') s.clearRoute() // Back (or any other link) leaves route mode
     if (route.name === 'room') {
       // A room opened from the assistant keeps the peek card (one-shot); links open the full card.
       const peek = useChatStore.getState().peekArrival
       useChatStore.setState({ peekArrival: false })
       if (roomById.has(route.id)) {
-        s.selectRoom(route.id, { focus: true, snap: peek ? 'peek' : 'full', cross: peek })
+        // Already on show (leaving route mode, or the card is open): leave the card as it is.
+        if (s.selectedRoomId !== route.id) s.selectRoom(route.id, { focus: true, snap: peek ? 'peek' : 'full', cross: peek })
       } else {
         s.showNotice('roomGone')
+        go('/', true)
+      }
+    } else if (route.name === 'route') {
+      useChatStore.setState({ peekArrival: false })
+      const from = parseFrom(route.from)
+      if (from && roomById.has(route.to)) {
+        if (!s.applyRoute(from, route.to)) go('/', true)
+      } else {
+        s.showNotice('routeNone')
         go('/', true)
       }
     } else if (route.name === 'at') {
@@ -49,7 +63,8 @@ export default function App() {
   const selected = useAppStore((s) => s.selectedRoomId)
   const searchOpen = useAppStore((s) => s.searchOpen)
   const keyOpen = useAppStore((s) => s.keyOpen)
-  const banner = useAppStore((s) => s.banner)
+  const routing = useAppStore((s) => s.route !== null)
+  const picking = useAppStore((s) => s.fromPicker !== null)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -62,11 +77,13 @@ export default function App() {
       </Suspense>
       <RouteEffects />
       <TopBar />
-      {banner ? <Banner /> : <Chips />}
+      <Banner />
+      <Chips />
       <StatusRow />
       <FloorPicker />
-      {selected ? <RoomSheet /> : <BottomBar />}
+      {routing ? <StepsCard /> : selected ? <RoomSheet /> : <BottomBar />}
       {searchOpen && <SearchScreen />}
+      {picking && <FromPicker />}
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}
       {route.name === 'about' && <AboutScreen />}
       {keyOpen && <KeySheet />}

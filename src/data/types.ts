@@ -62,6 +62,8 @@ export interface Room {
   hours?: string
   contact?: string
   photo?: string
+  /** Id of this room's door node in `walkways` (a point on the room's edge, facing the corridor). */
+  door?: string
 }
 
 export interface QrPoint {
@@ -86,6 +88,35 @@ export interface Amenity {
   type: AmenityType
 }
 
+/** A point on a floor's walkway graph. Corridor nodes sit on the corridor centre line; door nodes sit just outside a room's edge. */
+export interface WalkNode {
+  id: string
+  floor: number
+  position: Point
+}
+
+/** A walkable link between two nodes on the same floor. */
+export interface WalkEdge {
+  a: string
+  b: string
+}
+
+/** A stair or lift shaft: one node per floor it serves, in the same `kind` of room. */
+export interface Connector {
+  id: string
+  kind: 'stairs' | 'elevator'
+  /** Walking cost of one floor of travel, in metre-equivalents (see docs: 1 m = 0.77 s). */
+  costPerFloor: number
+  /** Node id on each floor the shaft serves, keyed by floor level. */
+  nodes: Record<string, string>
+}
+
+export interface Walkways {
+  nodes: WalkNode[]
+  edges: WalkEdge[]
+  connectors: Connector[]
+}
+
 export interface BuildingData {
   building: Building
   floors: Floor[]
@@ -93,4 +124,5 @@ export interface BuildingData {
   rooms: Room[]
   qrPoints: QrPoint[]
   amenities: Amenity[]
+  walkways: Walkways
 }

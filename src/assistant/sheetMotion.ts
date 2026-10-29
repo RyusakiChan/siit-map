@@ -75,3 +75,20 @@ export function takeFlip(): DOMRect | null {
   flipFrom = null
   return r
 }
+
+/** Gap above the sheet normally, and while the on-screen keyboard is up (the sheet uses the space). */
+export const SHEET_INSET = 56
+export const SHEET_INSET_KB = 8
+export const SHEET_BOTTOM = 8
+/** The visual viewport is at least this much shorter than the layout viewport: the keyboard is open. */
+export const KEYBOARD_MIN = 120
+
+/**
+ * The sheet is pinned to the visual viewport: Chrome pans it to show a focused input, so the top
+ * follows `offsetTop` and the height follows the viewport's height (no separate keyboard lift).
+ */
+export function sheetFrame(layoutHeight: number, vvHeight: number, vvOffsetTop: number): { top: number; height: number; keyboard: boolean } {
+  const keyboard = layoutHeight - vvHeight > KEYBOARD_MIN
+  const inset = keyboard ? SHEET_INSET_KB : SHEET_INSET
+  return { top: vvOffsetTop + inset, height: Math.max(160, vvHeight - inset - SHEET_BOTTOM), keyboard }
+}

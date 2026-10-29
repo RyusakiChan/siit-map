@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { buildingData as data } from '../data'
+import { roomById } from '../data/lookup'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
@@ -290,7 +291,22 @@ function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
         ref={(l) => { matRef.current = l ? (l.material as unknown as { opacity: number }) : null }}
       />
       {tagReady && (
-        <Html position={[cx, 0.6, cz]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
+        <Html
+          position={[cx, 0.6, cz]}
+          center
+          zIndexRange={[20, 10]}
+          style={{ pointerEvents: 'none' }}
+          calculatePosition={(obj, camera, size) => {
+            // Same projection as drei's default, then kept at least 8 px inside the canvas.
+            const v = new THREE.Vector3().setFromMatrixPosition(obj.matrixWorld).project(camera)
+            const w = (tagRef.current?.offsetWidth ?? 120) / 2
+            const h = (tagRef.current?.offsetHeight ?? 28) / 2
+            const x = (v.x * size.width) / 2 + size.width / 2
+            const y = (-v.y * size.height) / 2 + size.height / 2
+            const lo = (n: number, half: number, max: number) => Math.min(Math.max(n, 8 + half), Math.max(8 + half, max - 8 - half))
+            return [lo(x, w, size.width), lo(y, h, size.height)]
+          }}
+        >
           <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
         </Html>
       )}
@@ -370,6 +386,154 @@ function HerePin() {
         <meshBasicMaterial color={tokens.youAreHere} toneMapped={false} depthTest={false} />
       </mesh>
     </group>
+  )
+}
+
+const RIBBON_HALF = 0.3 // the ribbon is 0.6 m wide
+const RIBBON_COLOR = new THREE.Color(tokens.youAreHere).lerp(new THREE.Color(tokens.slabTopViewed), 0.15) // 85% pink over the floor
+
+/** Flat triangle strip along a polyline; every segment is a quad, joined by overlapping end caps. */
+function ribbonGeometry(points: Point[]): THREE.BufferGeometry | null {
+  if (points.length < 2) return null
+  const pos: number[] = []
+  for (let i = 1; i < points.length; i++) {
+    const [ax, az] = points[i - 1]!
+    const [bx, bz] = points[i]!
+    const len = Math.hypot(bx - ax, bz - az)
+    if (len < 0.01) continue
+    const dx = (bx - ax) / len
+    const dz = (bz - az) / len
+    const nx = -dz * RIBBON_HALF
+    const nz = dx * RIBBON_HALF
+    const sx = dx * RIBBON_HALF
+    const sz = dz * RIBBON_HALF
+    const p: Point[] = [
+      [ax - sx + nx, az - sz + nz], [ax - sx - nx, az - sz - nz],
+      [bx + sx + nx, bz + sz + nz], [bx + sx - nx, bz + sz - nz],
+    ]
+    for (const k of [0, 1, 2, 2, 1, 3]) pos.push(p[k]![0], 0, p[k]![1])
+  }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  return g
+}
+
+/** The route: a pink ribbon per floor (shown with that floor), the start pin, the end flag and the lift or stairs outlined. */
+function RouteLayer() {
+  const route = useAppStore((s) => s.route)
+  const routeTap = useAppStore((s) => s.routeTap)
+  const legs = route?.plan.legs
+  const ribbons = useMemo(() => (legs ?? []).map((l) => ribbonGeometry(l.points)), [legs])
+  useEffect(() => () => ribbons.forEach((g) => g?.dispose()), [ribbons])
+  const refs = useRef<(THREE.Group | null)[]>([])
+  const links = useRef<(THREE.Group | null)[]>([])
+  const mats = useRef<(THREE.MeshBasicMaterial | null)[]>([])
+  const startRef = useRef<THREE.Group>(null)
+  const flagRef = useRef<THREE.Group>(null)
+  const flag = useMemo(() => {
+    const shape = new THREE.Shape([new THREE.Vector2(0, 3.2), new THREE.Vector2(2.6, 2.6), new THREE.Vector2(0, 2)])
+    return { pole: new THREE.CylinderGeometry(0.12, 0.12, 3.4, 8), cloth: new THREE.ShapeGeometry(shape), dot: new THREE.CircleGeometry(0.9, 24), ring: new THREE.RingGeometry(0.9, 1.3, 24) }
+  }, [])
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => invalidate(), [invalidate, route])
+
+  const at = (i: number, last: boolean) => {
+    const leg = legs![i]!
+    return last ? leg.points[leg.points.length - 1]! : leg.points[0]!
+  }
+  useFrame(() => {
+    if (!legs) return
+    legs.forEach((leg, i) => {
+      const f = floorState.get(leg.floor)
+      const g = f?.g ?? 0
+      const grp = refs.current[i]
+      if (grp) {
+        grp.visible = g > 0.01
+        grp.position.y = elevationOf(leg.floor) + 0.2 + (f?.offset ?? 0)
+        grp.scale.set(1, 1, 1)
+      }
+    })
+    // The leg being read is at full strength; the others (seen in the "All" view) are faded.
+    const live = useAppStore.getState().route
+    const current = live?.plan.steps[live.step]?.leg ?? 0
+    mats.current.forEach((m, i) => { if (m) m.opacity = i === current ? 1 : 0.35 })
+    // The dashed riser between floors shows only while both floors are on show (the "All" view).
+    legs.forEach((leg, i) => {
+      const grp = links.current[i]
+      if (!grp || !leg.ride) return
+      grp.visible = (floorState.get(leg.floor)?.g ?? 0) > 0.99 && (floorState.get(leg.ride.toFloor)?.g ?? 0) > 0.99
+    })
+    const place = (grp: THREE.Group | null, leg: number, y: number, size = 1) => {
+      if (!grp) return
+      const f = floorState.get(legs[leg]!.floor)
+      const g = f?.g ?? 0
+      grp.visible = g > 0.01
+      grp.position.y = elevationOf(legs[leg]!.floor) + y + (f?.offset ?? 0)
+      grp.scale.setScalar(Math.max(g, 0.001) * size)
+    }
+    place(startRef.current, 0, 0.25)
+    place(flagRef.current, legs.length - 1, ROOM_HEIGHT * (1 + RISE) + 0.1, 1.6)
+  })
+
+  if (!route || !legs) return null
+  const start = at(0, false)
+  const last = legs[legs.length - 1]!.points
+  const tip = last[last.length - 1]!
+  const before = last[last.length - 2] ?? tip
+  const back = Math.hypot(before[0] - tip[0], before[1] - tip[1]) || 1
+  // The flag stands a little toward the door, so the room's number tag does not cover it.
+  const end: Point = [tip[0] + ((before[0] - tip[0]) / back) * 3, tip[1] + ((before[1] - tip[1]) / back) * 3]
+  // The lift or stairs of each leg: the room it leaves by, and the room it arrives in.
+  const connectorRooms = new Set(legs.flatMap((l, i) => [l.ride ? l.endRoomId : null, i > 0 ? l.startRoomId : null]).filter((x): x is string => !!x))
+  return (
+    <>
+      {legs.map((_leg, i) => {
+        const geo = ribbons[i]
+        return (
+          <group key={i} ref={(g) => { refs.current[i] = g }} visible={false}>
+            {geo && (
+              <mesh geometry={geo} renderOrder={4}>
+                <meshBasicMaterial ref={(m) => { mats.current[i] = m }} color={RIBBON_COLOR} transparent depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+              </mesh>
+            )}
+          </group>
+        )
+      })}
+      {legs.map((leg, i) => {
+        const next = legs[i + 1]
+        if (!leg.ride || !next) return null
+        const [x, z] = leg.points[leg.points.length - 1]!
+        const pts = [new THREE.Vector3(x, elevationOf(leg.floor) + 0.2, z), new THREE.Vector3(x, elevationOf(leg.ride.toFloor) + 0.2, z)]
+        return (
+          <group key={`link-${i}`} ref={(g) => { links.current[i] = g }} visible={false}>
+            <Line points={pts} color={tokens.youAreHere} lineWidth={2} dashed dashSize={1.2} gapSize={0.8} depthTest={false} renderOrder={6} />
+          </group>
+        )
+      })}
+      <group ref={startRef} position={[start[0], 0.25, start[1]]}>
+        <mesh geometry={flag.ring} rotation={[-Math.PI / 2, 0, 0]} renderOrder={7}>
+          <meshBasicMaterial color="#ffffff" depthTest={false} toneMapped={false} />
+        </mesh>
+        <mesh geometry={flag.dot} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={8}>
+          <meshBasicMaterial color={tokens.youAreHere} depthTest={false} toneMapped={false} />
+        </mesh>
+      </group>
+      <group ref={flagRef} position={[end[0], 0, end[1]]}>
+        <mesh geometry={flag.pole} position={[0, 1.7, 0]} renderOrder={9}>
+          <meshBasicMaterial color={tokens.ink} depthTest={false} toneMapped={false} />
+        </mesh>
+        <mesh geometry={flag.cloth} renderOrder={9}>
+          <meshBasicMaterial color={tokens.youAreHere} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+      </group>
+      {routeTap && !connectorRooms.has(routeTap.id) && roomById.get(routeTap.id) ? (
+        <Outline key={`tap-${routeTap.tick}`} room={roomById.get(routeTap.id)!} role="in" />
+      ) : null}
+      {[...connectorRooms].map((id) => {
+        const room = data.rooms.find((r) => r.id === id)
+        return room && id !== route.toId ? <Outline key={`route-${id}`} room={room} role="in" /> : null
+      })}
+    </>
   )
 }
 
@@ -689,6 +853,7 @@ export default function BuildingScene() {
       ))}
       <Selection />
       <HerePin />
+      <RouteLayer />
       <Labels />
       <Rig />
     </Canvas>

@@ -16,7 +16,17 @@ interface ChatState {
   busy: boolean
   /** The last request failed or the assistant is switched off: show the "resting" line. */
   failed: boolean
+  /** The sheet is on screen; it stays true while it shrinks back into the Ask button. */
+  sheetMounted: boolean
+  /** Where the Ask button was when the sheet opened; the sheet grows out of this. */
+  btnRect: { x: number; y: number } | null
+  /** Runs once, when the sheet has finished closing (an action waits for the shrink). */
+  afterClose: (() => void) | null
+  /** One-shot hint for RouteEffects: a room opened from the assistant keeps the peek card. */
+  peekArrival: boolean
   setOpen: (open: boolean) => void
+  openFrom: (btn: { x: number; y: number } | null) => void
+  finishClose: () => void
   send: (text: string) => Promise<void>
 }
 
@@ -28,10 +38,25 @@ export const useChatStore = create<ChatState>((set, get) => ({
   items: [],
   busy: false,
   failed: false,
+  sheetMounted: false,
+  btnRect: null,
+  afterClose: null,
+  peekArrival: false,
 
   setOpen: (open) => {
     if (open && !get().open) countView('/assistant') // the path only, never any message text
-    set({ open })
+    set(open ? { open, sheetMounted: true } : { open })
+  },
+
+  openFrom: (btn) => {
+    set({ btnRect: btn })
+    get().setOpen(true)
+  },
+
+  finishClose: () => {
+    const run = get().afterClose
+    set({ sheetMounted: false, afterClose: null })
+    run?.()
   },
 
   send: async (raw) => {

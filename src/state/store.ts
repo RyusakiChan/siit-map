@@ -67,6 +67,8 @@ interface AppState {
   highlightDept: (id: string | null) => void
   showNotice: (key: 'roomGone' | 'deptGone' | 'linkCopied') => void
   clearNotice: () => void
+  /** Route mode is built separately; until then this opens the destination room. fromId null means "where I am". */
+  requestRoute: (fromId: string | null, toId: string) => void
 }
 
 let tick = 0
@@ -151,4 +153,5 @@ export const useAppStore = create<AppState>((set, get) => ({
   highlightDept: (highlightDeptId) => set({ highlightDeptId, ...(highlightDeptId ? { selectedRoomId: null, view: 'all' as const } : {}) }),
   showNotice: (key) => set({ notice: { key, tick: ++tick } }),
   clearNotice: () => set({ notice: null }),
+  requestRoute: (_fromId, toId) => get().selectRoom(toId, { focus: true, cross: true }),
 }))

@@ -118,6 +118,12 @@ export function AboutScreen() {
           </a>
         </p>
         <p className="body-14 muted">{t('lastUpdated', { date: config.buildDate })}</p>
+        {config.assistantUrl && (
+          <>
+            <h2 className="section">{t('askTitle').toUpperCase()}</h2>
+            <p className="body-14">{t('askPrivacy')}</p>
+          </>
+        )}
         {config.reportUrl && (
           <>
             <h2 className="section">{t('somethingWrong')}</h2>

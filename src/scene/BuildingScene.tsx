@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
@@ -14,7 +14,7 @@ import { ease } from './motion'
 const SLAB_THICKNESS = 0.3
 const ROOM_HEIGHT = 3
 const RISE = 0.3 // a selected room grows 30% taller
-const BIG_ROOM_AREA = 90 // m²: bigger rooms are always labelled in single-floor view
+const BIG_ROOM_AREA = 200 // m²: bigger rooms are always labelled in single-floor view
 const FOV = 40
 
 const outline = data.building.outline
@@ -24,8 +24,10 @@ const bounds = outline.reduce(
 )
 const center = { x: (bounds.minX + bounds.maxX) / 2, z: (bounds.minZ + bounds.maxZ) / 2 }
 const halfWidth = (bounds.maxX - bounds.minX) / 2
-const elevationOf = (level: number) => data.floors.find((f) => f.level === level)?.elevation ?? 0
-const topElevation = Math.max(...data.floors.map((f) => f.elevation))
+// Floors are drawn further apart than their real height so the stack reads clearly.
+const STACK_SPREAD = 1.75
+const elevationOf = (level: number) => (data.floors.find((f) => f.level === level)?.elevation ?? 0) * STACK_SPREAD
+const topElevation = Math.max(...data.floors.map((f) => elevationOf(f.level)))
 
 // The shape lives in the XY plane. After rotating -90deg about X, shape y maps
 // to world -z and the extrusion depth maps to world +y (up).
@@ -279,19 +281,22 @@ function fitDistance(radius: number, aspect: number) {
 }
 
 function Rig() {
-  const ref = useRef<CameraControlsImpl>(null)
+  const ref = useRef<CameraControlsImpl | null>(null)
+  const [attached, setAttached] = useState(false)
   const size = useThree((s) => s.size)
   const view = useAppStore((s) => s.view)
   const ready = size.width > 0 && size.height > 0
   const aspect = ready ? size.width / size.height : 1
-  const allDist = fitDistance(halfWidth + 9, aspect)
-  const floorDist = fitDistance(halfWidth + 3, aspect)
+  const allDist = fitDistance(halfWidth * 1.15 + 12, aspect)
+  const floorDist = fitDistance(halfWidth * 1.2 + 8, aspect)
   const started = useRef(false)
   const zoomed = useRef(false)
 
   useEffect(() => {
     const c = ref.current
     if (!c || !ready) return
+    // Dev-only handle so browser tests can read the camera.
+    if (import.meta.env.DEV) (window as unknown as { __rig?: CameraControlsImpl }).__rig = c
     const animate = started.current
     started.current = true
     c.minDistance = 18
@@ -305,7 +310,7 @@ function Rig() {
     c.dollyTo(single ? floorDist : allDist, animate)
     const y = single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
     c.moveTo(center.x, y, center.z, animate)
-  }, [view, ready, allDist, floorDist])
+  }, [attached, view, ready, allDist, floorDist])
 
   useFrame(() => {
     const c = ref.current
@@ -319,7 +324,10 @@ function Rig() {
 
   return (
     <CameraControls
-      ref={ref}
+      ref={(inst) => {
+        ref.current = inst
+        setAttached(inst !== null)
+      }}
       makeDefault
       smoothTime={0.3}
       draggingSmoothTime={0.08}

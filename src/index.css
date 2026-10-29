@@ -34,6 +34,7 @@ body,
 }
 
 .badge {
+  z-index: 40;
   position: absolute;
   top: max(12px, env(safe-area-inset-top));
   left: 12px;
@@ -48,6 +49,7 @@ body,
 }
 
 .selected {
+  z-index: 40;
   position: absolute;
   left: 12px;
   right: 72px;
@@ -76,6 +78,7 @@ body,
 }
 
 .floor-picker {
+  z-index: 40;
   position: absolute;
   right: 12px;
   top: 50%;

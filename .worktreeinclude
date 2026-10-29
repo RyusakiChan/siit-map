@@ -1,0 +1,8 @@
+# Git-ignored internal notes that Claude Code copies into each new worktree,
+# so coding sessions get the project rules, plan, spec and briefs.
+# The copy is made once, at creation; the live versions stay in the main checkout.
+/CLAUDE.md
+/AGENTS.md
+/PLAN.md
+/orchestra.md
+docs/**

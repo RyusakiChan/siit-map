@@ -6,13 +6,18 @@ Status: **draft, not yet approved by the owner.** The coding session builds from
 
 ## Screens (390 × 844 phone frames)
 
+Revised 2026-10-29 after `docs/design/map-app-research.md`: vertical floor picker on the right, quick-category chips, search empty state, room peek state, cross-floor hint, department letter badges, facility icons, Key button instead of an always-on legend.
+
 | Screen | What it shows |
 |---|---|
-| Map · all floors | Search field, language button (ไทย/EN), About button; SAMPLE DATA badge; all 5 floors stacked; bottom panel with floor switcher (All, 1–5), legend, OSM credit |
+| Map · all floors | Search field, language button (ไทย/EN), About button; quick-category chips (Restrooms, Food & drink, Lifts & stairs, Study spaces); SAMPLE DATA badge; all 5 floors stacked; vertical floor picker on the right (All, 5–1); slim bottom bar with hint, Key button and OSM credit |
+| Search · before typing | "Find nearby" category tiles (Restrooms, Food & drink, Lifts & stairs, Study spaces, Services, More), Popular places, Recent searches (kept on the phone only) |
+| Room · peek | Single floor, chosen room raised and tagged; small card with name, code, floor, department letter badge, Share; swipe up for the full card |
 | Search | Focused search; results grouped Rooms / Departments, each room with a department color bar, mono room number, name, department and floor; "Try also" chips (Restrooms, Lifts, Café, Student services) |
-| Room selected | Floor view with other rooms greyed out and the chosen room raised, outlined and tagged; bottom sheet with photo, number, name, Thai name, department, where / hours / contact, one-line description, "Department details" and Share |
+| Room · full card | Floor view with other rooms greyed out and the chosen room raised, outlined and tagged; bottom sheet with photo, number, name, Thai name, department, where / hours / contact, one-line description, "Department details" and Share |
 | Department | Color bar, name, Thai name, short summary, office / hours / contact, link to the official page, room list, "Show all rooms on the map" |
-| You are here (from QR) | Banner "You are here · Floor 2 · lift lobby, facing …"; map turned to the scanner's view with a pin and facing cone; "Near you" list; "Find a room from here" |
+| You are here (from QR) | Banner "You are here · Floor 2 · lift lobby · facing … when you scanned"; map turned to the scanner's view with a pin and a wide facing cone; department letters and facility icons on the rooms; "Near you" list; "Find a room from here" |
+| Result on another floor | Map switches to the result's floor; banner "Now showing Floor 3 · You were on Floor 2 · go up one floor by lift or stairs"; lifts marked; picker shows the current floor and a dot on the previous one; peek card |
 | Room selected · Thai | Same as Room selected in Thai, IBM Plex Sans Thai first, taller line height |
 | About | What it is; credit card "[GROUP NAME] · TU100 student project, SIIT, Thammasat University · Not an official SIIT service"; data note with SAMPLE, OSM/ODbL credit, last updated; report-a-problem link; "Visits are counted without cookies or personal data" |
 
@@ -54,6 +59,10 @@ More departments will need more colors: run them through `/dataviz` before real 
 - Color goes on data (rooms, department bars, the pin), not on chrome. Primary buttons are ink, not colored.
 - Touch targets at least 44 px; corner radius 12 for controls, 16 for sheets.
 - Selection: the chosen room is raised, outlined in ink and tagged with its number; other rooms on that floor turn grey.
-- Floor labels only on the floor being viewed (the stacked view shows F1–F5 at the slab edges).
+- Floor picker: vertical, right edge, 44 px buttons, current floor in ink; a raspberry dot marks the floor you came from.
+- Color is never the only cue: each department has a letter badge (outlined in its color, ink letter) on the map and in lists; facilities have icons.
+- Labels by zoom: in single-floor view big rooms always show their letter/name, small rooms and facility icons appear when zoomed in; the stacked view shows no room labels.
+- Search results on another floor switch the floor automatically and say how to get there.
+- The QR facing cone stays wide and is worded "when you scanned": the direction comes from the QR's wall, and people turn.
 - Real buttons, links and labels; icon-only buttons have `aria-label`.
 - No emoji, gradients or shadows.

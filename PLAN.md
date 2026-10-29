@@ -74,9 +74,9 @@ The full trace editor is cut down to a **minimal trace tool**, to save time:
 
 ## Schedule (3 weeks to the 20 Nov demo)
 
-1. **Week 1 (30 Oct – 5 Nov): viewer and go-live.** 3D viewer on sample rooms inside the real OSM outline: floors, tap for info, search, legend, About, GoatCounter. **Share the link publicly by about 5 Nov** with the SAMPLE badge, to start building traffic. In parallel, the group photographs fire-exit maps, walks the floors, and asks staff (through the instructor) for room information and QR approval.
+1. **Week 1 (30 Oct – 5 Nov): viewer and go-live.** 3D viewer on sample rooms inside the real OSM outline: floors, tap for info, search, legend, About, GoatCounter, and the English/Thai switch with draft Thai UI text (polished in Week 3). QR links (`#/at/<id>`) already open the right floor with a pin; the full "You are here" screen comes with the QR work in Week 3. **Share the link publicly by about 5 Nov** with the SAMPLE badge, to start building traffic. In parallel, the group photographs fire-exit maps, walks the floors, and asks staff (through the instructor) for room information and QR approval.
 2. **Week 2 (6 – 12 Nov): real data.** Minimal trace tool; trace the real floors and enter names, numbers, departments, photos and department summaries. Real floors replace the samples as they are done; the SAMPLE badge goes when all five are real.
-3. **Week 3 (13 – 19 Nov): QR and polish.** QR points and printable sheet, put codes up (if approved), Thai text, phone polish, accessibility check, rehearse the demo. Offline PWA only if time allows.
+3. **Week 3 (13 – 19 Nov): QR and polish.** QR points, the full "You are here" screen and the printable sheet, put codes up (if approved), Thai text, phone polish, accessibility check, rehearse the demo. Offline PWA only if time allows.
 4. **Fri 20 Nov:** live demo and presentation, with the GoatCounter traffic numbers.
 
 **If time runs short, cut in this order:** offline PWA, printable QR sheet styling (print plain codes instead), Thai polish beyond the key labels, room photos.

@@ -53,6 +53,7 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 - 2026-10-29: TU100 course context (`docs/context/`) changed the plan; owner decided: 3-week schedule to the **Fri 20 Nov live demo**, group collects data now in parallel; **GoatCounter** for traffic (the instructor's KPI); go public with sample data by ~5 Nov; credit "TU100 student project, SIIT, Thammasat University" + group name, no student names; full trace editor cut to a minimal trace tool; offline PWA is a stretch goal. Applied in `PLAN.md`.
 - 2026-10-29: Owner chose **Pastel Mauve** colors over the original palette (orchestrator had recommended original, since pink chrome sits close to the pink pin). Tokens and the color rule in `docs/design/ui-spec.md` updated. Canvas font stack switched from Inter to IBM Plex.
 - 2026-10-29: Owner approved the 10 Week 1 screens and the Motion section.
+- 2026-10-29: Week 1 brief written (`docs/ai-handoffs/week1-viewer-brief.md`). Owner approved two schedule shifts, applied in `PLAN.md`: the Thai switch with draft Thai UI text moves into Week 1; the full "You are here" screen moves to Week 3 with the QR work.
 - 2026-10-29: After map-app research, owner chose a vertical floor picker on the right and approved adding category chips, search empty state, room peek state, cross-floor hint, department letter badges, facility icons and a Key button. Data model to add aliases (EN/TH) and optional point amenities (IMDF names).
 
 ## Open items
@@ -66,8 +67,7 @@ The full set of decisions is in `PLAN.md`. Changes after 2026-10-29:
 ## Pending owner decisions (as of 2026-10-29)
 
 1. GoatCounter site code, group name, group roles.
-2. Confirm two schedule shifts in the Week 1 brief: the Thai switch and a draft Thai string table move into Week 1 (`PLAN.md` puts Thai in Week 3), and the full "You are here" sheet waits for Week 3 with the QR work (Week 1 only does the `#/at/` route and the pin).
-3. Start Week 1 coding (Run A of the brief): owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
+2. Start Week 1 coding (Run A of the brief): owner said "not yet" so far; weekly usage was 86% (resets 30 Oct 17:00), so start the coding session after the reset or on the backup account.
 
 ## Next steps
 

@@ -9,7 +9,7 @@ import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
 import { useAppStore, type FloorView } from '../state/store'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
-import { ease } from './motion'
+import { ease, reducedMotion, setFrameRequester } from './motion'
 
 const SLAB_THICKNESS = 0.3
 const ROOM_HEIGHT = 3
@@ -113,7 +113,7 @@ function FloorLayer({ level }: { level: number }) {
   )
 
   useFrame((_, dt) => {
-    const { view, selectedRoomId } = useAppStore.getState()
+    const { view, selectedRoomId, highlightDeptId } = useAppStore.getState()
     const a = anim.current
     const shown = view === 'all' || view === level
     const viewedTarget = view === level ? 1 : 0
@@ -139,7 +139,8 @@ function FloorLayer({ level }: { level: number }) {
       const l = live.current.get(it.room.id)
       if (!l) continue
       l.raise = ease(l.raise, isSel ? 1 : 0, 12, dt)
-      l.dim = ease(l.dim, selected && selected.floor === level && !isSel ? 1 : 0, 12, dt)
+      const dimmedNow = !isSel && ((selected && selected.floor === level) || (highlightDeptId && it.room.departmentId !== highlightDeptId))
+      l.dim = ease(l.dim, dimmedNow ? 1 : 0, 12, dt)
       it.top.color.lerpColors(it.colors.top, dimmed.top, l.dim)
       it.side.color.lerpColors(it.colors.side, dimmed.side, l.dim)
       setAlpha([it.top, it.side], a.vis)
@@ -196,19 +197,22 @@ function BaseSlab() {
   return <mesh ref={ref} geometry={geometry} material={mats} rotation={[-Math.PI / 2, 0, 0]} />
 }
 
-/** Ink outline and number tag on the chosen room. */
+/** Ink outline and number tag on the chosen room; fades in and out. */
 function Selection() {
   const id = useAppStore((s) => s.selectedRoomId)
-  const room = data.rooms.find((r) => r.id === id)
+  const current = data.rooms.find((r) => r.id === id)
+  // Keep showing the last room while its outline fades out.
+  const [shown, setShown] = useState<Room | undefined>(current)
+  if (current && current.id !== shown?.id) setShown(current)
+  const room = current ?? shown
   const state = useRef({ raise: 0, alpha: 0 })
   const lineRef = useRef<THREE.Group>(null)
   const matRef = useRef<{ opacity: number } | null>(null)
   const tagRef = useRef<HTMLDivElement>(null)
-  // Fade out the previous outline quickly instead of animating a stale room.
   useFrame((_, dt) => {
     const s = state.current
-    s.raise = ease(s.raise, room ? 1 : 0, 12, dt)
-    s.alpha = ease(s.alpha, room ? 1 : 0, 12, dt)
+    s.raise = ease(s.raise, current ? 1 : 0, 12, dt)
+    s.alpha = ease(s.alpha, current ? 1 : 0, 12, dt)
     const y = elevationOf(room?.floor ?? 1) + ROOM_HEIGHT * (1 + RISE * s.raise) + 0.05
     if (lineRef.current) {
       lineRef.current.position.y = y
@@ -217,9 +221,12 @@ function Selection() {
     if (matRef.current) matRef.current.opacity = s.alpha
     if (tagRef.current) tagRef.current.style.opacity = String(s.alpha)
   })
+  const points = useMemo(
+    () => (room ? [...room.polygon, ...room.polygon.slice(0, 1)].map(([x, z]) => new THREE.Vector3(x, 0, z)) : []),
+    [room],
+  )
   if (!room) return null
   const [cx, cz] = polygonCentroid(room.polygon)
-  const points = [...room.polygon, ...room.polygon.slice(0, 1)].map(([x, z]) => new THREE.Vector3(x, 0, z))
   return (
     <group ref={lineRef} key={room.id}>
       <Line
@@ -232,6 +239,59 @@ function Selection() {
       <Html position={[cx, 0.6, cz]} center zIndexRange={[20, 10]} style={{ pointerEvents: 'none' }}>
         <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
       </Html>
+    </group>
+  )
+}
+
+/** The "you are here" pin, wide facing cone and a soft pulsing halo (the only looping motion). */
+function HerePin() {
+  const here = useAppStore((s) => s.here)
+  const view = useAppStore((s) => s.view)
+  const halo = useRef<THREE.Mesh>(null)
+  const geo = useMemo(() => {
+    if (!here) return null
+    const dir = THREE.MathUtils.degToRad(here.facingDeg) // clockwise from north (-z)
+    const pts: Point[] = [[0, 0]]
+    for (let i = 0; i <= 16; i++) {
+      const a = dir - 0.9 + (1.8 * i) / 16
+      pts.push([Math.sin(a) * 14, -Math.cos(a) * 14])
+    }
+    return {
+      cone: new THREE.ShapeGeometry(toShape(pts)),
+      ring: new THREE.RingGeometry(1.5, 2.2, 32),
+      dot: new THREE.CircleGeometry(1.5, 32),
+      halo: new THREE.CircleGeometry(2.2, 32),
+    }
+  }, [here])
+  const invalidate = useThree((s) => s.invalidate)
+  useFrame(({ clock }) => {
+    if (!halo.current) return
+    if (reducedMotion()) {
+      halo.current.scale.setScalar(1.6)
+      return
+    }
+    const p = (clock.elapsedTime % 2.6) / 2.6
+    const e = 1 - Math.pow(1 - p, 3)
+    halo.current.scale.setScalar(1 + e * 1.6)
+    ;(halo.current.material as THREE.MeshBasicMaterial).opacity = 0.18 * (1 - p)
+    invalidate()
+  })
+  if (!here || !geo || (view !== 'all' && view !== here.floor)) return null
+  const y = elevationOf(here.floor) + 0.15
+  return (
+    <group position={[here.x, y, here.z]}>
+      <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
+        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.22} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+      </mesh>
+      <mesh ref={halo} geometry={geo.halo} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={6}>
+        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.18} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh geometry={geo.ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]} renderOrder={7}>
+        <meshBasicMaterial color="#ffffff" toneMapped={false} depthTest={false} />
+      </mesh>
+      <mesh geometry={geo.dot} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]} renderOrder={8}>
+        <meshBasicMaterial color={tokens.youAreHere} toneMapped={false} depthTest={false} />
+      </mesh>
     </group>
   )
 }
@@ -293,27 +353,41 @@ function Rig() {
   const started = useRef(false)
   const zoomed = useRef(false)
 
+  const focus = useAppStore((s) => s.focus)
+  const lastFocus = useRef(0)
+
   useEffect(() => {
     const c = ref.current
     if (!c || !ready) return
     // Dev-only handle so browser tests can read the camera.
     if (import.meta.env.DEV) (window as unknown as { __rig?: CameraControlsImpl }).__rig = c
-    const animate = started.current
+    const animate = started.current && !reducedMotion()
+    const first = !started.current
     started.current = true
     c.minDistance = 18
     c.maxDistance = allDist * 1.2
     c.minPolarAngle = 0.12
     c.maxPolarAngle = 1.5
     c.setBoundary(new THREE.Box3(new THREE.Vector3(bounds.minX - 10, -3, bounds.minZ - 10), new THREE.Vector3(bounds.maxX + 10, topElevation + 8, bounds.maxZ + 10)))
+    const nudge = (dist: number) => PICKER_NUDGE * dist * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect
+    if (focus && focus.tick !== lastFocus.current) {
+      // Glide to a search result or QR spot.
+      lastFocus.current = focus.tick
+      const dist = floorDist * 0.6
+      void c.rotateTo(focus.azimuth ?? (first ? 0.4 : c.azimuthAngle), 0.85, animate)
+      void c.dollyTo(dist, animate)
+      void c.moveTo(focus.x, elevationOf(focus.floor) + 1, focus.z, animate)
+      void c.setFocalOffset(nudge(dist), 0, 0, animate)
+      return
+    }
     const single = view !== ('all' as FloorView)
-    const az = animate ? c.azimuthAngle : 0.4
-    c.rotateTo(az, single ? 0.8 : 1.0, animate)
-    c.dollyTo(single ? floorDist : allDist, animate)
-    const y = single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
-    c.moveTo(center.x, y, center.z, animate)
+    void c.rotateTo(first ? 0.4 : c.azimuthAngle, single ? 0.8 : 1.0, animate)
+    void c.dollyTo(single ? floorDist : allDist, animate)
+    void c.moveTo(center.x, single ? elevationOf(view as number) + 1 : topElevation / 2 + 1, center.z, animate)
     // Nudge the building left so the floor picker on the right doesn't cover it.
-    void c.setFocalOffset(PICKER_NUDGE * (single ? floorDist : allDist) * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect, 0, 0, animate)
-  }, [attached, view, ready, allDist, floorDist, aspect])
+    void c.setFocalOffset(nudge(single ? floorDist : allDist), 0, 0, animate)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- floorDist and allDist follow aspect
+  }, [attached, view, ready, aspect, focus])
 
   useFrame(() => {
     const c = ref.current
@@ -344,10 +418,26 @@ function Rig() {
   )
 }
 
+/** Demand rendering: any store change or unfinished ease asks for another frame. */
+function FrameBridge() {
+  const invalidate = useThree((s) => s.invalidate)
+  useEffect(() => {
+    setFrameRequester(invalidate)
+    const unsub = useAppStore.subscribe(() => invalidate())
+    invalidate()
+    return () => {
+      unsub()
+      setFrameRequester(() => {})
+    }
+  }, [invalidate])
+  return null
+}
+
 export default function BuildingScene() {
   return (
     <Canvas
       className="scene"
+      frameloop="demand"
       dpr={[1, 1.75]}
       camera={{ position: [0, 120, 200], fov: FOV, near: 1, far: 900 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -355,11 +445,13 @@ export default function BuildingScene() {
     >
       <ambientLight intensity={1.6} />
       <directionalLight position={[-40, 80, 60]} intensity={1.1} />
+      <FrameBridge />
       <BaseSlab />
       {data.floors.map((f) => (
         <FloorLayer key={f.level} level={f.level} />
       ))}
       <Selection />
+      <HerePin />
       <Labels />
       <Rig />
     </Canvas>

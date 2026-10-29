@@ -1,6 +1,6 @@
 # SIIT Map
 
-A phone-first 3D web map of the 5-floor SIIT Main Building at Thammasat University Rangsit campus, hosted on GitHub Pages. This is an unofficial student project. Scope, data decisions and the weekly schedule are in [PLAN.md](PLAN.md); working rules are in [AGENTS.md](AGENTS.md).
+A phone-first 3D web map of the 5-floor SIIT Main Building at Thammasat University Rangsit campus, hosted on GitHub Pages. This is an unofficial student project.
 
 ## Requirements
 

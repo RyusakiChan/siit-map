@@ -26,3 +26,10 @@ test-results/
 Thumbs.db
 .vscode/
 *.log
+
+# Internal project notes: kept locally, not published (owner, 2026-10-29)
+/orchestra.md
+/PLAN.md
+/AGENTS.md
+/CLAUDE.md
+/docs/

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DRAG_CLOSE_PX, REVEAL_MAX_MS, revealStep, revealTotal, shouldCloseDrag } from './sheetMotion'
+import { DRAG_CLOSE_PX, REVEAL_MAX_MS, revealStep, revealTotal, shouldCloseDrag, sheetFrame } from './sheetMotion'
 
 describe('shouldCloseDrag', () => {
   it('closes past the distance threshold', () => {
@@ -28,5 +28,23 @@ describe('line reveal timing', () => {
   })
   it('is zero for no lines', () => {
     expect(revealTotal(0)).toBe(0)
+  })
+})
+
+describe('sheetFrame', () => {
+  it('keeps the normal inset when nothing covers the page', () => {
+    expect(sheetFrame(844, 844, 0)).toEqual({ top: 56, height: 780, keyboard: false })
+  })
+  it('uses the space while the keyboard is open', () => {
+    expect(sheetFrame(844, 500, 0)).toEqual({ top: 8, height: 484, keyboard: true })
+  })
+  it('follows the visual viewport when Chrome pans it', () => {
+    expect(sheetFrame(844, 500, 36)).toEqual({ top: 44, height: 484, keyboard: true })
+  })
+  it('does not mistake a small browser-bar change for a keyboard', () => {
+    expect(sheetFrame(844, 790, 0).keyboard).toBe(false)
+  })
+  it('never collapses', () => {
+    expect(sheetFrame(844, 100, 0).height).toBe(160)
   })
 })

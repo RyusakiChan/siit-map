@@ -49,7 +49,6 @@ export default function App() {
   const selected = useAppStore((s) => s.selectedRoomId)
   const searchOpen = useAppStore((s) => s.searchOpen)
   const keyOpen = useAppStore((s) => s.keyOpen)
-  const banner = useAppStore((s) => s.banner)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -62,7 +61,8 @@ export default function App() {
       </Suspense>
       <RouteEffects />
       <TopBar />
-      {banner ? <Banner /> : <Chips />}
+      <Banner />
+      <Chips />
       <StatusRow />
       <FloorPicker />
       {selected ? <RoomSheet /> : <BottomBar />}

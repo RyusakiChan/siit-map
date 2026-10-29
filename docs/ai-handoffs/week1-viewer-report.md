@@ -82,7 +82,7 @@ Scope: brief tasks 3 and 4, plus the orchestrator's additions: demand rendering,
 
 - `npm run lint`: pass. `npm test`: 22 pass (13 data, 6 search, 3 router). `npm run build`: pass; the Vite warning for the 995 kB scene chunk remains.
 - Build size now: main JS 281 kB (84 kB gzip), CSS 36 kB (12 kB gzip, includes the font rules), scene chunk 995 kB (264 kB gzip). The 18 font files are only fetched when their unicode range is used (Latin, Thai, Latin-ext).
-- **Demand rendering** (measured with Playwright in headless Edge): floor-switch glides animate over about 0.8 s (target height 13.3, 9.9, 6.9 … 1.0 at 100 ms steps); with the QR pin on screen the pulse draws about 590 frames per second of calls (885 draw calls in 1.5 s); an idle map draws 0. R3F's first frame after idle sees a huge delta and would finish every glide at once, so `FrameBridge` resets the clock on each wake-up and `ease` caps its step.
+- **Demand rendering** (measured with Playwright in headless Edge): floor-switch glides animate over about 0.8 s (target height 13.3, 9.9, 6.9 … 1.0 at 100 ms steps); with the QR pin on screen the pulse keeps drawing (885 draw calls in 1.5 s); an idle map draws 0. R3F's first frame after idle sees a huge delta and would finish every glide at once, so `FrameBridge` resets the clock on each wake-up and `ease` caps its step.
 - The only console message in the Playwright runs is "Attempted to synchronously unmount a root while React was already rendering", logged on each `about:blank` navigation between test steps (React teardown, not seen in normal use). I did not chase it further.
 
 ### Screenshots

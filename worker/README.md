@@ -53,7 +53,7 @@ You create the accounts and the key. Nobody else should handle the key.
 
 ### Optional: a daily limit
 
-The Worker already limits each IP address to 10 questions a minute (`wrangler.toml`, `[[ratelimits]]`). Cloudflare's limiter only counts 10 or 60 seconds, so the 60-a-day limit needs a KV store:
+The Worker already limits each IP address to 30 questions a minute (`wrangler.toml`, `[[ratelimits]]`). Cloudflare's limiter only counts 10 or 60 seconds, so the 60-a-day limit needs a KV store:
 
 ```bash
 npx wrangler kv namespace create DAILY --config worker/wrangler.toml

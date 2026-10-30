@@ -3,7 +3,7 @@ import { buildingData as data } from './index'
 import { deleteBlock, departmentId, freeLetter, freeSlot, sharedSlots, urlOk, letterOk, DEPT_COLOR_SLOTS } from './departments'
 import { validate } from './validate'
 import { replaceDepartments } from '../trace/saveFloor'
-import { departmentBadgeColor, deptColor, roomColor } from '../theme/colors'
+import { departmentBadgeColor, deptColor, roomColor, tintKeyOf, typeTints } from '../theme/colors'
 import { slotColors, slotNames } from '../theme/slots'
 import type { BuildingData } from './types'
 
@@ -109,11 +109,11 @@ describe('colour slots', () => {
     data.departments.forEach((dep, i) => expect(deptColor(dep)).toBe(slotColors[i]))
   })
 
-  it('colours sample rooms as before: department slot, grey for lifts and stairs, facility otherwise', () => {
+  it('colours sample rooms as before: department slot, grey for lifts and stairs, the type tint otherwise', () => {
     const room = data.rooms.find((r) => r.departmentId === data.departments[0]!.id && r.type !== 'stairs' && r.type !== 'elevator')!
     expect(roomColor(room)).toBe(slotColors[0])
     expect(departmentBadgeColor(room.departmentId)).toBe(slotColors[0]!.badge)
     expect(roomColor(data.rooms.find((r) => r.type === 'elevator')!).top).toBe('#A89EA9')
-    expect(roomColor({ ...room, departmentId: null }).top).toBe('#EADFEB')
+    expect(roomColor({ ...room, departmentId: null }).top).toBe(typeTints[tintKeyOf(room.type) as 'other'].top)
   })
 })

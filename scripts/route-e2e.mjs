@@ -134,8 +134,6 @@ try {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
       await page.goto(`${base}#/at/sample-f2-lift`)
-      // The Ask button gives way to the Near you sheet; closing it brings the button back.
-      await page.getByRole('button', { name: 'Close "You are here"' }).tap()
       await page.waitForTimeout(1500)
       await page.goto(`${base}#/room/sample-lab-5-02`)
       await page.getByRole('button', { name: 'Directions' }).waitFor()
@@ -214,6 +212,8 @@ try {
         }),
       )
       await page.goto(`${base}#/at/sample-f2-lift`)
+      // The Ask button gives way to the Near you sheet; closing it brings the button back.
+      await page.getByRole('button', { name: 'Close "You are here"' }).tap()
       await page.getByRole('button', { name: 'Ask', exact: true }).waitFor()
       await page.waitForTimeout(1500)
       await page.getByRole('button', { name: 'Ask', exact: true }).tap()

@@ -165,7 +165,7 @@ try {
   await dform.getByLabel('Official page (https://…)').fill('http://not-secure.example')
   check(await page.getByText(/must start with https/).isVisible(), 'a link without https:// is flagged')
   await dform.getByLabel('Official page (https://…)').fill('https://example.com/test')
-  await dform.getByRole('radio', { name: 'Colour 6' }).click()
+  await dform.getByRole('radio', { name: 'Green' }).click()
   check(await page.getByText(/must start with https/).count() === 0, 'the https problem clears')
   check(await page.getByText('Write it in your own words').isVisible(), 'the summary hint is shown')
   await page.getByRole('button', { name: 'Save departments' }).click()
@@ -199,7 +199,7 @@ try {
   await app.waitForTimeout(1500)
   await app.screenshot({ path: join(out, '05-app-floor2.png') })
   const letterColor = await app.evaluate(() => getComputedStyle(document.querySelector('.dept-badge')).borderColor)
-  check(letterColor === 'rgb(154, 219, 143)', 'the room card badge uses the slot 5 colour (' + letterColor + ')')
+  check(letterColor === 'rgb(111, 158, 103)', 'the room card badge uses the slot 5 badge colour (' + letterColor + ')')
   console.log('ok: the app at / shows the traced room on floor 2')
 
   // 10b. Delete is blocked while the department is in use.

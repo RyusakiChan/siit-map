@@ -23,8 +23,8 @@ export const tokens = {
 
 export { slotColors, slotColor, type RoomColor } from './slots'
 
-const facility: RoomColor = { top: '#EADFEB', side: '#D2C4D3' }
-const circulation: RoomColor = { top: '#A89EA9', side: '#8F8490' }
+const facility: RoomColor = { top: '#EADFEB', side: '#D2C4D3', badge: tokens.muted }
+const circulation: RoomColor = { top: '#A89EA9', side: '#8F8490', badge: tokens.muted }
 
 export const deptColor = (dept: Pick<Department, 'colorSlot'> | undefined): RoomColor | undefined => slotColor(dept?.colorSlot)
 
@@ -38,5 +38,5 @@ export function roomColor(room: Room): RoomColor {
 
 /** Outline color of a department letter badge (falls back to the muted ink). */
 export function departmentBadgeColor(departmentId: string | null): string {
-  return (departmentId && deptColor(deptBySlot.get(departmentId))?.side) || tokens.muted
+  return (departmentId && deptColor(deptBySlot.get(departmentId))?.badge) || tokens.muted
 }

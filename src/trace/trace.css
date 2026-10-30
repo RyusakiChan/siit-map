@@ -9,7 +9,8 @@ html, body, #root { height: 100%; margin: 0; background: var(--bg); }
 .seg.right { margin-left: auto; gap: 6px; }
 button { font: inherit; font-size: 13px; padding: 5px 10px; border: 1px solid var(--line); background: #faf9fb; border-radius: 6px; cursor: pointer; color: var(--ink); }
 button:hover:not(:disabled) { background: #efecf3; }
-button:disabled { opacity: 0.4; cursor: default; }
+button:disabled { background: #ebe8ee; border: 1px dashed #8d8795; color: #5d5764; cursor: not-allowed; }
+button.primary:disabled { background: #ebe8ee; color: #5d5764; border-color: #8d8795; }
 button.on, button.on:hover:not(:disabled) { background: #3d2796; border-color: #3d2796; color: #fff; }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 button.danger { color: var(--bad); border-color: #e3b4b4; }

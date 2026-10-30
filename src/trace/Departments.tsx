@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DEPT_COLOR_SLOTS, SUMMARY_MAX, roomsUsing, sharedSlots } from '../data/departments.ts'
 import type { Department } from '../data/types.ts'
-import { slotColors } from '../theme/slots.ts'
+import { slotColors, slotNames } from '../theme/slots.ts'
 import { useTrace } from './store.ts'
 import { useAllProblems } from './useProblems.ts'
 
@@ -48,7 +48,7 @@ function DeptForm({ dept }: { dept: Department }) {
         <span>Colour</span>
         <div className="swatches" role="radiogroup" aria-label="Colour">
           {slotColors.slice(0, DEPT_COLOR_SLOTS).map((c, i) => (
-            <button key={i} role="radio" aria-checked={dept.colorSlot === i} aria-label={`Colour ${i + 1}`} className={dept.colorSlot === i ? 'swatch on' : 'swatch'} style={{ background: c.top, borderColor: c.side }} onClick={() => set({ colorSlot: i })} />
+            <button key={i} role="radio" aria-checked={dept.colorSlot === i} aria-label={slotNames[i]} title={slotNames[i]} className={dept.colorSlot === i ? 'swatch on' : 'swatch'} style={{ background: c.top, borderColor: c.badge }} onClick={() => set({ colorSlot: i })} />
           ))}
         </div>
         {shared && <p className="warn-text">Shared with {shared.filter((x) => x !== dept.id).map((x) => draft.departments.find((d) => d.id === x)?.name || x).join(', ')}. Allowed, but the map is easier to read when departments differ.</p>}
@@ -105,7 +105,7 @@ export function DepartmentsPanel() {
             return (
               <li key={d.id} className={d.id === selectedDept ? 'active' : ''}>
                 <button className="dept-row" onClick={() => selectDept(d.id)}>
-                  <span className="badge" style={{ borderColor: slotColors[d.colorSlot]?.side, background: slotColors[d.colorSlot]?.top }}>{d.letter}</span>
+                  <span className="badge" style={{ borderColor: slotColors[d.colorSlot]?.badge, background: slotColors[d.colorSlot]?.top }}>{d.letter}</span>
                   <span className="dept-name">{d.name || '(no name)'}</span>
                   <span className="muted">{n} room{n === 1 ? '' : 's'}</span>
                 </button>

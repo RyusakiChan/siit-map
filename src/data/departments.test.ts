@@ -4,7 +4,7 @@ import { deleteBlock, departmentId, freeLetter, freeSlot, sharedSlots, urlOk, le
 import { validate } from './validate'
 import { replaceDepartments } from '../trace/saveFloor'
 import { departmentBadgeColor, deptColor, roomColor } from '../theme/colors'
-import { slotColors } from '../theme/slots'
+import { slotColors, slotNames } from '../theme/slots'
 import type { BuildingData } from './types'
 
 const clone = (): BuildingData => structuredClone(data)
@@ -87,10 +87,19 @@ describe('department validation', () => {
 describe('colour slots', () => {
   it('has 8 slots, the first three unchanged', () => {
     expect(slotColors).toHaveLength(DEPT_COLOR_SLOTS)
-    expect(slotColors[0]).toEqual({ top: '#7CC8F8', side: '#5AAEE0' })
-    expect(slotColors[1]).toEqual({ top: '#B9A3FF', side: '#9B84E6' })
-    expect(slotColors[2]).toEqual({ top: '#5FDCC8', side: '#3FC0AC' })
+    expect(slotColors[0]).toMatchObject({ top: '#7CC8F8', side: '#5AAEE0' })
+    expect(slotColors[1]).toMatchObject({ top: '#B9A3FF', side: '#9B84E6' })
+    expect(slotColors[2]).toMatchObject({ top: '#5FDCC8', side: '#3FC0AC' })
     expect(new Set(slotColors.map((c) => c.top)).size).toBe(DEPT_COLOR_SLOTS)
+  })
+
+  it('keeps every badge shade at 3:1 or more on white, and names every slot', () => {
+    const lin = (c: number) => ((c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+    const lum = (h: string) => 0.2126 * lin(parseInt(h.slice(1, 3), 16)) + 0.7152 * lin(parseInt(h.slice(3, 5), 16)) + 0.0722 * lin(parseInt(h.slice(5, 7), 16))
+    for (const [i, c] of slotColors.entries()) expect(1.05 / (lum(c.badge) + 0.05), `slot ${i}`).toBeGreaterThanOrEqual(3)
+    expect(slotNames).toHaveLength(slotColors.length)
+    expect(slotColors[0]!.side).toBe('#5AAEE0')
+    expect(departmentBadgeColor(data.departments[0]!.id)).toBe(slotColors[0]!.badge)
   })
 
   it('reads a department colour from its slot, not its id', () => {
@@ -102,8 +111,8 @@ describe('colour slots', () => {
 
   it('colours sample rooms as before: department slot, grey for lifts and stairs, facility otherwise', () => {
     const room = data.rooms.find((r) => r.departmentId === data.departments[0]!.id && r.type !== 'stairs' && r.type !== 'elevator')!
-    expect(roomColor(room)).toEqual(slotColors[0])
-    expect(departmentBadgeColor(room.departmentId)).toBe(slotColors[0]!.side)
+    expect(roomColor(room)).toBe(slotColors[0])
+    expect(departmentBadgeColor(room.departmentId)).toBe(slotColors[0]!.badge)
     expect(roomColor(data.rooms.find((r) => r.type === 'elevator')!).top).toBe('#A89EA9')
     expect(roomColor({ ...room, departmentId: null }).top).toBe('#EADFEB')
   })

@@ -10,7 +10,8 @@ import { tracePlugin } from './tools/trace-plugin.ts'
 function bootOutline(): Plugin {
   return {
     name: 'boot-outline',
-    transformIndexHtml(html) {
+    transformIndexHtml(html, ctx) {
+      if (ctx.path !== '/index.html') return html // not the dev-only trace editor page
       const data = JSON.parse(readFileSync(new URL('./src/data/building.json', import.meta.url), 'utf8')) as { building: { outline: [number, number][] } }
       const o = data.building.outline
       const xs = o.map((p) => p[0])

@@ -1,5 +1,6 @@
 import type { BuildingData } from '../../src/data/types'
 import type { FaqEntry } from '../../src/data/faq'
+import { roomDeptIds } from '../../src/data/departments'
 
 const line = (parts: (string | number | null | undefined)[]) => parts.map((p) => (p === null || p === undefined ? '' : String(p))).join('|')
 
@@ -12,11 +13,11 @@ export function buildingContext(data: BuildingData): string {
   out.push('DEPARTMENTS (id|name|Thai name|letter|summary)')
   for (const d of data.departments) out.push(line([d.id, d.name, d.nameTh, d.letter, d.summary]))
   out.push('')
-  out.push('ROOMS (id|number|name|Thai name|department id|type|description|hours|contact)')
+  out.push('ROOMS (id|number|name|Thai name|department id (several ids joined by + when shared)|type|description|hours|contact)')
   for (const f of data.floors) {
     out.push(`-- Floor ${f.level}`)
     for (const r of data.rooms.filter((x) => x.floor === f.level)) {
-      out.push(line([r.id, r.number, r.name, r.nameTh, r.departmentId, r.type, r.description, r.hours, r.contact]))
+      out.push(line([r.id, r.number, r.name, r.nameTh, roomDeptIds(r).join('+'), r.type, r.description, r.hours, r.contact]))
     }
   }
   const amenities = new Map<string, number[]>()

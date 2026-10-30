@@ -1,4 +1,4 @@
-import type { BuildingData, Department } from './types.ts'
+import type { BuildingData, Department, Room } from './types.ts'
 
 /** Number of department colour slots (see slotColors in src/theme/colors.ts). */
 export const DEPT_COLOR_SLOTS = 8
@@ -16,7 +16,11 @@ export function departmentId(name: string, data: Pick<BuildingData, 'departments
   return id
 }
 
-export const roomsUsing = (data: Pick<BuildingData, 'rooms'>, id: string) => data.rooms.filter((r) => r.departmentId === id).length
+/** Every department a room belongs to: its one `departmentId`, or all of `departmentIds` for a shared room. */
+export const roomDeptIds = (room: Pick<Room, 'departmentId' | 'departmentIds'>): string[] =>
+  room.departmentIds?.length ? room.departmentIds : room.departmentId ? [room.departmentId] : []
+
+export const roomsUsing = (data: Pick<BuildingData, 'rooms'>, id: string) => data.rooms.filter((r) => roomDeptIds(r).includes(id)).length
 
 /** Null when the department can go; otherwise why not. */
 export function deleteBlock(data: Pick<BuildingData, 'rooms'>, id: string): string | null {

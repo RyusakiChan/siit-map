@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { buildingData as data } from '../data'
-import { deptName, deptOf, roomById, roomName, typeLabelKey } from '../data/lookup'
+import { deptNames, roomById, roomName, typeLabelKey } from '../data/lookup'
 import type { Room } from '../data/types'
 import { useT } from '../i18n'
 import { go, routeHashPath } from '../router'
@@ -71,7 +71,6 @@ export function FromPicker() {
         {query.trim() && list.length === 0 && <p className="note">{t('noResults')}</p>}
         <ul className="list">
           {list.map((room) => {
-            const dept = deptOf(room)
             return (
               <li key={room.id}>
                 <button type="button" className="row" onClick={() => choose(room)}>
@@ -80,7 +79,7 @@ export function FromPicker() {
                   <span className="row-main">
                     <span className="row-title">{roomName(room, lang)}</span>
                     <span className="row-sub">
-                      {[dept ? deptName(dept, lang) : t(typeLabelKey[room.type]), t('floor', { n: room.floor })].join(' · ')}
+                      {[deptNames(room, lang) ?? t(typeLabelKey[room.type]), t('floor', { n: room.floor })].join(' · ')}
                     </span>
                   </span>
                 </button>

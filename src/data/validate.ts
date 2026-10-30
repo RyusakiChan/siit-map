@@ -1,4 +1,4 @@
-import { DEPT_COLOR_SLOTS, SUMMARY_MAX, letterOk, urlOk } from './departments.ts'
+import { DEPT_COLOR_SLOTS, SUMMARY_MAX, letterOk, roomDeptIds, urlOk } from './departments.ts'
 import { boundaryDistance, pointInPolygon, polygonInside, polygonsOverlap, segmentThroughPolygon } from './geometry'
 import type { BuildingData, Point } from './types'
 
@@ -28,6 +28,7 @@ export function validate(data: BuildingData): Problem[] {
   const levels = new Set(floors.map((f) => f.level))
   const roomsOn = (floor: number) => rooms.filter((r) => r.floor === floor)
   const node = new Map(w.nodes.map((n) => [n.id, n]))
+  const voidsOn = (floor: number) => floors.find((f) => f.level === floor)?.voids ?? []
 
   // Floors and departments
   for (const l of dup(floors.map((f) => f.level))) add({ code: 'floor-duplicate', message: `Floor ${l} is listed twice.`, ids: [String(l)] })
@@ -40,7 +41,7 @@ export function validate(data: BuildingData): Problem[] {
     if (d.url && !urlOk(d.url)) add({ code: 'department-url', message: `${label}: the official link must start with https://.`, ids: [d.id] })
     if ((d.summary?.length ?? 0) > SUMMARY_MAX) add({ code: 'department-summary', message: `${label}: the summary is ${d.summary!.length} characters; the limit is ${SUMMARY_MAX}.`, ids: [d.id] })
     if (!Number.isInteger(d.colorSlot) || d.colorSlot < 0 || d.colorSlot >= DEPT_COLOR_SLOTS) add({ code: 'department-slot', message: `${label}: pick one of the ${DEPT_COLOR_SLOTS} colours.`, ids: [d.id] })
-    if (!rooms.some((r) => r.departmentId === d.id)) add({ code: 'department-unused', severity: 'warning', message: `${label} has no rooms yet.`, ids: [d.id] })
+    if (!rooms.some((r) => roomDeptIds(r).includes(d.id))) add({ code: 'department-unused', severity: 'warning', message: `${label} has no rooms yet.`, ids: [d.id] })
   }
   for (const l of dup(data.departments.map((d) => d.letter))) add({ code: 'department-letter', message: `Department letter ${l} is used twice.`, ids: [l] })
   if (building.outline.length < 3) add({ code: 'outline', message: 'The building outline needs at least 3 points.', ids: [] })
@@ -57,6 +58,14 @@ export function validate(data: BuildingData): Problem[] {
     if (!levels.has(r.floor)) add({ code: 'room-floor', message: `${label}: floor ${r.floor} does not exist.`, ids: [r.id] })
     if (r.departmentId !== null && !deptIds.has(r.departmentId)) {
       add({ code: 'room-department', message: `${label}: unknown department ${r.departmentId}.`, floor: r.floor, at, ids: [r.id] })
+    }
+    if (r.departmentIds !== undefined) {
+      if (r.departmentId !== null) add({ code: 'room-department-both', message: `${label}: use departmentId or departmentIds, not both.`, floor: r.floor, at, ids: [r.id] })
+      if (r.departmentIds.length < 2) add({ code: 'room-departments-short', message: `${label}: departmentIds needs at least 2 departments (use departmentId for one).`, floor: r.floor, at, ids: [r.id] })
+      for (const id of r.departmentIds) {
+        if (!deptIds.has(id)) add({ code: 'room-department', message: `${label}: unknown department ${id}.`, floor: r.floor, at, ids: [r.id] })
+      }
+      for (const id of dup(r.departmentIds)) add({ code: 'room-departments-duplicate', message: `${label}: department ${id} is listed twice.`, floor: r.floor, at, ids: [r.id] })
     }
     if (r.polygon.length < 3) {
       add({ code: 'room-polygon', message: `${label}: a room needs at least 3 corners.`, floor: r.floor, at, ids: [r.id] })
@@ -80,6 +89,21 @@ export function validate(data: BuildingData): Problem[] {
         }
       }
     }
+  }
+
+  // Voids (open atriums): inside the outline, outside every room
+  for (const floor of floors) {
+    ;(floor.voids ?? []).forEach((v, i) => {
+      const label = `Void ${i + 1} on floor ${floor.level}`
+      const vid = `void-${floor.level}-${i + 1}`
+      if (v.length < 3) { add({ code: 'void-polygon', message: `${label} needs at least 3 corners.`, floor: floor.level, ids: [vid] }); return }
+      if (!polygonInside(v, building.outline)) add({ code: 'void-outside', message: `${label} sticks out of the building outline.`, floor: floor.level, at: v[0], ids: [vid] })
+      for (const r of roomsOn(floor.level)) {
+        if (r.polygon.length >= 3 && polygonsOverlap(v, r.polygon)) {
+          add({ code: 'void-room-overlap', message: `${label} overlaps room ${r.number ?? r.id}.`, floor: floor.level, at: v[0], ids: [vid, r.id] })
+        }
+      }
+    })
   }
 
   // QR points and amenities
@@ -162,6 +186,11 @@ export function validate(data: BuildingData): Problem[] {
         add({ code: 'node-in-room', message: `Node ${n.id} is inside room ${r.number ?? r.id}.`, floor: n.floor, at: n.position, ids: [n.id, r.id] })
       }
     }
+    for (const v of voidsOn(n.floor)) {
+      if (v.length >= 3 && pointInPolygon(n.position, v) && boundaryDistance(n.position, v) > 0.05) {
+        add({ code: 'node-in-void', message: `Node ${n.id} is inside the open atrium.`, floor: n.floor, at: n.position, ids: [n.id] })
+      }
+    }
   }
   for (const e of w.edges) {
     const na = node.get(e.a)
@@ -173,6 +202,9 @@ export function validate(data: BuildingData): Problem[] {
       if (r.polygon.length < 3) continue
       const bad = segmentThroughPolygon(a, b, r.polygon)
       if (bad) add({ code: 'edge-through-room', message: `Edge ${e.a} - ${e.b} goes through room ${r.number ?? r.id}.`, floor: na.floor, at: mid(a, b), ids: [e.a, e.b, r.id] })
+    }
+    for (const v of voidsOn(na.floor)) {
+      if (v.length >= 3 && segmentThroughPolygon(a, b, v)) add({ code: 'edge-through-void', message: `Edge ${e.a} - ${e.b} crosses the open atrium.`, floor: na.floor, at: mid(a, b), ids: [e.a, e.b] })
     }
   }
 

@@ -20,6 +20,8 @@ export interface Floor {
   elevation: number
   /** True once the group has traced this floor from real sources (set by the trace tool). */
   traced?: boolean
+  /** Open parts of the floor with no slab (for example an atrium). Outside every room, inside the outline, avoided by walkways. */
+  voids?: Point[][]
 }
 
 export interface Department {
@@ -60,6 +62,8 @@ export interface Room {
   popular?: boolean
   floor: number
   departmentId: string | null
+  /** A room shared by 2 or more departments lists them here and has `departmentId: null`. */
+  departmentIds?: string[]
   type: RoomType
   polygon: Point[]
   description?: string

@@ -8,6 +8,7 @@ import { roomDeptIds } from '../data/departments'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
+import { liftDoorGeometry, shadeExtrusion, stairsGeometry } from './connectors'
 import { useAppStore, type FloorView } from '../state/store'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
@@ -46,15 +47,30 @@ function toShape(points: Point[], holes: Point[][] = []): THREE.Shape {
 }
 
 function extrude(points: Point[], depth: number, holes: Point[][] = []): THREE.ExtrudeGeometry {
-  return new THREE.ExtrudeGeometry(toShape(points, holes), { depth, bevelEnabled: false })
+  const g = new THREE.ExtrudeGeometry(toShape(points, holes), { depth, bevelEnabled: false })
+  shadeExtrusion(g)
+  return g
 }
 
+const doorPos = new Map(data.walkways.nodes.map((n) => [n.id, n.position] as const))
 const voidsOf = (level: number): Point[][] => data.floors.find((f) => f.level === level)?.voids ?? []
 
-// ExtrudeGeometry material groups: 0 = top and bottom caps, 1 = side walls.
-function makeMaterials(): [THREE.MeshBasicMaterial, THREE.MeshLambertMaterial] {
-  return [new THREE.MeshBasicMaterial({ toneMapped: false }), new THREE.MeshLambertMaterial({ toneMapped: false })]
+// ExtrudeGeometry material groups: 0 = top and bottom caps, 1 = side walls. The key light from the north-west
+// is baked into the wall vertex colours (connectors.ts), so no lights or shadows are needed.
+function makeMaterials(double = false): [THREE.MeshBasicMaterial, THREE.MeshBasicMaterial] {
+  const side = double ? THREE.DoubleSide : THREE.FrontSide
+  return [
+    new THREE.MeshBasicMaterial({ toneMapped: false, vertexColors: true, side }),
+    new THREE.MeshBasicMaterial({ toneMapped: false, vertexColors: true, side }),
+  ]
 }
+
+const TREAD = new THREE.Color('#BDB3BE')
+const LIFT_DOOR = new THREE.Color('#CFC7D0')
+const LIFT_DOOR_DIM = new THREE.Color('#DDD6DE')
+const EDGE_MATERIAL = new THREE.LineBasicMaterial({ color: tokens.ink, transparent: true, opacity: 0.14, depthWrite: false })
+
+const ringPoints = (poly: Point[], y: number) => [...poly, poly[0]!].map(([x, z]) => new THREE.Vector3(x, y, z))
 
 function setAlpha(mats: THREE.Material[], alpha: number) {
   for (const m of mats) {
@@ -66,10 +82,16 @@ function setAlpha(mats: THREE.Material[], alpha: number) {
 
 interface RoomItem {
   room: Room
-  geometry: THREE.ExtrudeGeometry
+  geometry: THREE.BufferGeometry
+  /** Extruded blocks are modelled in the XY plane and rotated flat; stair cores are built upright. */
+  rotated: boolean
   top: THREE.MeshBasicMaterial
-  side: THREE.MeshLambertMaterial
+  side: THREE.MeshBasicMaterial
   colors: { top: THREE.Color; side: THREE.Color }
+  /** Thin line round the room top that keeps neighbours of the same type apart. */
+  edge: THREE.BufferGeometry | null
+  /** Lift door leaves. */
+  door: { geometry: THREE.BufferGeometry; material: THREE.MeshBasicMaterial } | null
 }
 
 interface RoomLive {
@@ -104,11 +126,22 @@ function FloorLayer({ level }: { level: number }) {
     () =>
       data.rooms
         .filter((r) => r.floor === level)
-        .map((room) => {
-          const [top, side] = makeMaterials()
+        .map((room): RoomItem => {
           const c = roomColor(room)
-          return { room, geometry: extrude(room.polygon, ROOM_HEIGHT), top, side,
-            colors: { top: new THREE.Color(c.top), side: new THREE.Color(c.side) } }
+          const doorAt = room.door ? doorPos.get(room.door) : undefined
+          const stairs = room.type === 'stairs' ? stairsGeometry(room.polygon, doorAt, ROOM_HEIGHT) : null
+          const [top, side] = makeMaterials(!!stairs)
+          const liftDoor = room.type === 'elevator' ? liftDoorGeometry(room.polygon, doorAt) : null
+          return {
+            room,
+            geometry: stairs ?? extrude(room.polygon, ROOM_HEIGHT),
+            rotated: !stairs,
+            top,
+            side,
+            colors: { top: new THREE.Color(stairs ? TREAD : c.top), side: new THREE.Color(c.side) },
+            edge: stairs ? null : new THREE.BufferGeometry().setFromPoints(ringPoints(room.polygon, ROOM_HEIGHT + 0.02)),
+            door: liftDoor ? { geometry: liftDoor, material: new THREE.MeshBasicMaterial({ color: LIFT_DOOR, toneMapped: false, side: THREE.DoubleSide }) } : null,
+          }
         }),
     [level],
   )
@@ -117,18 +150,38 @@ function FloorLayer({ level }: { level: number }) {
   const slabTop = useMemo(() => ({ a: new THREE.Color(tokens.slabTop), b: new THREE.Color(tokens.slabTopViewed) }), [])
   const dimmed = useMemo(() => ({ top: new THREE.Color(tokens.dimmedTop), side: new THREE.Color(tokens.dimmedSide) }), [])
   const slabSide = useMemo(() => new THREE.Color(tokens.slabSide), [])
+  // A thin darker rim on the slab's top edge (and round an atrium), and the floor below showing through an atrium.
+  const rim = useMemo(() => {
+    const rings = [outline, ...voidsOf(level)]
+    const pts = rings.flatMap((r) => r.map((p, i) => [p, r[(i + 1) % r.length]!] as const).flat()).map(([x, z]) => new THREE.Vector3(x, 0, z))
+    return { geometry: new THREE.BufferGeometry().setFromPoints(pts), material: new THREE.LineBasicMaterial({ color: tokens.slabRim, transparent: true, depthWrite: false }) }
+  }, [level])
+  const below = useMemo(() => {
+    const lower = data.floors.filter((f) => f.level < level).at(-1)
+    const holes = voidsOf(level)
+    if (!lower || holes.length === 0) return null
+    const geometry = new THREE.ShapeGeometry(holes.map((h) => toShape(h)))
+    return { geometry, material: new THREE.MeshBasicMaterial({ color: tokens.voidFloor, toneMapped: false }), y: elevationOf(lower.level) - 0.05 }
+  }, [level])
 
   useEffect(
     () => () => {
       slabGeometry.dispose()
       slab.forEach((m) => m.dispose())
+      rim.geometry.dispose()
+      rim.material.dispose()
+      below?.geometry.dispose()
+      below?.material.dispose()
       items.forEach((i) => {
         i.geometry.dispose()
         i.top.dispose()
         i.side.dispose()
+        i.edge?.dispose()
+        i.door?.geometry.dispose()
+        i.door?.material.dispose()
       })
     },
-    [slabGeometry, slab, items],
+    [slabGeometry, slab, items, rim, below],
   )
 
   useFrame(() => {
@@ -179,6 +232,7 @@ function FloorLayer({ level }: { level: number }) {
     slab[0].color.copy(scratch)
     slab[1].color.copy(slabSide)
     setAlpha(slab, c.slab)
+    setAlpha([rim.material], c.slab)
 
     for (const it of items) {
       const l = live.current.get(it.room.id)
@@ -187,6 +241,7 @@ function FloorLayer({ level }: { level: number }) {
       l.cur.dim = lerp(l.from.dim, l.to.dim, k)
       it.top.color.lerpColors(it.colors.top, dimmed.top, l.cur.dim)
       it.side.color.lerpColors(it.colors.side, dimmed.side, l.cur.dim)
+      it.door?.material.color.lerpColors(LIFT_DOOR, LIFT_DOOR_DIM, l.cur.dim)
       const sy = c.g * (1 + RISE * l.cur.raise)
       if (l.group) {
         l.group.visible = c.g > 0.002
@@ -199,16 +254,20 @@ function FloorLayer({ level }: { level: number }) {
   return (
     <group ref={root}>
       <mesh geometry={slabGeometry} material={slab} position={[0, elevation - SLAB_THICKNESS, 0]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={1} />
+      <lineSegments geometry={rim.geometry} material={rim.material} position={[0, elevation + 0.02, 0]} renderOrder={2} />
+      {below && <mesh geometry={below.geometry} material={below.material} position={[0, below.y, 0]} rotation={[-Math.PI / 2, 0, 0]} />}
       {items.map((it) => (
         <group key={it.room.id} ref={(g) => {
           const l = live.current.get(it.room.id) ?? { group: null, from: { raise: 0, dim: 0 }, to: { raise: 0, dim: 0 }, cur: { raise: 0, dim: 0 } }
           l.group = g
           live.current.set(it.room.id, l)
         }} position={[0, elevation, 0]}>
+          {it.edge && <lineLoop geometry={it.edge} material={EDGE_MATERIAL} />}
+          {it.door && <mesh geometry={it.door.geometry} material={it.door.material} />}
           <mesh
             geometry={it.geometry}
             material={[it.top, it.side]}
-            rotation={[-Math.PI / 2, 0, 0]}
+            rotation={it.rotated ? [-Math.PI / 2, 0, 0] : undefined}
             onClick={(e) => {
               if (e.delta > 6 || anim.current.cur.g < 0.5) return // a drag, or a floor that is leaving
               e.stopPropagation()
@@ -815,7 +874,7 @@ function Rig() {
 }
 
 /** Demand rendering: any store change or unfinished ease asks for another frame. */
-function FrameBridge() {
+function FrameBridge({ onReady }: { onReady: () => void }) {
   const invalidate = useThree((s) => s.invalidate)
   const clock = useThree((s) => s.clock)
   const getThree = useThree((s) => s.get)
@@ -844,11 +903,19 @@ function FrameBridge() {
       setFrameRequester(() => {})
     }
   }, [invalidate, clock])
-  useFrame((_, dt) => stepTransition(dt))
+  const reported = useRef(false)
+  useFrame((_, dt) => {
+    stepTransition(dt)
+    // The first frame is drawn right after this callback: the placeholder can start fading out.
+    if (!reported.current) {
+      reported.current = true
+      onReady()
+    }
+  })
   return null
 }
 
-export default function BuildingScene() {
+export default function BuildingScene({ onReady }: { onReady: () => void }) {
   return (
     <Canvas
       className="scene"
@@ -858,9 +925,7 @@ export default function BuildingScene() {
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => useAppStore.getState().selectRoom(null)}
     >
-      <ambientLight intensity={1.6} />
-      <directionalLight position={[-40, 80, 60]} intensity={1.1} />
-      <FrameBridge />
+      <FrameBridge onReady={onReady} />
       <BaseSlab />
       {data.floors.map((f) => (
         <FloorLayer key={f.level} level={f.level} />

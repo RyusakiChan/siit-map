@@ -7,7 +7,7 @@ import { useT } from '../i18n'
 import { pick } from '../i18n'
 import { back, go } from '../router'
 import { useAppStore } from '../state/store'
-import { deptColor, tokens } from '../theme/colors'
+import { circulation, deptColor, tokens, typeTints } from '../theme/colors'
 import { typeLabelKey } from '../data/lookup'
 import type { RoomType } from '../data/types'
 import { BackIcon, ChevronIcon, CloseIcon, ExternalIcon } from './Icons'
@@ -139,6 +139,15 @@ export function AboutScreen() {
   )
 }
 
+const tintRows = [
+  ['study', typeTints.study, 'keyTintStudy'],
+  ['office', typeTints.office, 'keyTintOffice'],
+  ['library', typeTints.library, 'keyTintLibrary'],
+  ['facility', typeTints.facility, 'keyTintFacility'],
+  ['circulation', circulation, 'keyTintCirculation'],
+  ['other', typeTints.other, 'keyTintOther'],
+] as const
+
 const facilityTypes: RoomType[] = ['restroom', 'stairs', 'elevator', 'foodservice', 'library', 'lobby']
 
 export function KeySheet() {
@@ -162,6 +171,15 @@ export function KeySheet() {
               <span className="key-swatch" style={{ background: deptColor(d)?.top }} aria-hidden="true" />
               <DeptBadge dept={d} size={24} />
               <span>{pick(lang, d.name, d.nameTh)}</span>
+            </li>
+          ))}
+        </ul>
+        <h3 className="section">{t('keyRoomTypes')}</h3>
+        <ul className="list flush">
+          {tintRows.map(([key, color, label]) => (
+            <li key={key} className="key-row">
+              <span className="key-swatch" style={{ background: color.top, boxShadow: `inset 0 -3px 0 ${color.side}` }} aria-hidden="true" />
+              <span>{t(label)}</span>
             </li>
           ))}
         </ul>

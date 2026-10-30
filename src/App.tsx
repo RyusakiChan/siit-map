@@ -1,7 +1,6 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { countView } from './analytics'
 import { deptById, roomById } from './data/lookup'
-import { useT } from './i18n'
 import { go, routePath, useRoute } from './router'
 import { parseFrom } from './state/store'
 import { useAppStore } from './state/store'
@@ -11,11 +10,14 @@ import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from 
 import { FromPicker } from './ui/FromPicker'
 import { RoomSheet } from './ui/RoomSheet'
 import { StepsCard } from './ui/StepsCard'
+import { MapPlaceholder } from './ui/MapPlaceholder'
 import { SearchScreen } from './ui/SearchScreen'
 import { AboutScreen, DepartmentScreen, KeySheet } from './ui/Screens'
 
-// The 3D scene (three.js) loads after the controls have rendered.
-const BuildingScene = lazy(() => import('./scene/BuildingScene'))
+// The 3D scene (three.js) is the biggest download: it starts now, while the page is still starting, not after React mounts
+// (index.html also preloads the chunk). The outline placeholder shows until the scene has drawn its first frame.
+const sceneChunk = import('./scene/BuildingScene')
+const BuildingScene = lazy(() => sceneChunk)
 
 /** Applies the hash route to the app state and counts the view. */
 function RouteEffects() {
@@ -57,7 +59,6 @@ function RouteEffects() {
 }
 
 export default function App() {
-  const t = useT()
   const route = useRoute()
   const lang = useAppStore((s) => s.lang)
   const selected = useAppStore((s) => s.selectedRoomId)
@@ -65,6 +66,7 @@ export default function App() {
   const keyOpen = useAppStore((s) => s.keyOpen)
   const routing = useAppStore((s) => s.route !== null)
   const picking = useAppStore((s) => s.fromPicker !== null)
+  const [sceneReady, setSceneReady] = useState(false)
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -72,8 +74,11 @@ export default function App() {
 
   return (
     <div className={lang === 'th' ? 'app lang-th' : 'app'}>
-      <Suspense fallback={<p className="loading">{t('loading')}</p>}>
-        <BuildingScene />
+      <MapPlaceholder done={sceneReady} />
+      <Suspense fallback={null}>
+        <div className={sceneReady ? 'scene-fade is-ready' : 'scene-fade'} data-scene-ready={sceneReady}>
+          <BuildingScene onReady={() => setSceneReady(true)} />
+        </div>
       </Suspense>
       <RouteEffects />
       <TopBar />

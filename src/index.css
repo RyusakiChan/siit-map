@@ -28,7 +28,7 @@ body,
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--ground);
+  background: transparent;
   color: var(--ink);
   font-family: var(--sans);
   -webkit-text-size-adjust: 100%;
@@ -67,6 +67,55 @@ a {
   position: fixed;
   inset: 0;
   overflow: hidden;
+}
+
+/* The 3D scene fades in over the outline placeholder (250 ms) once its first frame is drawn */
+.scene-fade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 250ms var(--ease);
+}
+
+.scene-fade.is-ready {
+  opacity: 1;
+}
+
+html {
+  /* Map look v2: a soft vertical gradient behind the canvas (also painted inline by index.html before this file loads) */
+  background: linear-gradient(180deg, #f7eff6, #ece5ef) no-repeat;
+}
+
+.map-placeholder {
+  position: absolute;
+  inset: 0;
+  padding: 158px 62px 104px 16px;
+  transition: opacity 250ms var(--ease);
+}
+
+.map-placeholder.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.map-placeholder svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map-placeholder .loading {
+  inset: auto 0 112px;
+  display: block;
+  text-align: center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-fade,
+  .map-placeholder {
+    transition-duration: 150ms;
+  }
 }
 
 .app.lang-th {
@@ -1095,6 +1144,11 @@ a {
 .map-icon svg {
   width: 14px;
   height: 14px;
+}
+
+.map-icon svg[fill='currentColor'] {
+  width: 16px;
+  height: 16px;
 }
 
 .room-tag .tag-badge {

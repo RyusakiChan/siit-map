@@ -106,4 +106,4 @@ export const amenities = (b: ReturnType<typeof build>): Amenity[] => {
 }
 
 /** Shafts: which room of the right type each connector uses on this floor. */
-export const connectorRooms = { lift: 'f3-lifts', 'stairs-e': 'f3-stairs-top-right', 'stairs-w': 'f3-stairs-top-mid' }
+export const connectorRooms = { lift: 'f3-lifts', 'stairs-e': 'f3-stairs-top-right', 'stairs-w': 'f3-stairs-top-mid', 'stairs-s': 'f3-stairs-bottom' }

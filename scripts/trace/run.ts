@@ -16,22 +16,28 @@ export interface FloorJob {
 }
 
 export function runJob(job: FloorJob, write: boolean): void {
+  runJobs([job], write)
+}
+
+/** Several floors in one go (needed when a new connector spans floors that are all saved together). */
+export function runJobs(jobs: FloorJob[], write: boolean): void {
   const root = process.cwd()
   const file = resolve(root, 'src/data/building.json')
   const backups = resolve(root, '.trace-backups')
   const current = JSON.parse(readFileSync(file, 'utf8')) as BuildingData
   const have = new Set(current.departments.map((d) => d.id))
-  const wanted = [...current.departments, ...job.departments.filter((d) => !have.has(d.id))]
-  const next = replaceFloor(replaceDepartments(current, wanted), job.slice)
+  const wanted = [...current.departments, ...jobs.flatMap((j) => j.departments).filter((d, i, all) => !have.has(d.id) && all.findIndex((x) => x.id === d.id) === i)]
+  let next = replaceDepartments(current, wanted)
+  for (const job of jobs) next = replaceFloor(next, job.slice)
   const problems = validate(next)
   const errors = problems.filter((p) => p.severity === 'error')
-  console.log(job.report.join('\n'))
+  for (const job of jobs) console.log(job.report.join('\n'))
   console.log(`\nvalidate: ${errors.length} error(s), ${problems.length - errors.length} warning(s)`)
   for (const p of problems) console.log(` ${p.severity.toUpperCase()} ${p.code}: ${p.message}`)
   if (errors.length) { console.log('NOT WRITTEN (errors)'); process.exitCode = 1; return }
   if (!write) { console.log('dry run: nothing written (use --write)'); return }
   if (wanted.length !== current.departments.length) console.log('departments backup:', saveDepartmentsToFile(file, backups, wanted))
-  console.log('floor backup:', saveFloorToFile(file, backups, job.slice))
+  for (const job of jobs) console.log(`floor ${job.floor} backup:`, saveFloorToFile(file, backups, job.slice))
   const saved = JSON.parse(readFileSync(file, 'utf8')) as BuildingData
   console.log('re-validate saved file:', validate(saved).filter((p) => p.severity === 'error').length, 'errors')
 }

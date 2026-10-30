@@ -94,4 +94,4 @@ export const qrPoints = (b: ReturnType<typeof build>): QrPoint[] => {
 /** No amenity is visible in the floor-2 photos or poster; the two sample ones are removed (their ids retire). */
 export const amenities: Amenity[] = []
 
-export const connectorRooms = { lift: 'f2-lifts', 'stairs-e': 'f2-stairs-top-right', 'stairs-w': 'f2-stairs-top-mid' }
+export const connectorRooms = { lift: 'f2-lifts', 'stairs-e': 'f2-stairs-top-right', 'stairs-w': 'f2-stairs-top-mid', 'stairs-s': 'f2-stairs-bottom' }

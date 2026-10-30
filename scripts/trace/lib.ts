@@ -124,6 +124,8 @@ export interface Plan {
   fit: Fit
   outline: Point[]
   voidsPx: Point[][]
+  /** Voids in metres, used instead of voidsPx (the same atrium as another floor). */
+  voidsMetres?: Point[][]
   rooms: RoomSpec[]
   corridorNodesPx: Record<string, Point>
   corridorEdges: [string, string][]
@@ -166,7 +168,7 @@ export function build(plan: Plan): Built {
       type: spec.type, polygon: p, ...(spec.photo ? { photo: spec.photo } : {}),
     })
   }
-  const voids = plan.voidsPx.map((v) => clean(v.map((p) => fit.to(p)).map(roundP)))
+  const voids = plan.voidsMetres ?? plan.voidsPx.map((v) => clean(v.map((p) => fit.to(p)).map(roundP)))
 
   const nodes: WalkNode[] = []
   let edges: WalkEdge[] = []

@@ -166,6 +166,12 @@ function QrForm({ id }: { id: string }) {
     <section className="card">
       <h3>QR point <code>{q.id}</code></h3>
       <p className="muted">{locked ? 'Saved: this id is permanent, because printed QR codes link to it.' : 'Not saved yet. After you save, the id is permanent.'}</p>
+      <Field label="Place (English), e.g. Lift lobby">
+        <input value={q.label} onChange={(e) => updateQr(id, { label: e.target.value })} aria-label="QR place, English" />
+      </Field>
+      <Field label="Place (Thai)">
+        <input value={q.labelTh} onChange={(e) => updateQr(id, { labelTh: e.target.value })} aria-label="QR place, Thai" />
+      </Field>
       <Field label="Facing (degrees clockwise from north)">
         <input type="number" min={0} max={359} value={q.facingDeg} onChange={(e) => updateQr(id, { facingDeg: ((Number(e.target.value) % 360) + 360) % 360 })} />
       </Field>

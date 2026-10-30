@@ -1919,7 +1919,7 @@
       "id": "f3-1-306-307",
       "number": "1-306/1-307",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "aliases": [
         "1-306",
         "1-307"
@@ -1979,7 +1979,7 @@
       "id": "f3-1-309",
       "number": "1-309",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -2007,7 +2007,7 @@
       "id": "f3-1-310",
       "number": "1-310",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -2035,7 +2035,7 @@
       "id": "f3-1-311",
       "number": "1-311",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -3135,16 +3135,220 @@
         -10,
         8
       ],
-      "facingDeg": 0
+      "facingDeg": 0,
+      "label": "Lobby (sample)",
+      "labelTh": "ล็อบบี้ (ตัวอย่าง)",
+      "sample": true
     },
     {
       "id": "sample-f2-lift",
       "floor": 2,
       "position": [
-        -8.3,
-        10.8
+        -11.4,
+        13.6
       ],
-      "facingDeg": 180
+      "facingDeg": 0,
+      "label": "Lift lobby (sample)",
+      "labelTh": "โถงลิฟต์ (ตัวอย่าง)",
+      "sample": true
+    },
+    {
+      "id": "f2-lift",
+      "floor": 2,
+      "position": [
+        -11.4,
+        13.6
+      ],
+      "facingDeg": 0,
+      "label": "Lift lobby",
+      "labelTh": "โถงลิฟต์"
+    },
+    {
+      "id": "f2-stairs-w",
+      "floor": 2,
+      "position": [
+        9.2,
+        -18.3
+      ],
+      "facingDeg": 270,
+      "label": "North stairs",
+      "labelTh": "บันไดฝั่งเหนือ"
+    },
+    {
+      "id": "f2-stairs-e",
+      "floor": 2,
+      "position": [
+        25.5,
+        -26.1
+      ],
+      "facingDeg": 40,
+      "label": "Northeast stairs",
+      "labelTh": "บันไดมุมตะวันออกเฉียงเหนือ"
+    },
+    {
+      "id": "f2-stairs-s",
+      "floor": 2,
+      "position": [
+        -8.9,
+        17.4
+      ],
+      "facingDeg": 180,
+      "label": "South stairs",
+      "labelTh": "บันไดฝั่งใต้"
+    },
+    {
+      "id": "f2-corr-nw",
+      "floor": 2,
+      "position": [
+        -6.4,
+        -10.1
+      ],
+      "facingDeg": 270,
+      "label": "Corridor, northwest",
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
+    },
+    {
+      "id": "f2-corr-se",
+      "floor": 2,
+      "position": [
+        9.6,
+        15.2
+      ],
+      "facingDeg": 90,
+      "label": "Corridor, southeast",
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
+    },
+    {
+      "id": "f3-lift",
+      "floor": 3,
+      "position": [
+        -11.4,
+        13.5
+      ],
+      "facingDeg": 0,
+      "label": "Lift lobby",
+      "labelTh": "โถงลิฟต์"
+    },
+    {
+      "id": "f3-stairs-w",
+      "floor": 3,
+      "position": [
+        4.7,
+        -12.6
+      ],
+      "facingDeg": 0,
+      "label": "North stairs",
+      "labelTh": "บันไดฝั่งเหนือ"
+    },
+    {
+      "id": "f3-stairs-e",
+      "floor": 3,
+      "position": [
+        25.6,
+        -25.5
+      ],
+      "facingDeg": 35,
+      "label": "Northeast stairs",
+      "labelTh": "บันไดมุมตะวันออกเฉียงเหนือ"
+    },
+    {
+      "id": "f3-stairs-s",
+      "floor": 3,
+      "position": [
+        -8.4,
+        18.6
+      ],
+      "facingDeg": 200,
+      "label": "South stairs",
+      "labelTh": "บันไดฝั่งใต้"
+    },
+    {
+      "id": "f3-corr-nw",
+      "floor": 3,
+      "position": [
+        -23.5,
+        -13.1
+      ],
+      "facingDeg": 0,
+      "label": "Corridor, northwest",
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
+    },
+    {
+      "id": "f3-corr-se",
+      "floor": 3,
+      "position": [
+        12.3,
+        15.5
+      ],
+      "facingDeg": 205,
+      "label": "Corridor, southeast",
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
+    },
+    {
+      "id": "f4-lift",
+      "floor": 4,
+      "position": [
+        -11.3,
+        13.5
+      ],
+      "facingDeg": 0,
+      "label": "Lift lobby",
+      "labelTh": "โถงลิฟต์"
+    },
+    {
+      "id": "f4-stairs-w",
+      "floor": 4,
+      "position": [
+        7.7,
+        -16.5
+      ],
+      "facingDeg": 0,
+      "label": "North stairs",
+      "labelTh": "บันไดฝั่งเหนือ"
+    },
+    {
+      "id": "f4-stairs-e",
+      "floor": 4,
+      "position": [
+        26.1,
+        -26.4
+      ],
+      "facingDeg": 15,
+      "label": "Northeast stairs",
+      "labelTh": "บันไดมุมตะวันออกเฉียงเหนือ"
+    },
+    {
+      "id": "f4-stairs-s",
+      "floor": 4,
+      "position": [
+        -11.2,
+        15.3
+      ],
+      "facingDeg": 180,
+      "label": "South stairs",
+      "labelTh": "บันไดฝั่งใต้"
+    },
+    {
+      "id": "f4-corr-nw",
+      "floor": 4,
+      "position": [
+        -24.7,
+        -13.8
+      ],
+      "facingDeg": 270,
+      "label": "Corridor, northwest",
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
+    },
+    {
+      "id": "f4-corr-se",
+      "floor": 4,
+      "position": [
+        12,
+        15.9
+      ],
+      "facingDeg": 205,
+      "label": "Corridor, southeast",
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
     }
   ],
   "amenities": [
@@ -5761,6 +5965,24 @@
     "f4-stairs-bottom",
     "f4-lifts",
     "sample-f4-water",
-    "f4-prayer-top-mid"
+    "f4-prayer-top-mid",
+    "f2-lift",
+    "f2-stairs-w",
+    "f2-stairs-e",
+    "f2-stairs-s",
+    "f2-corr-nw",
+    "f2-corr-se",
+    "f3-lift",
+    "f3-stairs-w",
+    "f3-stairs-e",
+    "f3-stairs-s",
+    "f3-corr-nw",
+    "f3-corr-se",
+    "f4-lift",
+    "f4-stairs-w",
+    "f4-stairs-e",
+    "f4-stairs-s",
+    "f4-corr-nw",
+    "f4-corr-se"
   ]
 }

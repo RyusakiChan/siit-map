@@ -76,6 +76,44 @@ describe('validate()', () => {
     expect(codes(d).has('point-outside')).toBe(true)
   })
 
+  it('flags QR points with no label, a bad facing, in a room, in the atrium or with a room id', () => {
+    const d = clone()
+    const real = d.qrPoints.filter((q) => !q.sample)
+    const mid = (poly: [number, number][]): [number, number] => [poly.reduce((a, p) => a + p[0], 0) / poly.length, poly.reduce((a, p) => a + p[1], 0) / poly.length]
+    real[0]!.label = ' '
+    real[1]!.labelTh = ''
+    real[2]!.facingDeg = 360
+    real[3]!.facingDeg = -5
+    const inRoom = real.find((q) => q.floor === 2 && q !== real[0] && q !== real[1] && q !== real[2] && q !== real[3])!
+    inRoom.position = mid(d.rooms.find((r) => r.floor === 2 && r.polygon.length >= 4 && !['stairs', 'elevator', 'restroom'].includes(r.type))!.polygon)
+    const inVoid = real.find((q) => q.floor === 3 && q !== real[0] && q !== real[1] && q !== real[2] && q !== real[3])!
+    inVoid.position = mid(d.floors.find((f) => f.level === 3)!.voids![0]!)
+    const taken = real.find((q) => q.floor === 4)!
+    taken.id = d.rooms[0]!.id
+    const c = codes(d)
+    for (const k of ['qr-label', 'qr-facing', 'qr-in-room', 'qr-in-void', 'qr-id-taken']) expect(c.has(k), k).toBe(true)
+    expect(errors(d).filter((p) => p.code === 'qr-label')).toHaveLength(2)
+    expect(errors(d).filter((p) => p.code === 'qr-facing')).toHaveLength(2)
+  })
+
+  it('keeps every real QR point inside the building, in a corridor, on its own floor', () => {
+    const real = data.qrPoints.filter((q) => !q.sample)
+    expect(real.length).toBeGreaterThanOrEqual(12)
+    const bad = errors(data).filter((p) => p.code.startsWith('qr-') || p.code === 'point-outside' || p.code === 'point-floor')
+    expect(bad).toEqual([])
+  })
+
+  it('never changes a printed QR id (the ids below are permanent)', () => {
+    const ids = new Set(data.qrPoints.map((q) => q.id))
+    const printed = ['f2-lift', 'f2-stairs-w', 'f2-stairs-e', 'f2-stairs-s', 'f2-corr-nw', 'f2-corr-se', 'f3-lift', 'f3-stairs-w', 'f3-stairs-e', 'f3-stairs-s', 'f3-corr-nw', 'f3-corr-se', 'f4-lift', 'f4-stairs-w', 'f4-stairs-e', 'f4-stairs-s', 'f4-corr-nw', 'f4-corr-se']
+    for (const id of printed) expect(ids.has(id), id).toBe(true)
+    for (const id of printed) expect(data.usedIds, id).toContain(id)
+  })
+
+  it('marks the two sample QR points and no others', () => {
+    expect(data.qrPoints.filter((q) => q.sample).map((q) => q.id).sort()).toEqual(['sample-f1-lobby', 'sample-f2-lift'])
+  })
+
   it('flags broken walkways: duplicate node, bad edge, missing door', () => {
     const d = clone()
     d.walkways.nodes.push({ ...d.walkways.nodes[0]! })

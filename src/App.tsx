@@ -1,13 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { countView } from './analytics'
 import { deptById, roomById } from './data/lookup'
-import { go, routePath, useRoute } from './router'
+import { back, go, routePath, useRoute } from './router'
 import { parseFrom } from './state/store'
 import { useAppStore } from './state/store'
 import { AskButton, AssistantSheet } from './assistant/Assistant'
 import { useChatStore } from './assistant/chatStore'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
 import { FromPicker } from './ui/FromPicker'
+import { BackToMe, HereBanner, NearSheet } from './ui/HereScreen'
 import { RoomSheet } from './ui/RoomSheet'
 import { StepsCard } from './ui/StepsCard'
 import { MapPlaceholder } from './ui/MapPlaceholder'
@@ -47,7 +48,11 @@ function RouteEffects() {
         go('/', true)
       }
     } else if (route.name === 'at') {
-      s.showHere(route.id) // an unknown QR id just leaves the normal map
+      if (!s.showHere(route.id)) {
+        // An unknown QR id: say so and show the overview.
+        s.showNotice('qrGone')
+        go('/', true)
+      }
     } else if (route.name === 'dept' && !deptById.has(route.id)) {
       s.showNotice('deptGone')
       go('/', true)
@@ -66,11 +71,29 @@ export default function App() {
   const keyOpen = useAppStore((s) => s.keyOpen)
   const routing = useAppStore((s) => s.route !== null)
   const picking = useAppStore((s) => s.fromPicker !== null)
+  const nearSheet = useAppStore((s) => s.hereOpen && s.here !== null)
   const [sceneReady, setSceneReady] = useState(false)
 
   useEffect(() => {
     document.documentElement.lang = lang
   }, [lang])
+
+  // A full-screen layer (search, directions picker, about, department, key) is on top: the map controls behind it
+  // leave the tab order and the screen-reader tree, and Escape closes the layer.
+  const layer = searchOpen || picking || keyOpen || route.name === 'dept' || route.name === 'about'
+  useEffect(() => {
+    if (!layer) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const s = useAppStore.getState()
+      if (s.searchOpen) s.closeSearch()
+      else if (s.fromPicker !== null) s.closeFromPicker()
+      else if (s.keyOpen) s.setKeyOpen(false)
+      else back()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [layer])
 
   return (
     <div className={lang === 'th' ? 'app lang-th' : 'app'}>
@@ -81,12 +104,16 @@ export default function App() {
         </div>
       </Suspense>
       <RouteEffects />
-      <TopBar />
-      <Banner />
-      <Chips />
-      <StatusRow />
-      <FloorPicker />
-      {routing ? <StepsCard /> : selected ? <RoomSheet /> : <BottomBar />}
+      <div className="chrome" inert={layer}>
+        <TopBar />
+        <Banner />
+        <HereBanner />
+        <Chips />
+        <StatusRow />
+        <FloorPicker />
+        {routing ? <StepsCard /> : selected ? <RoomSheet /> : nearSheet ? <NearSheet /> : <BottomBar />}
+        <BackToMe />
+      </div>
       {searchOpen && <SearchScreen />}
       {picking && <FromPicker />}
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}

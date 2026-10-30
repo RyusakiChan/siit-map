@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "lint": "eslint .",
-    "worker:dev": "wrangler dev --config worker/wrangler.toml --port 8787 --var MOCK:1 --var ALLOW_LOCALHOST:1"
+    "worker:dev": "wrangler dev --config worker/wrangler.toml --port 8787 --var MOCK:1 --var ALLOW_LOCALHOST:1",
+    "qr-sheet": "node scripts/qr-sheet.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",
@@ -39,6 +40,7 @@
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.13.0",
     "playwright-core": "1.64.1",
+    "qrcode-generator": "2.0.4",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",
     "vite": "8.3.5",

@@ -78,7 +78,13 @@ export interface QrPoint {
   id: string
   floor: number
   position: Point
+  /** Direction a person faces while scanning (toward the wall the sign is on): degrees clockwise from north, 0-359. */
   facingDeg: number
+  /** The place, for example "Lift lobby", shown on the "You are here" banner and printed on the sign. */
+  label: string
+  labelTh: string
+  /** A sample point: kept working for tests and old links, never printed. */
+  sample?: boolean
 }
 
 /** IMDF amenity categories (OGC 20-094) used so far. */

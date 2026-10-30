@@ -33,3 +33,7 @@ export const typeLabelKey: Record<RoomType, StringKey> = {
   elevator: 'typeElevator',
   other: 'typeOther',
 }
+
+export const qrById = new Map(data.qrPoints.map((q) => [q.id, q]))
+/** The place a QR sign is at, in the app's language ("Lift lobby" / "โถงลิฟต์"). */
+export const qrLabel = (q: { label: string; labelTh: string }, lang: Lang): string => pick(lang, q.label, q.labelTh)

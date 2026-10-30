@@ -110,11 +110,10 @@ class BoxBuilder {
 
 const WALL = 0.25 // thickness of the low wall round a stair core
 const WALL_H = 0.3
-const SLAB = 0.25 // a flight is a stepped slab this thick under its treads, not a solid block, so you can see each step
 const STEP_RISE = 0.12 // the target height of one step
 
-/** Stair cores stand at 60% of a room's height, so the camera looks down into them. */
-export const STAIR_HEIGHT_RATIO = 0.6
+/** Stair cores stand at 45% of a room's height, so the camera looks down into them. */
+export const STAIR_HEIGHT_RATIO = 0.45
 
 /**
  * Stairs inside a rectangular room: a switchback (two flights and a half landing) when the room is at
@@ -138,7 +137,8 @@ export function stairsGeometry(poly: Point[], door: Point | undefined, height: n
   const nosing: number[] = []
   const sbox = (s0: number, s1: number, v0: number, v1: number, y1: number, front: 'low' | 'high' = 'low') => {
     const [u0, u1] = U(s0, s1)
-    b.box(u0, u1, v0, v1, Math.max(0, y1 - SLAB), y1)
+    // each step is solid down to the floor, so the flights and landing stand on it instead of floating
+    b.box(u0, u1, v0, v1, 0, y1)
     // the tread's front edge is the one on the lower side of the flight
     const sf = front === 'low' ? s0 : s1
     const uf = flip ? L - sf : sf
@@ -165,7 +165,7 @@ export function stairsGeometry(poly: Point[], door: Point | undefined, height: n
     const d = lf / n
     const mid = W / 2
     for (let i = 0; i < n; i++) sbox(s0 + i * d, s0 + (i + 1) * d, v0, mid - 0.04, (i + 1) * h) // up
-    b.box(...U(s0 + lf, s1), v0, v1, Math.max(0, half - SLAB), half) // landing, a thin slab too
+    b.box(...U(s0 + lf, s1), v0, v1, 0, half) // landing
     for (let j = 0; j < n; j++) sbox(s0 + lf - (j + 1) * d, s0 + lf - j * d, mid + 0.04, v1, half + (j + 1) * h, 'high') // back down the other side
   } else {
     const n = Math.max(6, Math.round(height / STEP_RISE))

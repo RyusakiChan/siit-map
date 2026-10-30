@@ -1,3 +1,4 @@
+import { DEPT_COLOR_SLOTS, SUMMARY_MAX, letterOk, urlOk } from './departments.ts'
 import { boundaryDistance, pointInPolygon, polygonInside, polygonsOverlap, segmentThroughPolygon } from './geometry'
 import type { BuildingData, Point } from './types'
 
@@ -31,6 +32,16 @@ export function validate(data: BuildingData): Problem[] {
   // Floors and departments
   for (const l of dup(floors.map((f) => f.level))) add({ code: 'floor-duplicate', message: `Floor ${l} is listed twice.`, ids: [String(l)] })
   for (const id of dup(data.departments.map((d) => d.id))) add({ code: 'department-duplicate', message: `Department id ${id} is used twice.`, ids: [id] })
+  for (const d of data.departments) {
+    const label = d.name || d.id
+    if (!/^d-[a-z0-9-]+$/.test(d.id) && !d.id.startsWith('sample-')) add({ code: 'department-id', message: `Department id ${d.id} is not in the d-<name> form.`, ids: [d.id] })
+    if (!letterOk(d.letter)) add({ code: 'department-letter-format', message: `${label}: the letter must be 1 or 2 capital letters A-Z.`, ids: [d.id] })
+    if (!d.name.trim()) add({ code: 'department-unnamed', message: `Department ${d.id} has no name.`, ids: [d.id] })
+    if (d.url && !urlOk(d.url)) add({ code: 'department-url', message: `${label}: the official link must start with https://.`, ids: [d.id] })
+    if ((d.summary?.length ?? 0) > SUMMARY_MAX) add({ code: 'department-summary', message: `${label}: the summary is ${d.summary!.length} characters; the limit is ${SUMMARY_MAX}.`, ids: [d.id] })
+    if (!Number.isInteger(d.colorSlot) || d.colorSlot < 0 || d.colorSlot >= DEPT_COLOR_SLOTS) add({ code: 'department-slot', message: `${label}: pick one of the ${DEPT_COLOR_SLOTS} colours.`, ids: [d.id] })
+    if (!rooms.some((r) => r.departmentId === d.id)) add({ code: 'department-unused', severity: 'warning', message: `${label} has no rooms yet.`, ids: [d.id] })
+  }
   for (const l of dup(data.departments.map((d) => d.letter))) add({ code: 'department-letter', message: `Department letter ${l} is used twice.`, ids: [l] })
   if (building.outline.length < 3) add({ code: 'outline', message: 'The building outline needs at least 3 points.', ids: [] })
 

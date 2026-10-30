@@ -22,14 +22,22 @@ The tool only exists while `npm run dev` runs. It is never part of the published
 - Use **Align photo**: click **3 spots on the photo** (building corners work best, far apart from each other), then the **same 3 spots on the black building outline**. The photo snaps into place, even if it was taken at a slant.
 - Fine tune with the arrows, the rotate buttons and the size buttons. Move the opacity slider to see through the photo.
 
-## 3. Trace the rooms (tool: Room)
+## 3. Enter the departments first
+
+Press **Departments** in the top bar. Add each department by name, then fill in its Thai name, a letter (1 or 2 capital letters, different for each department), other names people use, a short summary and the official SIIT page link (it must start with https://). Pick one of the 8 colours; two departments may share a colour, but the map is easier to read when they differ.
+
+- Write the summary **in your own words** (280 characters at most). Do not copy text from the SIIT website.
+- A department cannot be deleted while rooms use it; change those rooms first.
+- Press **Save departments**. Departments belong to the whole building, so they are saved on their own, not with a floor. Do this before assigning rooms and saving a floor.
+
+## 4. Trace the rooms (tool: Room)
 
 - Click each corner of a room. Click the first point again (or press **Enter**) to close it. **Esc** cancels. **Backspace** removes the last point.
 - Corners and walls snap to the outline and to neighbouring rooms, so shared walls match exactly. Right angles snap too; hold **Shift** to draw a free angle.
-- With **Select**, click a room to fill in its details on the right: number, name, Thai name, type, department, other names, opening hours, contact, a short description in your own words. Drag a corner to move it, click the small dot in the middle of a wall to add a corner, select a corner and press **Delete** to remove it.
+- With **Select**, click a room to fill in its details on the right: number, name, Thai name, type, department (from your list), other names, opening hours, contact, a short description in your own words. Drag a corner to move it, click the small dot in the middle of a wall to add a corner, select a corner and press **Delete** to remove it.
 - Only type what you can see or have checked. Leave a field empty if you do not know it.
 
-## 4. Corridors, doors, lifts and stairs
+## 5. Corridors, doors, lifts and stairs
 
 1. **Corridor node:** click along the middle of each corridor: every corner, junction and end. Clicking on an existing line splits it.
 2. **Corridor line:** click one node, then the next, to join them. Press **Esc** to stop.
@@ -38,13 +46,13 @@ The tool only exists while `npm run dev` runs. It is never part of the published
 
 Blue dots are corridor points, green dots are doors, a purple ring marks a lift or stairs door, an orange dot is not joined to anything.
 
-## 5. QR points
+## 6. QR points
 
 Choose **QR point**, click the spot where the sign will be, drag the arrow to the direction a person faces when they scan it, then type an id (lowercase letters, digits and dashes, for example `lobby-north`).
 
 **QR ids are permanent.** Printed codes link to `#/at/<id>`, so after you save, an id must never change or be reused. The tool refuses an id that is already used anywhere, including ids that were used before.
 
-## 6. Fix the red list, then save
+## 7. Fix the red list, then save
 
 - The **Checks** box updates after every change. Click a problem to jump to it. Red items must be fixed; orange items are reminders (for example a room without a name yet).
 - Press **Save floor**. If problems are left, the tool lists them and asks first. Saving writes your floor into `src/data/building.json`, keeps a copy of the old file in `.trace-backups/` (the newest 20) and marks the floor as traced. The **SAMPLE** badge in the app disappears once every floor is traced.

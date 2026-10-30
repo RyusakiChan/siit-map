@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { BuildingData } from '../data/types.ts'
 import { Canvas } from './Canvas.tsx'
+import { DepartmentsPanel } from './Departments.tsx'
 import { Hint, Side, Toolbar } from './Panels.tsx'
 import { persistDraft, useTrace } from './store.ts'
 
 export function App() {
   const [error, setError] = useState<string | null>(null)
   const ready = useTrace((s) => !!s.draft)
+  const showDepts = useTrace((s) => s.showDepts)
   useEffect(() => {
     fetch('/__trace/data', { cache: 'no-store' })
       .then((r) => (r.ok ? (r.json() as Promise<BuildingData>) : Promise.reject(new Error('The trace tool only works with `npm run dev`.'))))
@@ -25,7 +27,7 @@ export function App() {
       <Hint />
       <main className="work">
         <Canvas />
-        <Side />
+        {showDepts ? <DepartmentsPanel /> : <Side />}
       </main>
     </div>
   )

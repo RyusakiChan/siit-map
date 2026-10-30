@@ -1,4 +1,4 @@
-import type { BuildingData, Room, QrPoint, WalkEdge, WalkNode } from '../data/types.ts'
+import type { BuildingData, Department, Room, QrPoint, WalkEdge, WalkNode } from '../data/types.ts'
 
 /** Everything the tool owns for one floor. */
 export interface FloorSlice {
@@ -86,3 +86,21 @@ export function replaceFloor(data: BuildingData, slice: FloorSlice, markTraced =
 
 /** Keep this many backups in .trace-backups/. */
 export const BACKUPS_KEPT = 20
+
+/**
+ * Replace the building-wide department list. A department that rooms in the saved data still use
+ * cannot be removed, and an id that was retired cannot come back. Removed ids join `usedIds`.
+ */
+export function replaceDepartments(data: BuildingData, departments: Department[]): BuildingData {
+  const next = new Set(departments.map((d) => d.id))
+  const old = new Set(data.departments.map((d) => d.id))
+  const retired = new Set(data.usedIds ?? [])
+  if (next.size !== departments.length) throw new Error('Two departments have the same id')
+  for (const id of next) if (retired.has(id) && !old.has(id)) throw new Error(`Department id "${id}" was retired and cannot be used again`)
+  for (const id of old) {
+    const n = data.rooms.filter((r) => r.departmentId === id).length
+    if (!next.has(id) && n) throw new Error(`Department "${id}" is still used by ${n} saved room(s)`)
+  }
+  const removed = [...old].filter((id) => !next.has(id))
+  return { ...data, departments, usedIds: [...new Set([...(data.usedIds ?? []), ...removed, ...next])] }
+}

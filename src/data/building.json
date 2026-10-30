@@ -103,7 +103,8 @@
       "aliasesTh": [
         "ภาค เอ"
       ],
-      "summary": "A made-up department used to test the map. It is not a real SIIT department."
+      "summary": "A made-up department used to test the map. It is not a real SIIT department.",
+      "colorSlot": 0
     },
     {
       "id": "sample-dept-b",
@@ -113,14 +114,16 @@
       "aliases": [
         "dept b"
       ],
-      "summary": "A made-up department used to test the map. It is not a real SIIT department."
+      "summary": "A made-up department used to test the map. It is not a real SIIT department.",
+      "colorSlot": 1
     },
     {
       "id": "sample-dept-c",
       "letter": "C",
       "name": "Sample Dept C",
       "nameTh": "ภาควิชาตัวอย่าง C",
-      "summary": "A made-up department used to test the map. It is not a real SIIT department."
+      "summary": "A made-up department used to test the map. It is not a real SIIT department.",
+      "colorSlot": 2
     }
   ],
   "rooms": [

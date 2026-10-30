@@ -29,7 +29,7 @@ const depts = [
   { id: 'sample-dept-b', letter: 'B', name: 'Sample Dept B', nameTh: 'ภาควิชาตัวอย่าง B',
     aliases: ['dept b'] },
   { id: 'sample-dept-c', letter: 'C', name: 'Sample Dept C', nameTh: 'ภาควิชาตัวอย่าง C' },
-].map((d) => ({ ...d, summary: 'A made-up department used to test the map. It is not a real SIIT department.' }))
+].map((d, colorSlot) => ({ ...d, colorSlot, summary: 'A made-up department used to test the map. It is not a real SIIT department.' }))
 
 // [slot, type, dept] per floor; facilities are added for every floor below.
 const plan = {

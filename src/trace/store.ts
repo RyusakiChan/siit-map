@@ -1,9 +1,10 @@
 import { create } from 'zustand'
-import type { BuildingData, Point, QrPoint, Room, RoomType, WalkEdge, WalkNode } from '../data/types.ts'
+import type { BuildingData, Department, Point, QrPoint, Room, RoomType, WalkEdge, WalkNode } from '../data/types.ts'
 import { problemsForFloor, validate, type Problem } from '../data/validate.ts'
 import { applyAffine, compose, IDENTITY, invertAffine, rotateAbout, scaleAbout, solveAffine, translate, type Affine } from './affine.ts'
 import { nextConnectorId, nextNodeId, nextRoomId, qrIdProblem } from './ids.ts'
-import { replaceFloor, sliceFloor, type FloorSlice } from './saveFloor.ts'
+import { replaceDepartments, replaceFloor, sliceFloor, type FloorSlice } from './saveFloor.ts'
+import { deleteBlock, departmentId, freeLetter, freeSlot } from '../data/departments.ts'
 import { addEdge, nearestEdge, planDoor, splitEdge } from './walk.ts'
 
 export type Tool = 'select' | 'room' | 'node' | 'edge' | 'door' | 'connector' | 'qr' | 'align'
@@ -36,6 +37,7 @@ export interface View {
 }
 
 const DRAFT_KEY = (floor: number) => `siit-trace-draft-f${floor}`
+const DEPT_DRAFT_KEY = 'siit-trace-draft-departments'
 const PHOTO_KEY = (floor: number) => `siit-trace-photo-f${floor}`
 
 const lsGet = (key: string) => {
@@ -92,6 +94,9 @@ interface TraceState {
   status: string
   restored: number[]
   focus: { tick: number; point: Point } | null
+  showDepts: boolean
+  selectedDept: string | null
+  deptsRestored: boolean
 
   init: (saved: BuildingData) => void
   setFloor: (floor: number) => void
@@ -138,6 +143,13 @@ interface TraceState {
   adjustPhoto: (m: Affine) => void
   addAlignPoint: (kind: 'photo' | 'world', p: Point) => void
   resetAlign: () => void
+
+  setShowDepts: (v: boolean) => void
+  selectDept: (id: string | null) => void
+  addDepartment: (name: string) => string
+  updateDepartment: (id: string, patch: Partial<Department>) => void
+  deleteDepartment: (id: string) => string | null
+  markDepartmentsSaved: (saved: BuildingData) => void
 
   slice: () => FloorSlice
   markSaved: (saved: BuildingData, slice: FloorSlice) => void
@@ -201,6 +213,9 @@ export const useTrace = create<TraceState>((set, get) => {
     status: '',
     restored: [],
     focus: null,
+    showDepts: false,
+    selectedDept: null,
+    deptsRestored: false,
 
     init: (saved) => {
       let draft = saved
@@ -215,12 +230,20 @@ export const useTrace = create<TraceState>((set, get) => {
           restored.push(f.level)
         } catch { /* unreadable draft: ignore */ }
       }
+      let deptsRestored = false
+      const rawDepts = lsGet(DEPT_DRAFT_KEY)
+      if (rawDepts) {
+        try {
+          draft = { ...draft, departments: JSON.parse(rawDepts) as Department[] }
+          deptsRestored = true
+        } catch { /* ignore */ }
+      }
       const floor = restored[0] ?? saved.floors.find((f) => !f.traced)?.level ?? 2
       if (!opened.includes(floor) && !saved.floors.find((f) => f.level === floor)?.traced) {
         draft = clearFloor(draft, floor)
         opened.push(floor)
       }
-      set({ saved, draft, opened, floor, restored, past: [], future: [], status: restored.length ? `Restored your unsaved work on floor ${restored.join(', ')}.` : '' })
+      set({ saved, draft, opened, floor, restored, deptsRestored, past: [], future: [], status: restored.length ? `Restored your unsaved work on floor ${restored.join(', ')}.` : '' })
     },
 
     setFloor: (floor) => {
@@ -420,6 +443,30 @@ export const useTrace = create<TraceState>((set, get) => {
     },
     resetAlign: () => set({ align: { photoPts: [], worldPts: [] } }),
 
+    setShowDepts: (showDepts) => set({ showDepts }),
+    selectDept: (selectedDept) => set({ selectedDept }),
+    addDepartment: (name) => {
+      const { draft } = get()
+      const id = departmentId(name, draft)
+      const dept: Department = { id, name: name.trim(), letter: freeLetter(draft.departments), colorSlot: freeSlot(draft.departments) }
+      edit((d) => ({ ...d, departments: [...d.departments, dept] }))
+      set({ selectedDept: id })
+      return id
+    },
+    updateDepartment: (id, patch) => edit((d) => ({ ...d, departments: d.departments.map((x) => (x.id === id ? { ...x, ...patch, id } : x)) }), `dept:${id}:${Object.keys(patch).join()}`),
+    deleteDepartment: (id) => {
+      const why = deleteBlock(get().draft, id)
+      if (why) return why
+      // The id stays reserved, so a later department can never take it.
+      edit((d) => ({ ...d, departments: d.departments.filter((x) => x.id !== id), usedIds: [...new Set([...(d.usedIds ?? []), id])] }))
+      set({ selectedDept: null })
+      return null
+    },
+    markDepartmentsSaved: (saved) => {
+      set({ saved, draft: replaceDepartments(get().draft, saved.departments), deptsRestored: false })
+      lsSet(DEPT_DRAFT_KEY, null)
+    },
+
     slice: () => sliceFloor(get().draft, get().floor),
     markSaved: (saved, slice) => {
       const marked = replaceFloor(get().draft, slice)
@@ -442,6 +489,8 @@ export function facingFrom(a: Point, b: Point): number {
 }
 
 export function persistDraft(d: BuildingData, opened: number[], saved: BuildingData | null) {
+  const deptNow = JSON.stringify(d.departments)
+  lsSet(DEPT_DRAFT_KEY, saved && deptNow === JSON.stringify(saved.departments) ? null : deptNow)
   for (const f of opened) {
     const s = sliceFloor(d, f)
     const now = JSON.stringify(s)

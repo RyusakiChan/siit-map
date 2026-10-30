@@ -1919,7 +1919,7 @@
       "id": "f3-1-306-307",
       "number": "1-306/1-307",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "aliases": [
         "1-306",
         "1-307"
@@ -1979,7 +1979,7 @@
       "id": "f3-1-309",
       "number": "1-309",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -2007,7 +2007,7 @@
       "id": "f3-1-310",
       "number": "1-310",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -2035,7 +2035,7 @@
       "id": "f3-1-311",
       "number": "1-311",
       "name": "Graduate Room",
-      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "nameTh": "ห้องนักศึกษาบัณฑิตศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "other",
@@ -3205,7 +3205,7 @@
       ],
       "facingDeg": 270,
       "label": "Corridor, northwest",
-      "labelTh": "ทางเดินด้านตะวันตกเฉียงเหนือ"
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
     },
     {
       "id": "f2-corr-se",
@@ -3216,7 +3216,7 @@
       ],
       "facingDeg": 90,
       "label": "Corridor, southeast",
-      "labelTh": "ทางเดินด้านตะวันออกเฉียงใต้"
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
     },
     {
       "id": "f3-lift",
@@ -3271,7 +3271,7 @@
       ],
       "facingDeg": 0,
       "label": "Corridor, northwest",
-      "labelTh": "ทางเดินด้านตะวันตกเฉียงเหนือ"
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
     },
     {
       "id": "f3-corr-se",
@@ -3282,7 +3282,7 @@
       ],
       "facingDeg": 205,
       "label": "Corridor, southeast",
-      "labelTh": "ทางเดินด้านตะวันออกเฉียงใต้"
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
     },
     {
       "id": "f4-lift",
@@ -3337,7 +3337,7 @@
       ],
       "facingDeg": 270,
       "label": "Corridor, northwest",
-      "labelTh": "ทางเดินด้านตะวันตกเฉียงเหนือ"
+      "labelTh": "ทางเดินฝั่งตะวันตกเฉียงเหนือ"
     },
     {
       "id": "f4-corr-se",
@@ -3348,7 +3348,7 @@
       ],
       "facingDeg": 205,
       "label": "Corridor, southeast",
-      "labelTh": "ทางเดินด้านตะวันออกเฉียงใต้"
+      "labelTh": "ทางเดินฝั่งตะวันออกเฉียงใต้"
     }
   ],
   "amenities": [

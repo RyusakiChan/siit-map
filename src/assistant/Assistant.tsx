@@ -59,7 +59,7 @@ export function AskButton() {
   const offset = useBottomOffset(selected, peekH, nearSheet)
   const ref = useRef<HTMLButtonElement>(null)
   const wasMounted = useRef(false)
-  const hidden = full || searchOpen
+  const hidden = full || searchOpen || nearSheet // the Near you sheet is tall: on a small phone the button would sit on the floor picker
 
   useLayoutEffect(() => {
     const el = ref.current

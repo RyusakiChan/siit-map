@@ -45,7 +45,7 @@ export function DepartmentScreen({ id }: { id: string }) {
           {t('shownAs', { letter: dept.letter })}
         </span>
         <h1 className="screen-h1">{deptName(dept, lang)}</h1>
-        {second && <span className="muted-15">{second}</span>}
+        {second && <span className="muted-15" lang={lang === 'th' ? 'en' : 'th'}>{second}</span>}
         {dept.summary && <p className="body-text">{dept.summary}</p>}
         <a className="link-card" href={dept.url ?? config.siitUrl} target="_blank" rel="noreferrer">
           {t('officialPage')}

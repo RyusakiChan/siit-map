@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { countView } from './analytics'
 import { deptById, roomById } from './data/lookup'
-import { go, routePath, useRoute } from './router'
+import { back, go, routePath, useRoute } from './router'
 import { parseFrom } from './state/store'
 import { useAppStore } from './state/store'
 import { AskButton, AssistantSheet } from './assistant/Assistant'
@@ -78,6 +78,23 @@ export default function App() {
     document.documentElement.lang = lang
   }, [lang])
 
+  // A full-screen layer (search, directions picker, about, department, key) is on top: the map controls behind it
+  // leave the tab order and the screen-reader tree, and Escape closes the layer.
+  const layer = searchOpen || picking || keyOpen || route.name === 'dept' || route.name === 'about'
+  useEffect(() => {
+    if (!layer) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      const s = useAppStore.getState()
+      if (s.searchOpen) s.closeSearch()
+      else if (s.fromPicker !== null) s.closeFromPicker()
+      else if (s.keyOpen) s.setKeyOpen(false)
+      else back()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [layer])
+
   return (
     <div className={lang === 'th' ? 'app lang-th' : 'app'}>
       <MapPlaceholder done={sceneReady} />
@@ -87,14 +104,16 @@ export default function App() {
         </div>
       </Suspense>
       <RouteEffects />
-      <TopBar />
-      <Banner />
-      <HereBanner />
-      <Chips />
-      <StatusRow />
-      <FloorPicker />
-      {routing ? <StepsCard /> : selected ? <RoomSheet /> : nearSheet ? <NearSheet /> : <BottomBar />}
-      <BackToMe />
+      <div className="chrome" inert={layer}>
+        <TopBar />
+        <Banner />
+        <HereBanner />
+        <Chips />
+        <StatusRow />
+        <FloorPicker />
+        {routing ? <StepsCard /> : selected ? <RoomSheet /> : nearSheet ? <NearSheet /> : <BottomBar />}
+        <BackToMe />
+      </div>
       {searchOpen && <SearchScreen />}
       {picking && <FromPicker />}
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}

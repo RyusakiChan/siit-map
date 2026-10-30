@@ -150,6 +150,12 @@ function hereFocus(qr: { position: [number, number]; floor: number; facingDeg: n
   return { tick: ++tick, x: qr.position[0], z: qr.position[1], floor: qr.floor, azimuth: (-qr.facingDeg * Math.PI) / 180, here: true }
 }
 
+/** The pin for a QR spot, or null when the id is not on the map. */
+function pinOf(id: string): HerePin | null {
+  const qr = data.qrPoints.find((q) => q.id === id)
+  return qr ? { id: qr.id, floor: qr.floor, x: qr.position[0], z: qr.position[1], facingDeg: qr.facingDeg } : null
+}
+
 function loadLang(): Lang {
   // English by default (PLAN.md); only a remembered choice changes it.
   return readStore('siit-map.lang') === 'th' ? 'th' : 'en'
@@ -250,7 +256,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       lastScan: scan,
       route: null,
-      here: { id: qr.id, floor: qr.floor, x: qr.position[0], z: qr.position[1], facingDeg: qr.facingDeg },
+      here: pinOf(qr.id),
       hereOpen: true,
       hereMoved: false,
       searchOpen: false,
@@ -321,8 +327,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       selectedRoomId: toId,
       snap: 'peek',
       hereOpen: false,
-      // A route from another place replaces the QR pin; one from the QR keeps it.
-      here: from.kind === 'qr' && get().here?.id === from.id ? get().here : null,
+      // A route from another place replaces the QR pin; one from the QR shows it (also on a reload or a shared link).
+      here: from.kind === 'qr' ? pinOf(from.id) : null,
       searchFromQr: null,
       banner: null,
       previousFloor: null,

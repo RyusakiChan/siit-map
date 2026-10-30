@@ -95,7 +95,7 @@ export function FloorPicker() {
   return (
     <div className={compact ? 'floor-picker compact' : 'floor-picker'} role="group" aria-label={t('floors')}>
       {options.map((o) => (
-        <button key={o.value} type="button" className={o.value === view ? 'floor-btn on' : 'floor-btn'} aria-label={o.aria} aria-pressed={o.value === view} onClick={() => setView(o.value)}>
+        <button key={o.value} type="button" className={`${o.value === view ? 'floor-btn on' : 'floor-btn'}${o.value === 'all' ? ' floor-all' : ''}`} aria-label={o.aria} aria-pressed={o.value === view} onClick={() => setView(o.value)}>
           {o.label}
           {o.value === previous && <span className="floor-dot" aria-hidden="true" />}
         </button>

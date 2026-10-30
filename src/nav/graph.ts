@@ -104,14 +104,15 @@ function resolve(g: Graph, end: RouteEnd): Resolved | null {
     if (!room?.door) return null
     return { node: room.door, floor: room.floor, anchor: polygonCentroid(room.polygon), roomId: room.id }
   }
-  const qr = g.data.qrPoints.find((q) => q.id === end.id)
-  if (!qr) return null
-  const node = nearestCorridorNode(g, qr.floor, qr.position)
-  return node ? { node, floor: qr.floor, anchor: qr.position, roomId: null } : null
+  const entry = qrEntry(g, end.id)
+  return entry ? { node: entry.node, floor: entry.floor, anchor: entry.position, roomId: null } : null
 }
 
-/** Dijkstra over the walkway graph; returns the node ids from start to goal, or null when unreachable. */
-function shortestPath(g: Graph, from: string, to: string, opts: PlanOptions): { nodes: string[]; cost: number } | null {
+/**
+ * Dijkstra over the walkway graph from one node, honouring "avoid stairs". It stops at `stopAt` when given,
+ * otherwise it settles every reachable node. `best` holds the cost to each node reached, `prev` the way back.
+ */
+function dijkstra(g: Graph, from: string, opts: PlanOptions, stopAt?: string) {
   const best = new Map<string, number>([[from, 0]])
   const prev = new Map<string, string>()
   const done = new Set<string>()
@@ -128,11 +129,7 @@ function shortestPath(g: Graph, from: string, to: string, opts: PlanOptions): { 
       }
     }
     open.delete(cur)
-    if (cur === to) {
-      const nodes = [to]
-      while (nodes[0] !== from) nodes.unshift(prev.get(nodes[0]!)!)
-      return { nodes, cost: curCost }
-    }
+    if (cur === stopAt) break
     done.add(cur)
     for (const e of g.adj.get(cur) ?? []) {
       if (done.has(e.to)) continue
@@ -145,44 +142,29 @@ function shortestPath(g: Graph, from: string, to: string, opts: PlanOptions): { 
       }
     }
   }
-  return null
+  return { best, prev }
+}
+
+/** The node ids from start to goal and the cost, or null when unreachable. */
+function shortestPath(g: Graph, from: string, to: string, opts: PlanOptions): { nodes: string[]; cost: number } | null {
+  const { best, prev } = dijkstra(g, from, opts, to)
+  const cost = best.get(to)
+  if (cost === undefined) return null
+  const nodes = [to]
+  while (nodes[0] !== from) nodes.unshift(prev.get(nodes[0]!)!)
+  return { nodes, cost }
 }
 
 /** Walking cost (metre-equivalents) from one node to every node it can reach, honouring "avoid stairs". */
 export function costsFrom(g: Graph, from: string, opts: PlanOptions = {}): Map<string, number> {
-  const best = new Map<string, number>([[from, 0]])
-  const done = new Set<string>()
-  const open = new Set<string>([from])
-  while (open.size) {
-    let cur = ''
-    let curCost = Infinity
-    for (const id of open) {
-      const c = best.get(id)!
-      if (c < curCost) {
-        curCost = c
-        cur = id
-      }
-    }
-    open.delete(cur)
-    done.add(cur)
-    for (const e of g.adj.get(cur) ?? []) {
-      if (done.has(e.to)) continue
-      if (opts.avoidStairs && e.via && g.kindOfConnector.get(e.via) === 'stairs') continue
-      const c = curCost + e.cost
-      if (c < (best.get(e.to) ?? Infinity)) {
-        best.set(e.to, c)
-        open.add(e.to)
-      }
-    }
-  }
-  return best
+  return dijkstra(g, from, opts).best
 }
 
 /** Where a QR spot joins the walkway graph: its corridor node, and the straight walk to it in metres. */
-export function qrEntry(g: Graph, qrId: string): { node: string; floor: number; walk: number } | null {
+export function qrEntry(g: Graph, qrId: string): { node: string; floor: number; position: Point; walk: number } | null {
   const qr = g.data.qrPoints.find((q) => q.id === qrId)
   const node = qr ? nearestCorridorNode(g, qr.floor, qr.position) : null
-  return qr && node ? { node, floor: qr.floor, walk: dist(qr.position, g.pos.get(node)!) } : null
+  return qr && node ? { node, floor: qr.floor, position: qr.position, walk: dist(qr.position, g.pos.get(node)!) } : null
 }
 
 export interface RouteGeometry {

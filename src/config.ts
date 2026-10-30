@@ -1,5 +1,6 @@
 /** Values the owner supplies later; leave empty to switch the feature off. */
 export const config = {
+  /** The group's name for the About credit and the printed QR signs. While it is this placeholder, the signs print [GROUP NAME] (scripts/qr-sheet.mjs). */
   groupName: 'TU100 student group',
   /** GoatCounter site code (the part before .goatcounter.com). Empty: no script is loaded. */
   goatcounterCode: '',

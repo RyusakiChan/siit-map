@@ -180,7 +180,7 @@ export function RoomSheet() {
             </div>
           )}
           <div className="sheet-intro-text">
-            {other && <p className="room-other">{other}</p>}
+            {other && <p className="room-other" lang={lang === 'th' ? 'en' : 'th'}>{other}</p>}
             <dl className="details">
               {details.map(([k, v]) => v && (
                 <div key={k} className="detail">

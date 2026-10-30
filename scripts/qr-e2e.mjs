@@ -34,7 +34,6 @@ try {
       return { ctx, page }
     }
     const tag = (n) => `${size.name}-${n}`
-    const state = (page, fn) => page.evaluate(fn)
     const noOverflow = (page) => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
 
     // 1. The QR screen on each traced floor, one point per floor.
@@ -51,6 +50,19 @@ try {
       check((await page.locator('.here-back').count()) === 0, `${size.name}: no "Back to where I am" before moving`)
       check(await noOverflow(page), `${size.name}: no sideways scroll`)
       await page.screenshot({ path: join(out, `${tag(`01-${id}`)}.png`) })
+      await ctx.close()
+    }
+
+    // 1b. East and west facing points: the camera azimuth is minus the facing (a north-facing point cannot tell the sign).
+    for (const [id, facing] of [['f2-corr-se', 90], ['f2-corr-nw', 270]]) {
+      const { ctx, page } = await newPage()
+      await page.goto(`${base}#/at/${id}`)
+      await page.locator('.here-banner').waitFor()
+      await page.waitForFunction(() => window.__rig)
+      await page.waitForTimeout(1500)
+      const az = await page.evaluate(() => window.__rig.azimuthAngle)
+      const want = Math.atan2(Math.sin((-facing * Math.PI) / 180), Math.cos((-facing * Math.PI) / 180))
+      check(Math.abs(Math.atan2(Math.sin(az - want), Math.cos(az - want))) < 0.05, `${size.name}: ${id} looks ${facing}° (azimuth ${az.toFixed(2)})`)
       await ctx.close()
     }
 
@@ -78,6 +90,7 @@ try {
       await page.goto(`${base}#/at/f3-lift`)
       await page.locator('.near-row').first().waitFor()
       await page.waitForTimeout(1200)
+      await page.waitForFunction(() => window.__rig)
       // Move the map: the "Back to where I am" button appears, and brings the QR view back.
       await page.mouse.move(size.width / 2, size.height * 0.4)
       await page.evaluate(() => {

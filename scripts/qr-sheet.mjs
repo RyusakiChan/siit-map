@@ -11,13 +11,17 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const base = (process.env.QR_BASE ?? 'https://ryusakichan.github.io/siit-map/').replace(/\/?$/, '/')
 const data = JSON.parse(readFileSync(join(root, 'src/data/building.json'), 'utf8'))
 // The group name comes from the one config value the app also uses.
-const groupName = /groupName:\s*'([^']*)'/.exec(readFileSync(join(root, 'src/config.ts'), 'utf8'))?.[1] ?? '[GROUP NAME]'
+// While it is still the placeholder, the signs print [GROUP NAME].
+const PLACEHOLDER = 'TU100 student group'
+const configured = /groupName:\s*'([^']*)'/.exec(readFileSync(join(root, 'src/config.ts'), 'utf8'))?.[1]
+const groupName = configured && configured !== PLACEHOLDER ? configured : '[GROUP NAME]'
+if (configured === undefined) console.warn("warning: could not read groupName from src/config.ts (expected groupName: '...'), printing [GROUP NAME]")
 
 const points = data.qrPoints.filter((q) => !q.sample).sort((a, b) => a.floor - b.floor || a.id.localeCompare(b.id))
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /** One QR code as a single-path SVG with a 4-module quiet zone, error correction M. */
-export function qrSvg(url) {
+function qrSvg(url) {
   const qr = qrcode(0, 'M')
   qr.addData(url)
   qr.make()

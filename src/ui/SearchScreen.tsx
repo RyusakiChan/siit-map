@@ -263,6 +263,9 @@ export function SearchScreen() {
           {t('cancel')}
         </button>
       </div>
+      <p className="sr-only" role="status">
+        {typing ? `${t('rooms')} · ${results.rooms.length}, ${t('departments')} · ${results.departments.length}` : ''}
+      </p>
       <div className="screen-body">{body}</div>
       {typing && <div className="foot-note">{t('searchHelp')}</div>}
     </div>

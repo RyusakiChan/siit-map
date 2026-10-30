@@ -9,6 +9,7 @@ import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
 import { liftDoorGeometry, shadeExtrusion, stairsGeometry, STAIR_HEIGHT_RATIO } from './connectors'
+import { useT } from '../i18n'
 import { useAppStore, type FloorView } from '../state/store'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
@@ -759,15 +760,17 @@ function fitPose(view: FloorView, azimuth: number, polar: number, w: number, h: 
   }
 }
 
-const HERE_DIST = 22 // metres from the target: close enough to read the corridor
+const HERE_DIST = 46 // metres from the target: the lobby, the rooms around it and the corridor ahead (22 m filled the view with the first wall)
 const HERE_POLAR = (40 * Math.PI) / 180 // 40° from straight down = looking about 50° down
-const HERE_AHEAD = 3 // the camera aims this far ahead of the pin, so most of the view is what is in front
-const HERE_TOP = 216 // below the banner
+const HERE_AHEAD = 7 // the camera aims this far ahead of the pin, so most of the view is what is in front
+const HERE_TOP = 216 // below the banner, until the banner itself can be measured
 
 /** The camera for a QR spot: behind the pin, looking the way the scanner faces, centred a little ahead of it. */
 function herePose(here: { x: number; z: number; floor: number; facingDeg: number }, w: number, h: number, rect: Rect) {
   const f = THREE.MathUtils.degToRad(here.facingDeg)
-  const top = Math.min(Math.max(rect.top, HERE_TOP), rect.bottom - 120)
+  // The banner grows with a long place name or Thai text, so the picture starts under where it really ends.
+  const banner = document.querySelector('.here-banner')?.getBoundingClientRect().bottom
+  const top = Math.min(Math.max(rect.top, banner !== undefined ? banner + 12 : HERE_TOP), rect.bottom - 120)
   const tx = here.x + Math.sin(f) * HERE_AHEAD
   const tz = here.z - Math.cos(f) * HERE_AHEAD
   const ty = elevationOf(here.floor) + 1
@@ -983,9 +986,12 @@ function FrameBridge({ onReady }: { onReady: () => void }) {
 }
 
 export default function BuildingScene({ onReady }: { onReady: () => void }) {
+  const t = useT()
   return (
     <Canvas
       className="scene"
+      role="img"
+      aria-label={t('mapCanvasLabel')}
       frameloop="demand"
       dpr={[1, 1.75]}
       camera={{ position: [0, 120, 200], fov: FOV, near: 1, far: 900 }}

@@ -54,6 +54,11 @@ a {
   font-weight: 500;
 }
 
+/* Wrapper for the map controls: no box of its own, so they stay positioned against .app */
+.chrome {
+  display: contents;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -249,10 +254,10 @@ html {
   z-index: 30;
   left: 0;
   right: 0;
-  top: calc(74px + env(safe-area-inset-top));
+  top: calc(69px + env(safe-area-inset-top));
   display: flex;
   gap: 8px;
-  padding: 0 16px;
+  padding: 5px 16px; /* room for the chips' 44 px tap targets; the chips themselves do not move */
   overflow-x: auto;
   scrollbar-width: none;
   transition: opacity 0.15s linear;
@@ -273,6 +278,7 @@ html {
 }
 
 .chip {
+  position: relative;
   flex-shrink: 0;
   height: 36px;
   padding: 0 12px;
@@ -282,6 +288,13 @@ html {
   border-radius: 18px;
   font-size: 14px;
   white-space: nowrap;
+}
+
+/* Same look, 44 px tap target: the invisible strip adds 4 px above and below, inside the border. */
+.chip::after {
+  content: '';
+  position: absolute;
+  inset: -5px -1px; /* measured from the padding box, inside the 1 px border */
 }
 
 .chip svg {
@@ -1567,6 +1580,7 @@ html {
 }
 
 .ask-send {
+  position: relative;
   width: 40px;
   height: 40px;
   flex-shrink: 0;
@@ -1577,6 +1591,12 @@ html {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.ask-send::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
 }
 
 .ask-send:disabled {
@@ -1683,6 +1703,8 @@ html {
 }
 
 .route-from {
+  padding: 14px 0; /* room for the Change button's 44 px tap target; the margin cancels it */
+  margin: -14px 0;
   font-size: 13px;
   color: var(--muted);
   overflow: hidden;
@@ -1691,6 +1713,7 @@ html {
 }
 
 .route-change {
+  position: relative;
   border: 0;
   background: none;
   padding: 0;
@@ -1698,6 +1721,12 @@ html {
   font-weight: 600;
   color: var(--selected-label);
   text-decoration: underline;
+}
+
+.route-change::after {
+  content: '';
+  position: absolute;
+  inset: -14px -10px;
 }
 
 .route-step {
@@ -1940,6 +1969,8 @@ html.ask-open body {
 .near-chips {
   display: flex;
   gap: 8px;
+  padding: 5px 0; /* room for the chips' 44 px tap targets */
+  margin: -5px 0;
   overflow-x: auto;
   scrollbar-width: none;
   flex-shrink: 0;
@@ -2013,4 +2044,14 @@ html.ask-open body {
   margin: 12px 16px 0;
   font-size: 14px;
   color: var(--ink);
+}
+
+/* The Thai "All" label is longer than the button: a smaller size, never wrapped */
+.floor-all {
+  white-space: nowrap;
+}
+
+.lang-th .floor-all {
+  font-size: 11px;
+  letter-spacing: -0.02em;
 }

@@ -1,16 +1,16 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { buildingData as data } from '../data'
 import { deptOf, qrById, qrLabel, roomName } from '../data/lookup'
-import type { Room, RoomType } from '../data/types'
+import type { Room } from '../data/types'
 import { useT } from '../i18n'
 import { nearestPlaces, type NearPlace } from '../nav'
 import { go, routeHashPath } from '../router'
 import { useAppStore } from '../state/store'
 import { FacilityIcon } from '../scene/icons'
+import { hasIcon } from '../scene/iconTypes'
+import { categories } from './categories'
 import { DeptBadge } from './DeptBadge'
 import { CloseIcon, LocateIcon } from './Icons'
-
-const FACILITY_TYPES: RoomType[] = ['restroom', 'stairs', 'elevator', 'foodservice', 'library', 'lobby']
 
 /** "You are here · Floor 3 · Lift lobby": replaces the SAMPLE line under the chips while a QR spot is on show. */
 export function HereBanner() {
@@ -43,10 +43,13 @@ export function HereBanner() {
 
 function PlaceMark({ room }: { room: Room }) {
   const dept = deptOf(room)
-  if (FACILITY_TYPES.includes(room.type)) return <span className="near-mark"><FacilityIcon type={room.type} /></span>
+  if (hasIcon(room.type)) return <span className="near-mark"><FacilityIcon type={room.type} /></span>
   if (dept) return <span className="near-mark"><DeptBadge dept={dept} size={24} /></span>
   return <span className="near-mark near-dot" aria-hidden="true" />
 }
+
+/** The category tiles that double as quick picks on the Near you sheet. */
+const QUICK = ['restrooms', 'lifts', 'food']
 
 const startRoute = (qrId: string, room: Room) => go(routeHashPath(`@${qrId}`, room.id))
 
@@ -59,15 +62,14 @@ export function NearSheet() {
   const setPeekH = useAppStore((s) => s.setPeekH)
   const card = useRef<HTMLDivElement>(null)
   const id = here?.id ?? ''
-  const places = useMemo(() => nearestPlaces(id), [id])
-  const quick = useMemo(() => {
-    const pick = (types: RoomType[]) => nearestPlaces(id, { types, count: 1 })[0]
-    return [
-      { key: 'catRestrooms' as const, place: pick(['restroom']) },
-      { key: 'catLifts' as const, place: pick(['elevator', 'stairs']) },
-      { key: 'catFood' as const, place: pick(['foodservice']) },
-    ].filter((c) => c.place)
-  }, [id])
+  // One walk over the graph serves the list and the three quick picks.
+  const all = useMemo(() => nearestPlaces(id, { count: Infinity }), [id])
+  const places = all.slice(0, 5)
+  const quick = QUICK.flatMap((id) => {
+    const c = categories.find((x) => x.id === id)!
+    const place = all.find((p) => c.types.includes(p.room.type))
+    return place ? [{ key: c.labelKey, place }] : []
+  })
 
   // The map frames itself above the sheet, so the sheet reports its height.
   useLayoutEffect(() => {
@@ -102,7 +104,7 @@ export function NearSheet() {
       {quick.length > 0 && (
         <div className="near-chips" role="group" aria-label={t('nearChips')}>
           {quick.map((c) => (
-            <button key={c.key} type="button" className="chip" onClick={() => startRoute(here.id, c.place!.room)}>
+            <button key={c.key} type="button" className="chip" onClick={() => startRoute(here.id, c.place.room)}>
               {t(c.key)}
             </button>
           ))}

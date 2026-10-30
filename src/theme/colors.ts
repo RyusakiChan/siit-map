@@ -1,4 +1,6 @@
-import type { Room } from '../data/types'
+import { buildingData } from '../data'
+import { slotColor, type RoomColor } from './slots'
+import type { Department, Room } from '../data/types'
 
 /** Pastel Mauve tokens from docs/design/ui-spec.md. */
 export const tokens = {
@@ -19,28 +21,22 @@ export const tokens = {
   dimmedSide: '#D6CFD7',
 }
 
-export interface RoomColor {
-  top: string
-  side: string
-}
+export { slotColors, slotColor, type RoomColor } from './slots'
 
-const facility: RoomColor = { top: '#EADFEB', side: '#D2C4D3' }
-const circulation: RoomColor = { top: '#A89EA9', side: '#8F8490' }
+const facility: RoomColor = { top: '#EADFEB', side: '#D2C4D3', badge: tokens.muted }
+const circulation: RoomColor = { top: '#A89EA9', side: '#8F8490', badge: tokens.muted }
 
-/** Department colors, keyed by department id. */
-export const departmentColors: Record<string, RoomColor> = {
-  'sample-dept-a': { top: '#7CC8F8', side: '#5AAEE0' }, // sky
-  'sample-dept-b': { top: '#B9A3FF', side: '#9B84E6' }, // violet
-  'sample-dept-c': { top: '#5FDCC8', side: '#3FC0AC' }, // teal
-}
+export const deptColor = (dept: Pick<Department, 'colorSlot'> | undefined): RoomColor | undefined => slotColor(dept?.colorSlot)
+
+const deptBySlot = new Map(buildingData.departments.map((d) => [d.id, d]))
 
 export function roomColor(room: Room): RoomColor {
   if (room.type === 'stairs' || room.type === 'elevator') return circulation
-  if (room.departmentId) return departmentColors[room.departmentId] ?? facility
+  if (room.departmentId) return deptColor(deptBySlot.get(room.departmentId)) ?? facility
   return facility
 }
 
 /** Outline color of a department letter badge (falls back to the muted ink). */
 export function departmentBadgeColor(departmentId: string | null): string {
-  return (departmentId && departmentColors[departmentId]?.side) || tokens.muted
+  return (departmentId && deptColor(deptBySlot.get(departmentId))?.badge) || tokens.muted
 }

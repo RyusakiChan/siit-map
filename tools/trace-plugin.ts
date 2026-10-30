@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 import type { Plugin } from 'vite'
-import type { BuildingData } from '../src/data/types.ts'
-import { BACKUPS_KEPT, replaceFloor, type FloorSlice } from '../src/trace/saveFloor.ts'
+import type { BuildingData, Department } from '../src/data/types.ts'
+import { BACKUPS_KEPT, replaceDepartments, replaceFloor, type FloorSlice } from '../src/trace/saveFloor.ts'
 
 const stamp = (d: Date) => d.toISOString().replace(/[:.]/g, '-')
 
@@ -11,8 +11,17 @@ const stamp = (d: Date) => d.toISOString().replace(/[:.]/g, '-')
  * first (the newest BACKUPS_KEPT are kept). Returns the backup's path.
  */
 export function saveFloorToFile(file: string, backupsDir: string, slice: FloorSlice, now = new Date()): string {
+  return saveToFile(file, backupsDir, (current) => replaceFloor(current, slice), now)
+}
+
+/** Same as saveFloorToFile, for the building-wide department list. */
+export function saveDepartmentsToFile(file: string, backupsDir: string, departments: Department[], now = new Date()): string {
+  return saveToFile(file, backupsDir, (current) => replaceDepartments(current, departments), now)
+}
+
+function saveToFile(file: string, backupsDir: string, change: (d: BuildingData) => BuildingData, now: Date): string {
   const current = JSON.parse(readFileSync(file, 'utf8')) as BuildingData
-  const next = replaceFloor(current, slice) // throws before anything is written
+  const next = change(current) // throws before anything is written
   mkdirSync(backupsDir, { recursive: true })
   const backup = join(backupsDir, `building-${stamp(now)}.json`)
   writeFileSync(backup, readFileSync(file))
@@ -49,8 +58,8 @@ export function tracePlugin(): Plugin {
         req.on('end', () => {
           res.setHeader('content-type', 'application/json')
           try {
-            const slice = JSON.parse(body) as FloorSlice
-            const backup = saveFloorToFile(file, backups, slice)
+            const payload = JSON.parse(body) as FloorSlice | { departments: Department[] }
+            const backup = 'departments' in payload ? saveDepartmentsToFile(file, backups, payload.departments) : saveFloorToFile(file, backups, payload)
             res.end(JSON.stringify({ ok: true, backup: basename(backup) }))
           } catch (e) {
             res.statusCode = 400

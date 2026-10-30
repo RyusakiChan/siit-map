@@ -7,7 +7,7 @@ import { useT } from '../i18n'
 import { pick } from '../i18n'
 import { back, go } from '../router'
 import { useAppStore } from '../state/store'
-import { departmentColors, tokens } from '../theme/colors'
+import { deptColor, tokens } from '../theme/colors'
 import { typeLabelKey } from '../data/lookup'
 import type { RoomType } from '../data/types'
 import { BackIcon, ChevronIcon, CloseIcon, ExternalIcon } from './Icons'
@@ -33,7 +33,7 @@ export function DepartmentScreen({ id }: { id: string }) {
   const dept = deptById.get(id)
   if (!dept) return null
   const rooms = deptRooms(id).sort((a, b) => a.floor - b.floor || (a.number ?? '').localeCompare(b.number ?? ''))
-  const color = departmentColors[id]?.top ?? tokens.muted
+  const color = deptColor(dept)?.top ?? tokens.muted
   const second = lang === 'th' ? dept.name : dept.nameTh
   return (
     <div className="screen" role="dialog" aria-label={deptName(dept, lang)}>
@@ -159,7 +159,7 @@ export function KeySheet() {
         <ul className="list flush">
           {data.departments.map((d) => (
             <li key={d.id} className="key-row">
-              <span className="key-swatch" style={{ background: departmentColors[d.id]?.top }} aria-hidden="true" />
+              <span className="key-swatch" style={{ background: deptColor(d)?.top }} aria-hidden="true" />
               <DeptBadge dept={d} size={24} />
               <span>{pick(lang, d.name, d.nameTh)}</span>
             </li>

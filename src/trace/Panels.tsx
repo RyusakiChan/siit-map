@@ -18,7 +18,7 @@ const TOOLS: { id: Tool; label: string; hint: string }[] = [
 ]
 
 export function Toolbar() {
-  const { floor, setFloor, tool, setTool, undo, redo, past, future, draft } = useTrace()
+  const { floor, setFloor, tool, setTool, undo, redo, past, future, draft, showDepts, setShowDepts } = useTrace()
   return (
     <header className="bar">
       <strong className="brand">SIIT Map trace</strong>
@@ -36,6 +36,9 @@ export function Toolbar() {
             {t.label}
           </button>
         ))}
+      </div>
+      <div className="seg">
+        <button className={showDepts ? 'on' : ''} onClick={() => setShowDepts(!showDepts)}>Departments</button>
       </div>
       <div className="seg">
         <button onClick={undo} disabled={!past.length} title="Undo (Ctrl+Z)">Undo</button>

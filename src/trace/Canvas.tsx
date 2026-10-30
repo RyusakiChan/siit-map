@@ -329,7 +329,7 @@ export function Canvas() {
                   vectorEffect="non-scaling-stroke"
                   data-room={r.id}
                 />
-                <text x={c[0]} y={c[1]} fontSize={11 * px} className="label" textAnchor="middle" dominantBaseline="middle">
+                <text x={c[0]} y={c[1]} fontSize={11 * px} strokeWidth={3 * px} className="label" textAnchor="middle" dominantBaseline="middle">
                   {r.number || r.name || r.id.replace('r-', '')}
                 </text>
               </g>

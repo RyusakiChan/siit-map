@@ -5,7 +5,7 @@
 // traces two rooms, a corridor, two doors, a lift connector and a QR point, saves, and opens the app.
 // It WRITES src/data/building.json through the save endpoint, then restores it from the backup.
 import { chromium } from 'playwright-core'
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const out = process.argv[2] ?? 'trace-shots'
@@ -24,7 +24,7 @@ const A = { a: 13.9, b: 1.95, c: -1.6, d: 14.1 }
 const mapPx = (m, [x, z]) => [A.a * x + A.c * z + m.e, A.b * x + A.d * z + m.f]
 
 const browser = await chromium.launch({ channel: 'chrome' })
-let restoreFrom = null
+let restoreFrom = false
 try {
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } })
   const page = await ctx.newPage()
@@ -154,13 +154,38 @@ try {
   await state(() => window.__trace.getState().redo())
   check(await state(() => window.__trace.getState().draft.qrPoints.some((q) => q.id === 'test-trace-qr')), 'redo brings it back')
 
+  // 8b. Departments: add one, save it, give it to room A.
+  await tool('Select')
+  await page.getByRole('button', { name: 'Departments', exact: true }).click()
+  await page.getByLabel('New department name').fill('Test Department')
+  await page.getByRole('button', { name: 'Add', exact: true }).click()
+  const dform = page.getByTestId('dept-form')
+  await dform.getByLabel('Letter (1-2 capital letters, unique)').fill('T')
+  await dform.getByLabel('Summary', { exact: false }).fill('A made-up test department.')
+  await dform.getByLabel('Official page (https://…)').fill('http://not-secure.example')
+  check(await page.getByText(/must start with https/).isVisible(), 'a link without https:// is flagged')
+  await dform.getByLabel('Official page (https://…)').fill('https://example.com/test')
+  await dform.getByRole('radio', { name: 'Green' }).click()
+  check(await page.getByText(/must start with https/).count() === 0, 'the https problem clears')
+  check(await page.getByText('Write it in your own words').isVisible(), 'the summary hint is shown')
+  await page.getByRole('button', { name: 'Save departments' }).click()
+  await page.getByRole('status').filter({ hasText: 'Saved departments' }).waitFor()
+  let saved1 = JSON.parse(readFileSync(dataFile, 'utf8'))
+  const nd = saved1.departments.find((d) => d.name === 'Test Department')
+  check(nd && nd.id === 'd-test-department' && nd.colorSlot === 5 && nd.letter === 'T', 'department saved with id d-test-department, letter T, colour slot 5')
+  await page.screenshot({ path: join(out, '07-departments-panel.png') })
+  await page.getByRole('button', { name: 'Close' }).click()
+  await click([-15, -9])
+  await form.getByLabel('Department').selectOption('d-test-department')
+  check((await state(() => window.__trace.getState().draft.rooms.find((r) => r.id === 'r-f2-1').departmentId)) === 'd-test-department', 'room A uses the new department')
+
   // 9. Save.
   const before = new Set(existingBackups())
   await page.getByRole('button', { name: 'Save floor' }).click()
   await page.getByRole('status').filter({ hasText: 'Saved floor 2' }).waitFor()
   const added = existingBackups().filter((f) => !before.has(f))
   check(added.length === 1, 'a backup file was written')
-  restoreFrom = join('.trace-backups', added[0])
+  restoreFrom = true
   const saved = JSON.parse(readFileSync(dataFile, 'utf8'))
   check(saved.floors.find((f) => f.level === 2).traced === true && saved.building.sampleData === true, 'floor 2 marked traced; other floors still sample')
   check(saved.rooms.filter((r) => r.floor === 2).length === 2 && saved.rooms.filter((r) => r.floor === 3).length > 5, 'only floor 2 rooms were replaced')
@@ -173,7 +198,17 @@ try {
   await app.getByText('Test room A').first().waitFor({ timeout: 15000 })
   await app.waitForTimeout(1500)
   await app.screenshot({ path: join(out, '05-app-floor2.png') })
+  const letterColor = await app.evaluate(() => getComputedStyle(document.querySelector('.dept-badge')).borderColor)
+  check(letterColor === 'rgb(111, 158, 103)', 'the room card badge uses the slot 5 badge colour (' + letterColor + ')')
   console.log('ok: the app at / shows the traced room on floor 2')
+
+  // 10b. Delete is blocked while the department is in use.
+  await page.getByRole('button', { name: 'Departments', exact: true }).click()
+  await page.locator('.dept-row', { hasText: 'Test Department' }).click()
+  check((await page.locator('.dept-row', { hasText: 'Test Department' }).innerText()).includes('1 room'), 'the list shows 1 room using it')
+  await page.getByRole('button', { name: 'Delete department' }).click()
+  check(await page.getByRole('alert').filter({ hasText: '1 room still uses' }).isVisible(), 'delete is blocked while a room uses the department')
+  await page.screenshot({ path: join(out, '08-delete-blocked.png') })
 
   // 11. One check at 1280x800.
   const small = await browser.newContext({ viewport: { width: 1280, height: 800 } })
@@ -187,10 +222,8 @@ try {
   await p2.screenshot({ path: join(out, '06-1280x800.png') })
 } finally {
   await browser.close()
-  if (restoreFrom) {
-    copyFileSync(restoreFrom, dataFile)
-    console.log(`restored ${dataFile} from ${restoreFrom}`)
-  } else writeFileSync(dataFile, original)
+  writeFileSync(dataFile, original)
+  console.log(`restored ${dataFile}`)
 }
 
 function existingBackups() {

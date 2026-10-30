@@ -4,7 +4,7 @@ import { deptById, deptName, roomById, roomName } from '../data/lookup'
 import { useT } from '../i18n'
 import { go } from '../router'
 import { useAppStore, type FloorView } from '../state/store'
-import { departmentColors } from '../theme/colors'
+import { deptColor } from '../theme/colors'
 import { categories, toFilter } from './categories'
 import { CloseIcon, InfoIcon, SearchIcon } from './Icons'
 
@@ -113,8 +113,8 @@ export function BottomBar() {
         <span className="hint">{hereFloor ? t('youAreHere', { n: hereFloor }) : t('tapHint')}</span>
         <button type="button" className="key-btn" onClick={() => setKeyOpen(true)}>
           <span className="key-swatches" aria-hidden="true">
-            {Object.values(departmentColors).map((c) => (
-              <span key={c.top} style={{ background: c.top }} />
+            {[...new Set(data.departments.map((d) => deptColor(d)?.top).filter(Boolean))].map((top) => (
+              <span key={top} style={{ background: top }} />
             ))}
           </span>
           {t('key')}

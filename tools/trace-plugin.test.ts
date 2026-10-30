@@ -4,14 +4,14 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { findShipped } from '../scripts/check-not-shipped.mjs'
 import type { BuildingData } from '../src/data/types'
-import { saveFloorToFile } from './trace-plugin'
+import { saveDepartmentsToFile, saveFloorToFile } from './trace-plugin'
 
 const sample: BuildingData = {
   building: { name: 'B', campus: 'C', sampleData: true, floorHeight: 4, outline: [[0, 0], [20, 0], [20, 10], [0, 10]] },
   floors: [{ level: 1, label: 'Floor 1', elevation: 0 }, { level: 2, label: 'Floor 2', elevation: 4 }],
-  departments: [],
+  departments: [{ id: 'd-old', name: 'Old', letter: 'O', colorSlot: 0 }],
   rooms: [
-    { id: 'sample-1', number: null, name: 'Sample A', floor: 1, departmentId: null, type: 'office', polygon: [[1, 1], [5, 1], [5, 5]], door: 'n1' },
+    { id: 'sample-1', number: null, name: 'Sample A', floor: 1, departmentId: 'd-old', type: 'office', polygon: [[1, 1], [5, 1], [5, 5]], door: 'n1' },
     { id: 'sample-2', number: null, name: 'Sample B', floor: 2, departmentId: null, type: 'office', polygon: [[1, 1], [5, 1], [5, 5]], door: 'n2' },
   ],
   qrPoints: [],
@@ -78,6 +78,24 @@ describe('saveFloorToFile', () => {
     const names = readdirSync(backups).sort()
     expect(names).toHaveLength(20)
     expect(names[0]).toContain('10-00-03')
+  })
+})
+
+describe('saveDepartmentsToFile', () => {
+  it('replaces the department list with a backup, keeps rooms, and refuses to drop a used department', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'trace-d-'))
+    const file = join(dir, 'building.json')
+    writeFileSync(file, JSON.stringify(sample, null, 2) + '\n')
+    const backups = join(dir, 'backups')
+    const added = [...sample.departments, { id: 'd-new', name: 'New', letter: 'N', colorSlot: 5 }]
+    const backup = saveDepartmentsToFile(file, backups, added)
+    const out = JSON.parse(readFileSync(file, 'utf8')) as BuildingData
+    expect(out.departments.map((d) => d.id)).toEqual(['d-old', 'd-new'])
+    expect(out.rooms).toHaveLength(2)
+    expect(out.usedIds).toContain('d-new')
+    expect(JSON.parse(readFileSync(backup, 'utf8'))).toEqual(sample)
+    expect(() => saveDepartmentsToFile(file, backups, [])).toThrow(/still used/)
+    expect(JSON.parse(readFileSync(file, 'utf8')).departments).toHaveLength(2)
   })
 })
 

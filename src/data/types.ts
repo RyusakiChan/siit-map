@@ -32,6 +32,8 @@ export interface Department {
   aliasesTh?: string[]
   summary?: string
   url?: string
+  /** Index into the 8 department colour slots (src/theme/colors.ts); two departments may share one. */
+  colorSlot: number
 }
 
 /** IMDF unit categories (OGC 20-094) where they fit; `other` is our own fallback. */

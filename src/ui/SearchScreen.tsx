@@ -8,7 +8,7 @@ import { go } from '../router'
 import { roomsOfTypes, search } from '../search'
 import { readStore, writeStore } from '../storage'
 import { useAppStore } from '../state/store'
-import { departmentColors, roomColor, tokens } from '../theme/colors'
+import { deptColor, roomColor, tokens } from '../theme/colors'
 import { categories, moreIcon, toFilter } from './categories'
 import { ChevronIcon, ClockIcon, SearchIcon } from './Icons'
 
@@ -84,7 +84,7 @@ function DeptRow({ dept, lang, t }: { dept: Department; lang: Lang; t: T }) {
           go(`/dept/${dept.id}`)
         }}
       >
-        <span className="row-swatch" style={{ background: departmentColors[dept.id]?.top ?? tokens.muted }} aria-hidden="true" />
+        <span className="row-swatch" style={{ background: deptColor(dept)?.top ?? tokens.muted }} aria-hidden="true" />
         <span className="row-main">
           <span className="row-title">{deptName(dept, lang)}</span>
           <span className="row-sub">

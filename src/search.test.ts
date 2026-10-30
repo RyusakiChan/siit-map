@@ -31,7 +31,8 @@ describe('search', () => {
 
   it('lists rooms by type', () => {
     const rooms = roomsOfTypes(['restroom'], data)
-    expect(rooms.length).toBe(5)
+    expect(rooms.length).toBe(data.rooms.filter((r) => r.type === 'restroom').length)
+    expect(rooms.length).toBeGreaterThan(3)
     expect(rooms.every((r) => r.type === 'restroom')).toBe(true)
   })
 })

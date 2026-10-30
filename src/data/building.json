@@ -78,7 +78,60 @@
     {
       "level": 3,
       "label": "Floor 3",
-      "elevation": 8
+      "elevation": 8,
+      "voids": [
+        [
+          [
+            -20.48,
+            -11.12
+          ],
+          [
+            7.41,
+            -11.39
+          ],
+          [
+            7.49,
+            13.28
+          ],
+          [
+            -5.92,
+            13.1
+          ],
+          [
+            -5.94,
+            10.35
+          ],
+          [
+            -7.91,
+            10.33
+          ],
+          [
+            -7.93,
+            7.66
+          ],
+          [
+            -14.98,
+            7.61
+          ],
+          [
+            -14.95,
+            10.25
+          ],
+          [
+            -17.08,
+            10.23
+          ],
+          [
+            -17.05,
+            12.95
+          ],
+          [
+            -20.18,
+            12.91
+          ]
+        ]
+      ],
+      "traced": true
     },
     {
       "level": 4,
@@ -124,6 +177,32 @@
       "nameTh": "ภาควิชาตัวอย่าง C",
       "summary": "A made-up department used to test the map. It is not a real SIIT department.",
       "colorSlot": 2
+    },
+    {
+      "id": "d-cet",
+      "name": "School of Civil Engineering and Technology",
+      "letter": "CE",
+      "colorSlot": 3,
+      "aliases": [
+        "CET",
+        "Civil Engineering"
+      ],
+      "summary": "One of SIIT’s founding schools. It teaches civil engineering, with study areas in structures, concrete and materials, soil and foundations, water resources, transport and construction management.",
+      "url": "https://www.siit.tu.ac.th/about/schools/cet"
+    },
+    {
+      "id": "d-cgs",
+      "name": "School of Integrated Science and Innovation",
+      "letter": "IS",
+      "colorSlot": 4,
+      "aliases": [
+        "ISI",
+        "CGS",
+        "Department of Common and Graduate Studies",
+        "Common and Graduate Studies"
+      ],
+      "summary": "Brings mathematics, science and cross-subject innovation together, including dual-degree options and research tracks. The 2017 plan and some door plates still call it the Department of Common and Graduate Studies (CGS).",
+      "url": "https://www.siit.tu.ac.th/about/schools/isi"
     }
   ],
   "rooms": [
@@ -994,391 +1073,6 @@
       "door": "f2-door-stairs-e"
     },
     {
-      "id": "sample-f3-library",
-      "number": null,
-      "name": "Sample Library",
-      "nameTh": "ห้องสมุดตัวอย่าง",
-      "departmentId": null,
-      "type": "library",
-      "polygon": [
-        [
-          10.25,
-          5.25
-        ],
-        [
-          30.75,
-          5.25
-        ],
-        [
-          30.75,
-          28.75
-        ],
-        [
-          10.25,
-          28.75
-        ]
-      ],
-      "aliases": [
-        "study room"
-      ],
-      "aliasesTh": [
-        "อ่านหนังสือ"
-      ],
-      "popular": true,
-      "hours": "Sample hours 09:00–18:00",
-      "floor": 3,
-      "door": "f3-door-library"
-    },
-    {
-      "id": "sample-cla-3-01",
-      "number": "3-01",
-      "name": "Sample Classroom 3-01",
-      "nameTh": "ห้องเรียนตัวอย่าง 3-01",
-      "departmentId": "sample-dept-c",
-      "type": "classroom",
-      "polygon": [
-        [
-          -30.75,
-          5.25
-        ],
-        [
-          -20.25,
-          5.25
-        ],
-        [
-          -20.25,
-          28.75
-        ],
-        [
-          -30.75,
-          28.75
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-cla-3-01"
-    },
-    {
-      "id": "sample-off-3-02",
-      "number": "3-02",
-      "name": "Sample Office 3-02",
-      "departmentId": "sample-dept-a",
-      "type": "office",
-      "polygon": [
-        [
-          -19.75,
-          5.25
-        ],
-        [
-          -8.25,
-          5.25
-        ],
-        [
-          -8.25,
-          28.75
-        ],
-        [
-          -19.75,
-          28.75
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-off-3-02"
-    },
-    {
-      "id": "sample-lab-3-03",
-      "number": "3-03",
-      "name": "Sample Lab 3-03",
-      "nameTh": "ห้องปฏิบัติการตัวอย่าง 3-03",
-      "departmentId": "sample-dept-b",
-      "type": "laboratory",
-      "polygon": [
-        [
-          -7.75,
-          5.25
-        ],
-        [
-          -0.25,
-          5.25
-        ],
-        [
-          -0.25,
-          28.75
-        ],
-        [
-          -7.75,
-          28.75
-        ]
-      ],
-      "aliases": [
-        "computer lab"
-      ],
-      "floor": 3,
-      "door": "f3-door-lab-3-03"
-    },
-    {
-      "id": "sample-off-3-04",
-      "number": "3-04",
-      "name": "Sample Office 3-04",
-      "departmentId": "sample-dept-b",
-      "type": "office",
-      "polygon": [
-        [
-          -31.75,
-          -27.75
-        ],
-        [
-          -21.25,
-          -27.75
-        ],
-        [
-          -21.25,
-          -5.25
-        ],
-        [
-          -31.75,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-off-3-04"
-    },
-    {
-      "id": "sample-cla-3-05",
-      "number": "3-05",
-      "name": "Sample Classroom 3-05",
-      "nameTh": "ห้องเรียนตัวอย่าง 3-05",
-      "departmentId": "sample-dept-a",
-      "type": "classroom",
-      "polygon": [
-        [
-          -20.75,
-          -27.75
-        ],
-        [
-          -10.25,
-          -27.75
-        ],
-        [
-          -10.25,
-          -5.25
-        ],
-        [
-          -20.75,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-cla-3-05"
-    },
-    {
-      "id": "sample-lab-3-06",
-      "number": "3-06",
-      "name": "Sample Lab 3-06",
-      "departmentId": "sample-dept-c",
-      "type": "laboratory",
-      "polygon": [
-        [
-          0.25,
-          -27.75
-        ],
-        [
-          9.75,
-          -27.75
-        ],
-        [
-          9.75,
-          -5.25
-        ],
-        [
-          0.25,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "computer lab"
-      ],
-      "floor": 3,
-      "door": "f3-door-lab-3-06"
-    },
-    {
-      "id": "sample-cla-3-07",
-      "number": "3-07",
-      "name": "Sample Classroom 3-07",
-      "nameTh": "ห้องเรียนตัวอย่าง 3-07",
-      "departmentId": "sample-dept-b",
-      "type": "classroom",
-      "polygon": [
-        [
-          10.25,
-          -27.75
-        ],
-        [
-          19.75,
-          -27.75
-        ],
-        [
-          19.75,
-          -5.25
-        ],
-        [
-          10.25,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-cla-3-07"
-    },
-    {
-      "id": "sample-off-3-08",
-      "number": "3-08",
-      "name": "Sample Office 3-08",
-      "departmentId": "sample-dept-a",
-      "type": "office",
-      "polygon": [
-        [
-          20.25,
-          -27.75
-        ],
-        [
-          25.75,
-          -27.75
-        ],
-        [
-          25.75,
-          -5.25
-        ],
-        [
-          20.25,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-off-3-08"
-    },
-    {
-      "id": "sample-f3-restroom",
-      "number": null,
-      "name": "Sample Restrooms F3",
-      "nameTh": "ห้องน้ำตัวอย่าง ชั้น 3",
-      "departmentId": null,
-      "type": "restroom",
-      "polygon": [
-        [
-          -9.75,
-          -27.75
-        ],
-        [
-          -4.25,
-          -27.75
-        ],
-        [
-          -4.25,
-          -5.25
-        ],
-        [
-          -9.75,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "toilet",
-        "wc"
-      ],
-      "aliasesTh": [
-        "ห้องส้วม"
-      ],
-      "popular": false,
-      "floor": 3,
-      "door": "f3-door-restroom"
-    },
-    {
-      "id": "sample-f3-lift",
-      "number": null,
-      "name": "Sample Lift F3",
-      "nameTh": "ลิฟต์ตัวอย่าง ชั้น 3",
-      "departmentId": null,
-      "type": "elevator",
-      "polygon": [
-        [
-          -3.75,
-          -27.75
-        ],
-        [
-          -0.25,
-          -27.75
-        ],
-        [
-          -0.25,
-          -5.25
-        ],
-        [
-          -3.75,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "elevator"
-      ],
-      "floor": 3,
-      "door": "f3-door-lift"
-    },
-    {
-      "id": "sample-f3-stairs-w",
-      "number": null,
-      "name": "Sample Stairs West F3",
-      "nameTh": "บันไดตัวอย่างฝั่งตะวันตก",
-      "departmentId": null,
-      "type": "stairs",
-      "polygon": [
-        [
-          -36.75,
-          -27.75
-        ],
-        [
-          -32.25,
-          -27.75
-        ],
-        [
-          -32.25,
-          -5.25
-        ],
-        [
-          -36.75,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-stairs-w"
-    },
-    {
-      "id": "sample-f3-stairs-e",
-      "number": null,
-      "name": "Sample Stairs East F3",
-      "nameTh": "บันไดตัวอย่างฝั่งตะวันออก",
-      "departmentId": null,
-      "type": "stairs",
-      "polygon": [
-        [
-          26.25,
-          -27.75
-        ],
-        [
-          30.75,
-          -27.75
-        ],
-        [
-          30.75,
-          -5.25
-        ],
-        [
-          26.25,
-          -5.25
-        ]
-      ],
-      "floor": 3,
-      "door": "f3-door-stairs-e"
-    },
-    {
       "id": "sample-lab-4-01",
       "number": "4-01",
       "name": "Sample Lab 4-01",
@@ -2237,6 +1931,724 @@
       ],
       "floor": 5,
       "door": "f5-door-stairs-e"
+    },
+    {
+      "id": "f3-1-301",
+      "number": "1-301",
+      "name": "Computer Lab",
+      "nameTh": "ห้องปฏิบัติการคอมพิวเตอร์",
+      "floor": 3,
+      "departmentId": null,
+      "type": "laboratory",
+      "polygon": [
+        [
+          -7.68,
+          17.84
+        ],
+        [
+          8.08,
+          17.89
+        ],
+        [
+          8.13,
+          31.69
+        ],
+        [
+          3.23,
+          31.56
+        ],
+        [
+          -7.65,
+          31
+        ]
+      ],
+      "photo": "photos/1-301-entrance.webp",
+      "door": "f3-d1"
+    },
+    {
+      "id": "f3-1-302",
+      "number": "1-302",
+      "name": "Computer and Audiovisual Center",
+      "floor": 3,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          -22.62,
+          16.57
+        ],
+        [
+          -15.76,
+          16.52
+        ],
+        [
+          -15.7,
+          28.36
+        ],
+        [
+          -22.46,
+          28.29
+        ]
+      ],
+      "door": "f3-d2"
+    },
+    {
+      "id": "f3-1-303",
+      "number": "1-303",
+      "name": "Virtual Computer Lab",
+      "nameTh": "ห้องปฏิบัติการคอมพิวเตอร์เสมือน",
+      "floor": 3,
+      "departmentId": null,
+      "type": "laboratory",
+      "polygon": [
+        [
+          -27.84,
+          16.19
+        ],
+        [
+          -23.49,
+          16.26
+        ],
+        [
+          -23.33,
+          28.61
+        ],
+        [
+          -15.82,
+          28.82
+        ],
+        [
+          -15.79,
+          30.92
+        ],
+        [
+          -21.05,
+          31.01
+        ],
+        [
+          -27.62,
+          30.81
+        ]
+      ],
+      "door": "f3-d3"
+    },
+    {
+      "id": "f3-1-304",
+      "number": "1-304",
+      "name": "Computer Lab",
+      "nameTh": "ห้องปฏิบัติการคอมพิวเตอร์",
+      "floor": 3,
+      "departmentId": null,
+      "type": "laboratory",
+      "polygon": [
+        [
+          -38.86,
+          21.97
+        ],
+        [
+          -38.81,
+          11.5
+        ],
+        [
+          -25.57,
+          11.66
+        ],
+        [
+          -25.52,
+          15.43
+        ],
+        [
+          -28.29,
+          15.73
+        ],
+        [
+          -28.36,
+          30.87
+        ],
+        [
+          -31.28,
+          30.79
+        ],
+        [
+          -31.48,
+          21.96
+        ]
+      ],
+      "door": "f3-d4"
+    },
+    {
+      "id": "f3-1-305",
+      "number": "1-305",
+      "name": "Computer Lab",
+      "nameTh": "ห้องปฏิบัติการคอมพิวเตอร์",
+      "floor": 3,
+      "departmentId": null,
+      "type": "laboratory",
+      "polygon": [
+        [
+          -38.81,
+          11.25
+        ],
+        [
+          -38.58,
+          1.49
+        ],
+        [
+          -25.72,
+          1.52
+        ],
+        [
+          -25.58,
+          11.41
+        ]
+      ],
+      "door": "f3-d5"
+    },
+    {
+      "id": "f3-1-306-307",
+      "number": "1-306/1-307",
+      "name": "Graduate Room",
+      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "aliases": [
+        "1-306",
+        "1-307"
+      ],
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -38.83,
+          -12.21
+        ],
+        [
+          -25.84,
+          -12.18
+        ],
+        [
+          -25.73,
+          0.48
+        ],
+        [
+          -38.52,
+          0.38
+        ]
+      ],
+      "door": "f3-d6"
+    },
+    {
+      "id": "f3-1-308",
+      "number": "1-308",
+      "name": "Copy Center",
+      "nameTh": "ศูนย์ถ่ายเอกสาร",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -38.89,
+          -29.83
+        ],
+        [
+          -33.16,
+          -29.79
+        ],
+        [
+          -33.12,
+          -15.45
+        ],
+        [
+          -38.89,
+          -15.52
+        ]
+      ],
+      "door": "f3-d7"
+    },
+    {
+      "id": "f3-1-309",
+      "number": "1-309",
+      "name": "Graduate Room",
+      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -32.91,
+          -29.79
+        ],
+        [
+          -27.11,
+          -29.75
+        ],
+        [
+          -27.03,
+          -15.38
+        ],
+        [
+          -32.87,
+          -15.45
+        ]
+      ],
+      "door": "f3-d8"
+    },
+    {
+      "id": "f3-1-310",
+      "number": "1-310",
+      "name": "Graduate Room",
+      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -26.86,
+          -29.75
+        ],
+        [
+          -20.98,
+          -29.71
+        ],
+        [
+          -20.87,
+          -15.31
+        ],
+        [
+          -26.78,
+          -15.38
+        ]
+      ],
+      "door": "f3-d9"
+    },
+    {
+      "id": "f3-1-311",
+      "number": "1-311",
+      "name": "Graduate Room",
+      "nameTh": "ห้องนักศึกษาบัณฑิต",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -20.73,
+          -29.71
+        ],
+        [
+          -14.78,
+          -29.67
+        ],
+        [
+          -14.63,
+          -15.24
+        ],
+        [
+          -20.62,
+          -15.31
+        ]
+      ],
+      "door": "f3-d10"
+    },
+    {
+      "id": "f3-1-312",
+      "number": "1-312",
+      "name": "Classroom",
+      "nameTh": "ห้องเรียน",
+      "floor": 3,
+      "departmentId": null,
+      "type": "classroom",
+      "polygon": [
+        [
+          -14.01,
+          -29.64
+        ],
+        [
+          -7.09,
+          -29.65
+        ],
+        [
+          -6.98,
+          -15.1
+        ],
+        [
+          -13.86,
+          -15.11
+        ]
+      ],
+      "door": "f3-d11"
+    },
+    {
+      "id": "f3-1-313",
+      "number": "1-313",
+      "name": "Classroom",
+      "nameTh": "ห้องเรียน",
+      "floor": 3,
+      "departmentId": null,
+      "type": "classroom",
+      "polygon": [
+        [
+          -6.84,
+          -29.65
+        ],
+        [
+          0.17,
+          -29.67
+        ],
+        [
+          0.25,
+          -15.08
+        ],
+        [
+          -6.73,
+          -15.09
+        ]
+      ],
+      "door": "f3-d12"
+    },
+    {
+      "id": "f3-1-315",
+      "number": "1-315",
+      "name": "CET Office",
+      "floor": 3,
+      "departmentId": "d-cet",
+      "type": "office",
+      "polygon": [
+        [
+          15.98,
+          -22.89
+        ],
+        [
+          32.27,
+          -23.09
+        ],
+        [
+          32.18,
+          -3.7
+        ],
+        [
+          15.99,
+          -3.57
+        ]
+      ],
+      "door": "f3-d13"
+    },
+    {
+      "id": "f3-1-316",
+      "number": "1-316",
+      "name": "CET/CGS Office",
+      "aliases": [
+        "CET/ISI Office"
+      ],
+      "floor": 3,
+      "departmentId": null,
+      "departmentIds": [
+        "d-cet",
+        "d-cgs"
+      ],
+      "type": "office",
+      "polygon": [
+        [
+          15.99,
+          -2.77
+        ],
+        [
+          32.17,
+          -2.81
+        ],
+        [
+          32.12,
+          9.24
+        ],
+        [
+          16,
+          9.18
+        ]
+      ],
+      "door": "f3-d14"
+    },
+    {
+      "id": "f3-1-317",
+      "number": "1-317",
+      "name": "CGS Office",
+      "aliases": [
+        "ISI Office"
+      ],
+      "floor": 3,
+      "departmentId": "d-cgs",
+      "type": "office",
+      "polygon": [
+        [
+          16,
+          9.98
+        ],
+        [
+          32.11,
+          10.14
+        ],
+        [
+          32.26,
+          32.1
+        ],
+        [
+          16.01,
+          31.61
+        ]
+      ],
+      "door": "f3-d15"
+    },
+    {
+      "id": "f3-1-318",
+      "number": "1-318",
+      "name": "Meeting Room",
+      "nameTh": "ห้องประชุม",
+      "floor": 3,
+      "departmentId": null,
+      "type": "conferenceroom",
+      "polygon": [
+        [
+          11.07,
+          23.01
+        ],
+        [
+          15.13,
+          23.1
+        ],
+        [
+          15.14,
+          31.67
+        ],
+        [
+          11.09,
+          31.55
+        ]
+      ],
+      "door": "f3-d16"
+    },
+    {
+      "id": "f3-1-319",
+      "number": "1-319",
+      "name": "Room 1-319",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          8.87,
+          18.13
+        ],
+        [
+          11.1,
+          18.17
+        ],
+        [
+          11.11,
+          22.09
+        ],
+        [
+          8.88,
+          22.04
+        ]
+      ],
+      "door": "f3-d17"
+    },
+    {
+      "id": "f3-restroom-top-mid",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 3,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          0.92,
+          -29.68
+        ],
+        [
+          8.06,
+          -29.88
+        ],
+        [
+          8.08,
+          -22.52
+        ],
+        [
+          0.96,
+          -22.38
+        ]
+      ],
+      "door": "f3-d18"
+    },
+    {
+      "id": "f3-restroom-top-right",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 3,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          11.79,
+          -29.42
+        ],
+        [
+          19.17,
+          -29.62
+        ],
+        [
+          19.17,
+          -25.53
+        ],
+        [
+          11.8,
+          -25.37
+        ]
+      ],
+      "door": "f3-d19"
+    },
+    {
+      "id": "f3-restroom-bottom",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 3,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          -15.42,
+          24.26
+        ],
+        [
+          -7.92,
+          24.44
+        ],
+        [
+          -7.86,
+          30.98
+        ],
+        [
+          -10.93,
+          30.82
+        ],
+        [
+          -15.35,
+          30.91
+        ]
+      ],
+      "door": "f3-d20"
+    },
+    {
+      "id": "f3-stairs-top-mid",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 3,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          1.91,
+          -20.32
+        ],
+        [
+          7.46,
+          -20.42
+        ],
+        [
+          7.48,
+          -14.39
+        ],
+        [
+          1.95,
+          -14.33
+        ]
+      ],
+      "door": "f3-d21"
+    },
+    {
+      "id": "f3-stairs-top-right",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 3,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          26.71,
+          -23.69
+        ],
+        [
+          26.73,
+          -29.68
+        ],
+        [
+          32.43,
+          -29.83
+        ],
+        [
+          32.41,
+          -23.81
+        ]
+      ],
+      "door": "f3-d22"
+    },
+    {
+      "id": "f3-stairs-bottom",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 3,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          -14.63,
+          16.97
+        ],
+        [
+          -9.17,
+          17.07
+        ],
+        [
+          -9.12,
+          23.28
+        ],
+        [
+          -14.57,
+          23.16
+        ]
+      ],
+      "door": "f3-d23"
+    },
+    {
+      "id": "f3-lifts",
+      "number": null,
+      "name": "Lifts",
+      "nameTh": "ลิฟต์",
+      "floor": 3,
+      "departmentId": null,
+      "type": "elevator",
+      "polygon": [
+        [
+          -14.33,
+          8.18
+        ],
+        [
+          -8.57,
+          8.23
+        ],
+        [
+          -8.54,
+          11.83
+        ],
+        [
+          -14.29,
+          11.76
+        ]
+      ],
+      "door": "f3-d24"
     }
   ],
   "qrPoints": [
@@ -2297,15 +2709,6 @@
       "type": "drinkingfountain"
     },
     {
-      "id": "sample-f3-water",
-      "floor": 3,
-      "position": [
-        -7,
-        -2
-      ],
-      "type": "drinkingfountain"
-    },
-    {
       "id": "sample-f4-water",
       "floor": 4,
       "position": [
@@ -2333,13 +2736,13 @@
       "type": "prayerroom"
     },
     {
-      "id": "sample-f3-charging",
+      "id": "f3-prayer-1-308",
       "floor": 3,
       "position": [
-        15,
-        12
+        -36.02,
+        -15.84
       ],
-      "type": "powerchargingstation"
+      "type": "prayerroom"
     }
   ],
   "walkways": {
@@ -2771,214 +3174,6 @@
       {
         "id": "f2-c285",
         "floor": 2,
-        "position": [
-          28.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-library",
-        "floor": 3,
-        "position": [
-          20.5,
-          5
-        ]
-      },
-      {
-        "id": "f3-c205",
-        "floor": 3,
-        "position": [
-          20.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-cla-3-01",
-        "floor": 3,
-        "position": [
-          -25.5,
-          5
-        ]
-      },
-      {
-        "id": "f3-cm255",
-        "floor": 3,
-        "position": [
-          -25.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-off-3-02",
-        "floor": 3,
-        "position": [
-          -14,
-          5
-        ]
-      },
-      {
-        "id": "f3-cm140",
-        "floor": 3,
-        "position": [
-          -14,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-lab-3-03",
-        "floor": 3,
-        "position": [
-          -4,
-          5
-        ]
-      },
-      {
-        "id": "f3-cm40",
-        "floor": 3,
-        "position": [
-          -4,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-off-3-04",
-        "floor": 3,
-        "position": [
-          -26.5,
-          -5
-        ]
-      },
-      {
-        "id": "f3-cm265",
-        "floor": 3,
-        "position": [
-          -26.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-cla-3-05",
-        "floor": 3,
-        "position": [
-          -15.5,
-          -5
-        ]
-      },
-      {
-        "id": "f3-cm155",
-        "floor": 3,
-        "position": [
-          -15.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-lab-3-06",
-        "floor": 3,
-        "position": [
-          5,
-          -5
-        ]
-      },
-      {
-        "id": "f3-c50",
-        "floor": 3,
-        "position": [
-          5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-cla-3-07",
-        "floor": 3,
-        "position": [
-          15,
-          -5
-        ]
-      },
-      {
-        "id": "f3-c150",
-        "floor": 3,
-        "position": [
-          15,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-off-3-08",
-        "floor": 3,
-        "position": [
-          23,
-          -5
-        ]
-      },
-      {
-        "id": "f3-c230",
-        "floor": 3,
-        "position": [
-          23,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-restroom",
-        "floor": 3,
-        "position": [
-          -7,
-          -5
-        ]
-      },
-      {
-        "id": "f3-cm70",
-        "floor": 3,
-        "position": [
-          -7,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-lift",
-        "floor": 3,
-        "position": [
-          -2,
-          -5
-        ]
-      },
-      {
-        "id": "f3-cm20",
-        "floor": 3,
-        "position": [
-          -2,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-stairs-w",
-        "floor": 3,
-        "position": [
-          -34.5,
-          -5
-        ]
-      },
-      {
-        "id": "f3-cm345",
-        "floor": 3,
-        "position": [
-          -34.5,
-          0
-        ]
-      },
-      {
-        "id": "f3-door-stairs-e",
-        "floor": 3,
-        "position": [
-          28.5,
-          -5
-        ]
-      },
-      {
-        "id": "f3-c285",
-        "floor": 3,
         "position": [
           28.5,
           0
@@ -3431,6 +3626,422 @@
           28.5,
           0
         ]
+      },
+      {
+        "id": "f3-c1",
+        "floor": 3,
+        "position": [
+          -37.95,
+          -13.26
+        ]
+      },
+      {
+        "id": "f3-c2",
+        "floor": 3,
+        "position": [
+          -23.53,
+          -13.08
+        ]
+      },
+      {
+        "id": "f3-c3",
+        "floor": 3,
+        "position": [
+          12.2,
+          -13.5
+        ]
+      },
+      {
+        "id": "f3-c4",
+        "floor": 3,
+        "position": [
+          12.25,
+          15.5
+        ]
+      },
+      {
+        "id": "f3-c5",
+        "floor": 3,
+        "position": [
+          12.27,
+          22.64
+        ]
+      },
+      {
+        "id": "f3-c6",
+        "floor": 3,
+        "position": [
+          -23.15,
+          14.96
+        ]
+      },
+      {
+        "id": "f3-c7",
+        "floor": 3,
+        "position": [
+          -8.47,
+          15.19
+        ]
+      },
+      {
+        "id": "f3-c8",
+        "floor": 3,
+        "position": [
+          -8.39,
+          23.86
+        ]
+      },
+      {
+        "id": "f3-c9",
+        "floor": 3,
+        "position": [
+          12.18,
+          -24.19
+        ]
+      },
+      {
+        "id": "f3-c10",
+        "floor": 3,
+        "position": [
+          24.95,
+          -24.46
+        ]
+      },
+      {
+        "id": "f3-d1",
+        "floor": 3,
+        "position": [
+          0.12,
+          17.61
+        ]
+      },
+      {
+        "id": "f3-c11",
+        "floor": 3,
+        "position": [
+          0.15,
+          15.32
+        ]
+      },
+      {
+        "id": "f3-d2",
+        "floor": 3,
+        "position": [
+          -19.2,
+          16.3
+        ]
+      },
+      {
+        "id": "f3-c12",
+        "floor": 3,
+        "position": [
+          -19.18,
+          15.02
+        ]
+      },
+      {
+        "id": "f3-d3",
+        "floor": 3,
+        "position": [
+          -25.69,
+          15.97
+        ]
+      },
+      {
+        "id": "f3-d4",
+        "floor": 3,
+        "position": [
+          -25.29,
+          13.71
+        ]
+      },
+      {
+        "id": "f3-c13",
+        "floor": 3,
+        "position": [
+          -24.57,
+          15.52
+        ]
+      },
+      {
+        "id": "f3-d5",
+        "floor": 3,
+        "position": [
+          -25.4,
+          6.3
+        ]
+      },
+      {
+        "id": "f3-c14",
+        "floor": 3,
+        "position": [
+          -23.27,
+          6.27
+        ]
+      },
+      {
+        "id": "f3-d6",
+        "floor": 3,
+        "position": [
+          -25.54,
+          -5.99
+        ]
+      },
+      {
+        "id": "f3-c15",
+        "floor": 3,
+        "position": [
+          -23.44,
+          -6.02
+        ]
+      },
+      {
+        "id": "f3-d7",
+        "floor": 3,
+        "position": [
+          -36.02,
+          -15.24
+        ]
+      },
+      {
+        "id": "f3-c16",
+        "floor": 3,
+        "position": [
+          -36.05,
+          -13.24
+        ]
+      },
+      {
+        "id": "f3-d8",
+        "floor": 3,
+        "position": [
+          -29.96,
+          -15.17
+        ]
+      },
+      {
+        "id": "f3-c17",
+        "floor": 3,
+        "position": [
+          -29.99,
+          -13.16
+        ]
+      },
+      {
+        "id": "f3-d9",
+        "floor": 3,
+        "position": [
+          -23.83,
+          -15.1
+        ]
+      },
+      {
+        "id": "f3-d10",
+        "floor": 3,
+        "position": [
+          -17.63,
+          -15.03
+        ]
+      },
+      {
+        "id": "f3-c18",
+        "floor": 3,
+        "position": [
+          -17.61,
+          -13.15
+        ]
+      },
+      {
+        "id": "f3-d11",
+        "floor": 3,
+        "position": [
+          -10.43,
+          -14.86
+        ]
+      },
+      {
+        "id": "f3-c19",
+        "floor": 3,
+        "position": [
+          -10.41,
+          -13.23
+        ]
+      },
+      {
+        "id": "f3-d12",
+        "floor": 3,
+        "position": [
+          -3.25,
+          -14.84
+        ]
+      },
+      {
+        "id": "f3-c20",
+        "floor": 3,
+        "position": [
+          -3.23,
+          -13.32
+        ]
+      },
+      {
+        "id": "f3-d13",
+        "floor": 3,
+        "position": [
+          15.73,
+          -13.32
+        ]
+      },
+      {
+        "id": "f3-d14",
+        "floor": 3,
+        "position": [
+          15.75,
+          3.22
+        ]
+      },
+      {
+        "id": "f3-c21",
+        "floor": 3,
+        "position": [
+          12.23,
+          3.23
+        ]
+      },
+      {
+        "id": "f3-d15",
+        "floor": 3,
+        "position": [
+          15.76,
+          20.83
+        ]
+      },
+      {
+        "id": "f3-c22",
+        "floor": 3,
+        "position": [
+          12.26,
+          20.84
+        ]
+      },
+      {
+        "id": "f3-d16",
+        "floor": 3,
+        "position": [
+          13.1,
+          22.8
+        ]
+      },
+      {
+        "id": "f3-d17",
+        "floor": 3,
+        "position": [
+          11.36,
+          20.16
+        ]
+      },
+      {
+        "id": "f3-c23",
+        "floor": 3,
+        "position": [
+          12.26,
+          20.16
+        ]
+      },
+      {
+        "id": "f3-d18",
+        "floor": 3,
+        "position": [
+          4.51,
+          -22.2
+        ]
+      },
+      {
+        "id": "f3-c24",
+        "floor": 3,
+        "position": [
+          12.18,
+          -22.02
+        ]
+      },
+      {
+        "id": "f3-d19",
+        "floor": 3,
+        "position": [
+          15.47,
+          -25.2
+        ]
+      },
+      {
+        "id": "f3-c25",
+        "floor": 3,
+        "position": [
+          15.49,
+          -24.26
+        ]
+      },
+      {
+        "id": "f3-d20",
+        "floor": 3,
+        "position": [
+          -8.39,
+          24.18
+        ]
+      },
+      {
+        "id": "f3-d21",
+        "floor": 3,
+        "position": [
+          4.71,
+          -14.11
+        ]
+      },
+      {
+        "id": "f3-c26",
+        "floor": 3,
+        "position": [
+          4.72,
+          -13.41
+        ]
+      },
+      {
+        "id": "f3-d22",
+        "floor": 3,
+        "position": [
+          26.47,
+          -26.75
+        ]
+      },
+      {
+        "id": "f3-d23",
+        "floor": 3,
+        "position": [
+          -8.9,
+          20.11
+        ]
+      },
+      {
+        "id": "f3-c27",
+        "floor": 3,
+        "position": [
+          -8.42,
+          20.13
+        ]
+      },
+      {
+        "id": "f3-d24",
+        "floor": 3,
+        "position": [
+          -11.41,
+          12.05
+        ]
+      },
+      {
+        "id": "f3-c28",
+        "floor": 3,
+        "position": [
+          -11.46,
+          15.14
+        ]
       }
     ],
     "edges": [
@@ -3641,106 +4252,6 @@
       {
         "a": "f2-c255",
         "b": "f2-c285"
-      },
-      {
-        "a": "f3-door-library",
-        "b": "f3-c205"
-      },
-      {
-        "a": "f3-door-cla-3-01",
-        "b": "f3-cm255"
-      },
-      {
-        "a": "f3-door-off-3-02",
-        "b": "f3-cm140"
-      },
-      {
-        "a": "f3-door-lab-3-03",
-        "b": "f3-cm40"
-      },
-      {
-        "a": "f3-door-off-3-04",
-        "b": "f3-cm265"
-      },
-      {
-        "a": "f3-door-cla-3-05",
-        "b": "f3-cm155"
-      },
-      {
-        "a": "f3-door-lab-3-06",
-        "b": "f3-c50"
-      },
-      {
-        "a": "f3-door-cla-3-07",
-        "b": "f3-c150"
-      },
-      {
-        "a": "f3-door-off-3-08",
-        "b": "f3-c230"
-      },
-      {
-        "a": "f3-door-restroom",
-        "b": "f3-cm70"
-      },
-      {
-        "a": "f3-door-lift",
-        "b": "f3-cm20"
-      },
-      {
-        "a": "f3-door-stairs-w",
-        "b": "f3-cm345"
-      },
-      {
-        "a": "f3-door-stairs-e",
-        "b": "f3-c285"
-      },
-      {
-        "a": "f3-cm345",
-        "b": "f3-cm265"
-      },
-      {
-        "a": "f3-cm265",
-        "b": "f3-cm255"
-      },
-      {
-        "a": "f3-cm255",
-        "b": "f3-cm155"
-      },
-      {
-        "a": "f3-cm155",
-        "b": "f3-cm140"
-      },
-      {
-        "a": "f3-cm140",
-        "b": "f3-cm70"
-      },
-      {
-        "a": "f3-cm70",
-        "b": "f3-cm40"
-      },
-      {
-        "a": "f3-cm40",
-        "b": "f3-cm20"
-      },
-      {
-        "a": "f3-cm20",
-        "b": "f3-c50"
-      },
-      {
-        "a": "f3-c50",
-        "b": "f3-c150"
-      },
-      {
-        "a": "f3-c150",
-        "b": "f3-c205"
-      },
-      {
-        "a": "f3-c205",
-        "b": "f3-c230"
-      },
-      {
-        "a": "f3-c230",
-        "b": "f3-c285"
       },
       {
         "a": "f4-door-lab-4-01",
@@ -3957,6 +4468,214 @@
       {
         "a": "f5-c255",
         "b": "f5-c285"
+      },
+      {
+        "a": "f3-c1",
+        "b": "f3-c16"
+      },
+      {
+        "a": "f3-c16",
+        "b": "f3-c17"
+      },
+      {
+        "a": "f3-c17",
+        "b": "f3-c2"
+      },
+      {
+        "a": "f3-c2",
+        "b": "f3-c18"
+      },
+      {
+        "a": "f3-c18",
+        "b": "f3-c19"
+      },
+      {
+        "a": "f3-c19",
+        "b": "f3-c20"
+      },
+      {
+        "a": "f3-c20",
+        "b": "f3-c26"
+      },
+      {
+        "a": "f3-c26",
+        "b": "f3-c3"
+      },
+      {
+        "a": "f3-c3",
+        "b": "f3-c21"
+      },
+      {
+        "a": "f3-c21",
+        "b": "f3-c4"
+      },
+      {
+        "a": "f3-c4",
+        "b": "f3-c23"
+      },
+      {
+        "a": "f3-c23",
+        "b": "f3-c22"
+      },
+      {
+        "a": "f3-c22",
+        "b": "f3-c5"
+      },
+      {
+        "a": "f3-c6",
+        "b": "f3-c12"
+      },
+      {
+        "a": "f3-c12",
+        "b": "f3-c28"
+      },
+      {
+        "a": "f3-c28",
+        "b": "f3-c7"
+      },
+      {
+        "a": "f3-c7",
+        "b": "f3-c11"
+      },
+      {
+        "a": "f3-c11",
+        "b": "f3-c4"
+      },
+      {
+        "a": "f3-c7",
+        "b": "f3-c27"
+      },
+      {
+        "a": "f3-c27",
+        "b": "f3-c8"
+      },
+      {
+        "a": "f3-c2",
+        "b": "f3-c15"
+      },
+      {
+        "a": "f3-c15",
+        "b": "f3-c14"
+      },
+      {
+        "a": "f3-c14",
+        "b": "f3-c6"
+      },
+      {
+        "a": "f3-c3",
+        "b": "f3-c24"
+      },
+      {
+        "a": "f3-c24",
+        "b": "f3-c9"
+      },
+      {
+        "a": "f3-c9",
+        "b": "f3-c25"
+      },
+      {
+        "a": "f3-c25",
+        "b": "f3-c10"
+      },
+      {
+        "a": "f3-d1",
+        "b": "f3-c11"
+      },
+      {
+        "a": "f3-d2",
+        "b": "f3-c12"
+      },
+      {
+        "a": "f3-d3",
+        "b": "f3-c13"
+      },
+      {
+        "a": "f3-c13",
+        "b": "f3-c6"
+      },
+      {
+        "a": "f3-d4",
+        "b": "f3-c13"
+      },
+      {
+        "a": "f3-d5",
+        "b": "f3-c14"
+      },
+      {
+        "a": "f3-d6",
+        "b": "f3-c15"
+      },
+      {
+        "a": "f3-d7",
+        "b": "f3-c16"
+      },
+      {
+        "a": "f3-d8",
+        "b": "f3-c17"
+      },
+      {
+        "a": "f3-d9",
+        "b": "f3-c2"
+      },
+      {
+        "a": "f3-d10",
+        "b": "f3-c18"
+      },
+      {
+        "a": "f3-d11",
+        "b": "f3-c19"
+      },
+      {
+        "a": "f3-d12",
+        "b": "f3-c20"
+      },
+      {
+        "a": "f3-d13",
+        "b": "f3-c3"
+      },
+      {
+        "a": "f3-d14",
+        "b": "f3-c21"
+      },
+      {
+        "a": "f3-d15",
+        "b": "f3-c22"
+      },
+      {
+        "a": "f3-d16",
+        "b": "f3-c5"
+      },
+      {
+        "a": "f3-d17",
+        "b": "f3-c23"
+      },
+      {
+        "a": "f3-d18",
+        "b": "f3-c24"
+      },
+      {
+        "a": "f3-d19",
+        "b": "f3-c25"
+      },
+      {
+        "a": "f3-d20",
+        "b": "f3-c8"
+      },
+      {
+        "a": "f3-d21",
+        "b": "f3-c26"
+      },
+      {
+        "a": "f3-d22",
+        "b": "f3-c10"
+      },
+      {
+        "a": "f3-d23",
+        "b": "f3-c27"
+      },
+      {
+        "a": "f3-d24",
+        "b": "f3-c28"
       }
     ],
     "connectors": [
@@ -3967,7 +4686,7 @@
         "nodes": {
           "1": "f1-door-lift",
           "2": "f2-door-lift",
-          "3": "f3-door-lift",
+          "3": "f3-d24",
           "4": "f4-door-lift",
           "5": "f5-door-lift"
         }
@@ -3979,7 +4698,7 @@
         "nodes": {
           "1": "f1-door-stairs-w",
           "2": "f2-door-stairs-w",
-          "3": "f3-door-stairs-w",
+          "3": "f3-d21",
           "4": "f4-door-stairs-w",
           "5": "f5-door-stairs-w"
         }
@@ -3991,11 +4710,58 @@
         "nodes": {
           "1": "f1-door-stairs-e",
           "2": "f2-door-stairs-e",
-          "3": "f3-door-stairs-e",
+          "3": "f3-d22",
           "4": "f4-door-stairs-e",
           "5": "f5-door-stairs-e"
         }
       }
     ]
-  }
+  },
+  "usedIds": [
+    "sample-dept-a",
+    "sample-dept-b",
+    "sample-dept-c",
+    "d-cet",
+    "d-cgs",
+    "sample-f3-library",
+    "sample-cla-3-01",
+    "sample-off-3-02",
+    "sample-lab-3-03",
+    "sample-off-3-04",
+    "sample-cla-3-05",
+    "sample-lab-3-06",
+    "sample-cla-3-07",
+    "sample-off-3-08",
+    "sample-f3-restroom",
+    "sample-f3-lift",
+    "sample-f3-stairs-w",
+    "sample-f3-stairs-e",
+    "f3-1-301",
+    "f3-1-302",
+    "f3-1-303",
+    "f3-1-304",
+    "f3-1-305",
+    "f3-1-306-307",
+    "f3-1-308",
+    "f3-1-309",
+    "f3-1-310",
+    "f3-1-311",
+    "f3-1-312",
+    "f3-1-313",
+    "f3-1-315",
+    "f3-1-316",
+    "f3-1-317",
+    "f3-1-318",
+    "f3-1-319",
+    "f3-restroom-top-mid",
+    "f3-restroom-top-right",
+    "f3-restroom-bottom",
+    "f3-stairs-top-mid",
+    "f3-stairs-top-right",
+    "f3-stairs-bottom",
+    "f3-lifts",
+    "sample-f3-water",
+    "sample-f3-charging",
+    "f3-prayer-1-308"
+  ]
 }

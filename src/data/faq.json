@@ -30,9 +30,9 @@
     "id": "faq-scholarships",
     "task": "Ask about scholarships",
     "taskTh": "สอบถามทุนการศึกษา",
-    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 3-02 on floor 3. Dummy text.",
+    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 1-05 on floor 1. Dummy text.",
     "deptId": "sample-dept-a",
-    "roomId": "sample-off-3-02",
+    "roomId": "sample-off-1-05",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
@@ -56,8 +56,7 @@
     "id": "faq-library",
     "task": "Borrow books or study quietly",
     "taskTh": "ยืมหนังสือหรือนั่งอ่านเงียบ ๆ",
-    "answer": "Sample Library is on floor 3. Borrowing rules here are dummy text.",
-    "roomId": "sample-f3-library",
+    "answer": "Sample answer about borrowing books. Dummy text: the real library is added when its floor is traced.",
     "url": "https://www.siit.tu.ac.th/"
   },
   {

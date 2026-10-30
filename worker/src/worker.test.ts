@@ -152,6 +152,13 @@ describe('prompt data', () => {
     for (const r of data.rooms) expect(text).toContain(r.id)
     for (const d of data.departments) expect(text).toContain(d.id)
   })
+
+  it('names every department of a shared room', () => {
+    const shared = data.rooms.find((r) => r.departmentIds?.length)
+    expect(shared).toBeDefined()
+    const row = buildingContext(data).split('\n').find((l) => l.startsWith(`${shared!.id}|`))!
+    expect(row).toContain(shared!.departmentIds!.join('+'))
+  })
 })
 
 describe('handler', () => {
@@ -224,7 +231,7 @@ describe('handler', () => {
 
 describe('mockChat', () => {
   it('routes a room number question to a map action and a route', () => {
-    const out = mockChat({ lang: 'en', messages: [{ role: 'user', content: 'How do I get to 3-06?' }] })
+    const out = mockChat({ lang: 'en', messages: [{ role: 'user', content: 'How do I get to 1-301?' }] })
     expect(out.actions.map((a) => a.type)).toEqual(['show_room', 'show_route'])
   })
 

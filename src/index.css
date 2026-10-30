@@ -622,6 +622,23 @@ a {
   color: var(--muted);
 }
 
+.room-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  height: auto;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: 12px;
+  background: var(--ph);
+}
+
+.dept-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .sheet-intro {
   display: flex;
   gap: 14px;

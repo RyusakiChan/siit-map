@@ -643,7 +643,11 @@ function FloorLabels({ floor }: { floor: number }) {
       {rooms.map(({ room, big, at, letters }) => {
         if (room.id === selectedId || !(big || zoomedIn)) return null
         const keep = (e: HTMLElement | null) => {
-          if (e) els.current.add(e)
+          if (!e) return
+          els.current.add(e)
+          // A badge that mounts after the last frame (drei's Html attaches it a tick later) would stay invisible until the
+          // next frame; so give it its floor's opacity now.
+          e.style.opacity = String(floorState.get(floor)?.g ?? 0)
         }
         const badge = letters.length ? (
           <span ref={keep} className="map-badges" style={{ opacity: 0 }}>

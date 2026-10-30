@@ -44,9 +44,9 @@ const shots = [
   { name: '05-stair-close', run: near('f3-stairs-top-mid', 9, 24, 14), settle: 2500 },
   { name: '06-lifts-close', run: near('f3-lifts', 9, 24, 14), settle: 2500 },
   { name: '07-selected-room', run: async (p) => { await view(3)(p); await wait(1500); await p.evaluate(async () => { window.__store.getState().selectRoom('f3-1-301', { focus: true }); await new Promise((r) => setTimeout(r, 1200)); window.__store.getState().setSnap('full') }) }, settle: 2500 },
-  { name: '08-route-stairs-all', hash: '#/route/f2-1-206/f3-1-301', run: view('all'), settle: 3500 },
+  { name: '08-route-stairs-all', hash: '#/route/f2-1-208/f3-1-312', run: async (p) => { await view('all')(p); for (let i = 0; i < 2; i++) { await p.getByRole('button', { name: 'Next' }).click(); await wait(500) } }, settle: 3500 },
   { name: '09-key', run: async (p) => { await view(3)(p); await p.evaluate(() => window.__store.getState().setKeyOpen(true)) } },
-  { name: '10-restroom-chip-map', run: async (p) => { await view(3)(p); await wait(1000); await p.evaluate(() => window.__rig.dollyTo(60, false)); await wait(600) }, settle: 2500 },
+  { name: '10-restroom-chip-map', run: near('f3-restroom-top-mid', 6, 24, 18), settle: 3000 },
   { name: '11-search-restroom', run: async (p) => { await p.getByRole('button', { name: /Restrooms/ }).first().click() }, settle: 1500 },
 ]
 for (const s of shots) {

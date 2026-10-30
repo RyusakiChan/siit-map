@@ -905,9 +905,10 @@ a {
 }
 
 .row-num {
-  width: 40px;
+  min-width: 40px;
   flex-shrink: 0;
   font-size: 14px;
+  white-space: nowrap;
 }
 
 .row-main {

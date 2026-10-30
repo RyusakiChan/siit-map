@@ -408,7 +408,7 @@ export const useTrace = create<TraceState>((set, get) => {
       const bad = qrIdProblem(id, draft)
       if (bad) return bad
       if (!pendingQr) return 'Click a spot on the map first.'
-      edit((d) => ({ ...d, qrPoints: [...d.qrPoints, { id, floor, position: pendingQr.position, facingDeg: Math.round(pendingQr.facingDeg) }] }))
+      edit((d) => ({ ...d, qrPoints: [...d.qrPoints, { id, floor, position: pendingQr.position, facingDeg: ((Math.round(pendingQr.facingDeg) % 360) + 360) % 360, label: '', labelTh: '' }] }))
       set({ pendingQr: null, selection: { kind: 'qr', id } })
       return null
     },

@@ -1,10 +1,10 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { buildingData as data } from '../data'
-import { deptName, deptNames, deptRooms, roomById, roomName, typeLabelKey } from '../data/lookup'
+import { deptName, deptNames, deptRooms, qrById, qrLabel, roomById, roomName, typeLabelKey } from '../data/lookup'
 import type { Department, Room, RoomType } from '../data/types'
 import { useT, type T } from '../i18n'
 import type { Lang } from '../i18n/strings'
-import { go } from '../router'
+import { go, routeHashPath } from '../router'
 import { roomsOfTypes, search } from '../search'
 import { readStore, writeStore } from '../storage'
 import { useAppStore } from '../state/store'
@@ -43,9 +43,15 @@ function highlight(text: string, query: string): ReactNode {
 function useOpenRoom() {
   const selectRoom = useAppStore((s) => s.selectRoom)
   const closeSearch = useAppStore((s) => s.closeSearch)
+  const fromQr = useAppStore((s) => s.searchFromQr)
   return (room: Room) => {
     addRecent(room.id)
     closeSearch()
+    if (fromQr) {
+      // "Find a room from here": the pick starts a route from the QR spot.
+      go(routeHashPath(`@${fromQr}`, room.id))
+      return
+    }
     selectRoom(room.id, { focus: true, cross: true })
   }
 }
@@ -107,6 +113,8 @@ export function SearchScreen() {
   const [showAll, setShowAll] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [recent] = useState(readRecent)
+  const fromQr = useAppStore((s) => s.searchFromQr)
+  const fromQrLabel = fromQr && qrById.get(fromQr) ? qrLabel(qrById.get(fromQr)!, lang) : null
 
   const results = useMemo(() => search(query, data), [query])
   const filtered = useMemo(() => (filter ? roomsOfTypes(filter.types, data) : []), [filter])
@@ -186,6 +194,7 @@ export function SearchScreen() {
   } else {
     body = (
       <>
+        {fromQrLabel && <p className="note from-note">{t('findFromHint', { place: fromQrLabel })}</p>}
         <h2 className="section first">{t('findNearby')}</h2>
         <div className="tiles">
           {categories.map((c) => (

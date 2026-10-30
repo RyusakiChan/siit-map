@@ -142,6 +142,10 @@ try {
   const qr = await state(() => window.__trace.getState().draft.qrPoints.find((q) => q.id === 'test-trace-qr'))
   check(qr && qr.facingDeg > 170 && qr.facingDeg < 190, `QR facing south (${qr?.facingDeg})`)
 
+  // A QR point needs a place name in both languages before the check list is clean.
+  await page.getByLabel('QR place, English').fill('Test spot')
+  await page.getByLabel('QR place, Thai').fill('จุดทดสอบ')
+
   // 8. Checks are clear.
   await tool('Select')
   await page.screenshot({ path: join(out, '03-traced.png') })
@@ -149,9 +153,14 @@ try {
   check(errCount === '0', `check list has no errors (shows ${errCount})`)
 
   // Undo / redo
-  await state(() => window.__trace.getState().undo())
+  // The place-name edits are undo steps of their own, so undo until the QR point is gone.
+  let undone = 0
+  while (undone < 5 && (await state(() => window.__trace.getState().draft.qrPoints.some((q) => q.id === 'test-trace-qr')))) {
+    await state(() => window.__trace.getState().undo())
+    undone++
+  }
   check((await state(() => window.__trace.getState().draft.qrPoints.some((q) => q.id === 'test-trace-qr'))) === false, 'undo removes the QR point')
-  await state(() => window.__trace.getState().redo())
+  for (let i = 0; i < undone; i++) await state(() => window.__trace.getState().redo())
   check(await state(() => window.__trace.getState().draft.qrPoints.some((q) => q.id === 'test-trace-qr')), 'redo brings it back')
 
   // 8b. Departments: add one, save it, give it to room A.

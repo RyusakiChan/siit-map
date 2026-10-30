@@ -30,7 +30,7 @@ function Mark({ size }: { size: 'sm' | 'md' }) {
 }
 
 /** Distance (px) from the bottom of the screen to the top of the bar or peek card. */
-function useBottomOffset(selected: boolean, peekH: number): number {
+function useBottomOffset(selected: boolean, peekH: number, nearSheet: boolean): number {
   const [bar, setBar] = useState(80)
   useLayoutEffect(() => {
     const el = document.querySelector<HTMLElement>('.bottom-bar')
@@ -40,7 +40,7 @@ function useBottomOffset(selected: boolean, peekH: number): number {
     const ro = new ResizeObserver(measure)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [selected])
+  }, [selected, nearSheet])
   return selected ? peekH : bar
 }
 
@@ -55,7 +55,8 @@ export function AskButton() {
   const peekH = useAppStore((s) => s.peekH)
   const mounted = useChatStore((s) => s.sheetMounted)
   const openFrom = useChatStore((s) => s.openFrom)
-  const offset = useBottomOffset(selected, peekH)
+  const nearSheet = useAppStore((s) => s.hereOpen && s.here !== null)
+  const offset = useBottomOffset(selected, peekH, nearSheet)
   const ref = useRef<HTMLButtonElement>(null)
   const wasMounted = useRef(false)
   const hidden = full || searchOpen

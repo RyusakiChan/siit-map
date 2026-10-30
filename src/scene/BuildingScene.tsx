@@ -409,9 +409,13 @@ function Selection() {
   )
 }
 
-/** The "you are here" pin, wide facing cone and a soft pulsing halo (the only looping motion). */
+const CONE_HALF = Math.PI / 6 // the facing cone is 60° wide
+const CONE_LENGTH = 6 // metres
+
+/** The "you are here" pin: ink dot with a white ring, a 60° x 6 m facing cone and a soft pulsing halo (the only looping motion). */
 function HerePin() {
   const here = useAppStore((s) => s.here)
+  const showCone = useAppStore((s) => s.hereOpen) // closing the banner leaves just the small pin
   const halo = useRef<THREE.Mesh>(null)
   const group = useRef<THREE.Group>(null)
   const geo = useMemo(() => {
@@ -419,14 +423,14 @@ function HerePin() {
     const dir = THREE.MathUtils.degToRad(here.facingDeg) // clockwise from north (-z)
     const pts: Point[] = [[0, 0]]
     for (let i = 0; i <= 16; i++) {
-      const a = dir - 0.9 + (1.8 * i) / 16
-      pts.push([Math.sin(a) * 14, -Math.cos(a) * 14])
+      const a = dir - CONE_HALF + (2 * CONE_HALF * i) / 16
+      pts.push([Math.sin(a) * CONE_LENGTH, -Math.cos(a) * CONE_LENGTH])
     }
     return {
       cone: new THREE.ShapeGeometry(toShape(pts)),
-      ring: new THREE.RingGeometry(1.5, 2.2, 32),
-      dot: new THREE.CircleGeometry(1.5, 32),
-      halo: new THREE.CircleGeometry(2.2, 32),
+      ring: new THREE.RingGeometry(0.26, 0.4, 32),
+      dot: new THREE.CircleGeometry(0.26, 32),
+      halo: new THREE.CircleGeometry(0.42, 32),
     }
   }, [here])
   const invalidate = useThree((s) => s.invalidate)
@@ -441,29 +445,31 @@ function HerePin() {
     }
     if (!halo.current) return
     if (reducedMotion()) {
-      halo.current.scale.setScalar(1.6)
+      halo.current.scale.setScalar(1.8)
       return
     }
     const p = (clock.elapsedTime % 2.6) / 2.6
     const e = 1 - Math.pow(1 - p, 3)
-    halo.current.scale.setScalar(1 + e * 1.6)
-    ;(halo.current.material as THREE.MeshBasicMaterial).opacity = 0.18 * (1 - p)
+    halo.current.scale.setScalar(1 + e * 1.8)
+    ;(halo.current.material as THREE.MeshBasicMaterial).opacity = 0.3 * (1 - p)
     invalidate()
   })
   if (!here || !geo) return null
   return (
     <group ref={group} position={[here.x, elevationOf(here.floor) + 0.15, here.z]}>
-      <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
-        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.22} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
-      </mesh>
+      {showCone && (
+        <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
+          <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.25} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+      )}
       <mesh ref={halo} geometry={geo.halo} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={6}>
-        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.18} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.3} depthWrite={false} toneMapped={false} />
       </mesh>
       <mesh geometry={geo.ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]} renderOrder={7}>
         <meshBasicMaterial color="#ffffff" toneMapped={false} depthTest={false} />
       </mesh>
       <mesh geometry={geo.dot} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]} renderOrder={8}>
-        <meshBasicMaterial color={tokens.youAreHere} toneMapped={false} depthTest={false} />
+        <meshBasicMaterial color={tokens.ink} toneMapped={false} depthTest={false} />
       </mesh>
     </group>
   )
@@ -753,6 +759,39 @@ function fitPose(view: FloorView, azimuth: number, polar: number, w: number, h: 
   }
 }
 
+const HERE_DIST = 22 // metres from the target: close enough to read the corridor
+const HERE_POLAR = (40 * Math.PI) / 180 // 40° from straight down = looking about 50° down
+const HERE_AHEAD = 3 // the camera aims this far ahead of the pin, so most of the view is what is in front
+const HERE_TOP = 216 // below the banner
+
+/** The camera for a QR spot: behind the pin, looking the way the scanner faces, centred a little ahead of it. */
+function herePose(here: { x: number; z: number; floor: number; facingDeg: number }, w: number, h: number, rect: Rect) {
+  const f = THREE.MathUtils.degToRad(here.facingDeg)
+  const top = Math.min(Math.max(rect.top, HERE_TOP), rect.bottom - 120)
+  const tx = here.x + Math.sin(f) * HERE_AHEAD
+  const tz = here.z - Math.cos(f) * HERE_AHEAD
+  const ty = elevationOf(here.floor) + 1
+  // The picture shifts so the pin sits in the lower part of the free area (the view ahead above it).
+  fitCam.aspect = w / h
+  fitCam.updateProjectionMatrix()
+  fitCam.position.set(tx + HERE_DIST * Math.sin(HERE_POLAR) * Math.sin(-f), ty + HERE_DIST * Math.cos(HERE_POLAR), tz + HERE_DIST * Math.sin(HERE_POLAR) * Math.cos(-f))
+  fitCam.lookAt(tx, ty, tz)
+  fitCam.updateMatrixWorld()
+  fitPoint.set(here.x, elevationOf(here.floor), here.z).project(fitCam)
+  const px = ((fitPoint.x + 1) / 2) * w
+  const py = ((1 - fitPoint.y) / 2) * h
+  return {
+    az: -f,
+    polar: HERE_POLAR,
+    dist: HERE_DIST,
+    tx,
+    tz,
+    ty,
+    shiftX: (rect.left + rect.right) / 2 - px,
+    shiftY: top + (rect.bottom - top) * 0.7 - py,
+  }
+}
+
 function Rig() {
   const ref = useRef<CameraControlsImpl | null>(null)
   const [attached, setAttached] = useState(false)
@@ -760,6 +799,7 @@ function Rig() {
   const invalidate = useThree((s) => s.invalidate)
   const view = useAppStore((s) => s.view)
   const hasRoom = useAppStore((s) => s.selectedRoomId !== null)
+  const hereSheet = useAppStore((s) => s.hereOpen && s.here !== null && s.route === null && s.selectedRoomId === null)
   const snap = useAppStore((s) => s.snap)
   const peekH = useAppStore((s) => s.peekH)
   const ready = size.width > 0 && size.height > 0
@@ -782,6 +822,8 @@ function Rig() {
   const focus = useAppStore((s) => s.focus)
   const lastFocus = useRef(0)
   const lastView = useRef<FloorView | null>(null)
+  // True while the camera sits in the QR view (until the person moves it or another view is asked for).
+  const inHere = useRef(false)
 
   useEffect(() => {
     const c = ref.current
@@ -805,33 +847,43 @@ function Rig() {
     const single = view !== ('all' as FloorView)
     // A new view picks the standard tilt; a re-fit (resize, card moved) keeps the user's angles.
     const azimuth = newFocus && focus?.azimuth !== undefined ? focus.azimuth : first ? 0.15 : c.azimuthAngle
-    const polar = first || viewChanged || newFocus ? (single ? 0.65 : 0.6) : c.polarAngle
-    const card = !hasRoom ? 'none' : snap === 'full' ? 'full' : 'peek'
-    const fit = fitPose(view, azimuth, polar, w, h, freeRect(w, h, card, peekH))
-    const ty = single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
+    const polar0 = first || viewChanged || newFocus ? (single ? 0.65 : 0.6) : c.polarAngle
+    const card = hasRoom ? (snap === 'full' ? 'full' : 'peek') : hereSheet ? 'peek' : 'none'
+    if (newFocus) inHere.current = Boolean(focus?.here)
+    else if (viewChanged) inHere.current = false
+    const hereNow = useAppStore.getState().here
+    const hp = inHere.current && hereNow ? herePose(hereNow, w, h, freeRect(w, h, card, peekH)) : null
+    const fit = hp ? { dist: hp.dist, shiftX: hp.shiftX, shiftY: hp.shiftY } : fitPose(view, azimuth, polar0, w, h, freeRect(w, h, card, peekH))
+    const polar = hp ? hp.polar : polar0
+    const tgt = hp ? { x: hp.tx, z: hp.tz } : { x: center.x, z: center.z }
+    const ty = hp ? hp.ty : single ? elevationOf(view as number) + 1 : topElevation / 2 + 1
     shift.current = { x: fit.shiftX, y: fit.shiftY, jump: !animate }
     if (animate && transition.p < 0.5) {
       // Same frame, same curve as the floors and the room: the camera reads the shared progress too.
       const t = c.getTarget(new THREE.Vector3())
       glide.current = {
-        az: azimuth, polar, dist: fit.dist, tx: center.x, ty, tz: center.z,
+        az: hp ? hp.az : azimuth, polar, dist: fit.dist, tx: tgt.x, ty, tz: tgt.z,
         from: { az: c.azimuthAngle, polar: c.polarAngle, dist: c.distance, tx: t.x, ty: t.y, tz: t.z },
         k0: easeOutExpo(transition.p), sx0: offset.current.x, sy0: offset.current.y,
       }
       invalidate()
     } else {
       glide.current = null
-      void c.rotateTo(azimuth, polar, animate)
+      void c.rotateTo(hp ? hp.az : azimuth, polar, animate)
       void c.dollyTo(fit.dist, animate)
-      void c.moveTo(center.x, ty, center.z, animate)
+      void c.moveTo(tgt.x, ty, tgt.z, animate)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- allDist follows the size
-  }, [attached, view, ready, w, h, focus, hasRoom, snap, peekH])
+  }, [attached, view, ready, w, h, focus, hasRoom, hereSheet, snap, peekH])
 
   useEffect(() => {
     const c = ref.current
     if (!c) return
-    const stop = () => { glide.current = null }
+    const stop = () => {
+      glide.current = null
+      inHere.current = false
+      useAppStore.getState().markMoved() // shows "Back to where I am" while a QR view is open
+    }
     c.addEventListener('controlstart', stop)
     return () => c.removeEventListener('controlstart', stop)
   }, [attached])

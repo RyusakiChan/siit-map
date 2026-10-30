@@ -148,6 +148,43 @@ function shortestPath(g: Graph, from: string, to: string, opts: PlanOptions): { 
   return null
 }
 
+/** Walking cost (metre-equivalents) from one node to every node it can reach, honouring "avoid stairs". */
+export function costsFrom(g: Graph, from: string, opts: PlanOptions = {}): Map<string, number> {
+  const best = new Map<string, number>([[from, 0]])
+  const done = new Set<string>()
+  const open = new Set<string>([from])
+  while (open.size) {
+    let cur = ''
+    let curCost = Infinity
+    for (const id of open) {
+      const c = best.get(id)!
+      if (c < curCost) {
+        curCost = c
+        cur = id
+      }
+    }
+    open.delete(cur)
+    done.add(cur)
+    for (const e of g.adj.get(cur) ?? []) {
+      if (done.has(e.to)) continue
+      if (opts.avoidStairs && e.via && g.kindOfConnector.get(e.via) === 'stairs') continue
+      const c = curCost + e.cost
+      if (c < (best.get(e.to) ?? Infinity)) {
+        best.set(e.to, c)
+        open.add(e.to)
+      }
+    }
+  }
+  return best
+}
+
+/** Where a QR spot joins the walkway graph: its corridor node, and the straight walk to it in metres. */
+export function qrEntry(g: Graph, qrId: string): { node: string; floor: number; walk: number } | null {
+  const qr = g.data.qrPoints.find((q) => q.id === qrId)
+  const node = qr ? nearestCorridorNode(g, qr.floor, qr.position) : null
+  return qr && node ? { node, floor: qr.floor, walk: dist(qr.position, g.pos.get(node)!) } : null
+}
+
 export interface RouteGeometry {
   legs: Leg[]
   /** Cost in metre-equivalents: walking plus the lift or stairs. */

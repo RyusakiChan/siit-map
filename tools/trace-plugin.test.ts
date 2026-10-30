@@ -36,7 +36,7 @@ describe('saveFloorToFile', () => {
     rooms: [{ id: 'r-f2-1', number: '201', name: '', floor: 2, departmentId: null, type: 'classroom' as const, polygon: [[2, 2], [6, 2], [6, 6]] as [number, number][], door: 'f2-d1' }],
     nodes: [{ id: 'f2-d1', floor: 2, position: [4, 7] as [number, number] }],
     edges: [],
-    qrPoints: [{ id: 'qr-201', floor: 2, position: [4, 8] as [number, number], facingDeg: 90 }],
+    qrPoints: [{ id: 'qr-201', floor: 2, position: [4, 8] as [number, number], facingDeg: 90, label: 'Lift lobby', labelTh: 'โถงลิฟต์' }],
     connectors: [{ id: 'lift', kind: 'elevator' as const, costPerFloor: 20, node: 'f2-d1' }],
   }
 

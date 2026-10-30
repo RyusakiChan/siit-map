@@ -18,6 +18,8 @@ export interface Focus {
   floor: number
   /** Camera azimuth in radians (0 looks north); omitted keeps the current one. */
   azimuth?: number
+  /** The "You are here" view: close behind the pin, looking the way the scanner faces. */
+  here?: boolean
 }
 
 export interface HerePin {
@@ -28,7 +30,7 @@ export interface HerePin {
   facingDeg: number
 }
 
-export type NoticeKey = 'roomGone' | 'deptGone' | 'linkCopied' | 'routeNone'
+export type NoticeKey = 'roomGone' | 'deptGone' | 'linkCopied' | 'routeNone' | 'qrGone'
 
 /** Room types a category chip or tile filters the search to. */
 export interface TypeFilter {
@@ -85,6 +87,12 @@ interface AppState {
   previousFloor: number | null
   banner: { floor: number; from: number } | null
   here: HerePin | null
+  /** The "You are here" banner and Near you sheet are open (closing them keeps a small pin). */
+  hereOpen: boolean
+  /** The camera or floor moved away from the QR view, so "Back to where I am" shows. */
+  hereMoved: boolean
+  /** Set while search is picking a start-from-here destination: the QR id the route starts from. */
+  searchFromQr: string | null
   highlightDeptId: string | null
   focus: Focus | null
   notice: { key: NoticeKey; tick: number } | null
@@ -110,6 +118,11 @@ interface AppState {
   setKeyOpen: (open: boolean) => void
   dismissBanner: () => void
   showHere: (qrId: string) => boolean
+  closeHere: () => void
+  /** Brings the QR view back after the person moved the map. */
+  recenterHere: () => void
+  markMoved: () => void
+  openSearchFromHere: () => void
   highlightDept: (id: string | null) => void
   showNotice: (key: NoticeKey) => void
   clearNotice: () => void
@@ -132,6 +145,11 @@ interface AppState {
 
 let tick = 0
 
+/** The camera request for a QR spot: azimuth is minus the facing, because the camera looks away from where it sits. */
+function hereFocus(qr: { position: [number, number]; floor: number; facingDeg: number }): Focus {
+  return { tick: ++tick, x: qr.position[0], z: qr.position[1], floor: qr.floor, azimuth: (-qr.facingDeg * Math.PI) / 180, here: true }
+}
+
 function loadLang(): Lang {
   // English by default (PLAN.md); only a remembered choice changes it.
   return readStore('siit-map.lang') === 'th' ? 'th' : 'en'
@@ -150,6 +168,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   previousFloor: null,
   banner: null,
   here: null,
+  hereOpen: false,
+  hereMoved: false,
+  searchFromQr: null,
   highlightDeptId: null,
   focus: null,
   notice: null,
@@ -172,7 +193,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const sel = data.rooms.find((r) => r.id === selectedRoomId)
     // Leaving a floor clears a selection that would no longer be on show.
     const keep = !sel || view === 'all' || sel.floor === view || route !== null
-    set({ view, banner: null, previousFloor: null, ...(keep ? {} : { selectedRoomId: null }) })
+    set({ view, banner: null, previousFloor: null, hereMoved: true, ...(keep ? {} : { selectedRoomId: null }) })
   },
 
   selectRoom: (id, opts = {}) => {
@@ -200,6 +221,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     set({
       selectedRoomId: room.id,
       view: room.floor,
+      hereMoved: true,
       snap: opts.snap ?? 'peek',
       banner: cross ? { floor: room.floor, from } : null,
       previousFloor: cross ? from : null,
@@ -214,8 +236,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     writeStore('siit-map.lang', lang)
     set({ lang })
   },
-  openSearch: (filter = null) => set({ searchOpen: true, filter }),
-  closeSearch: () => set({ searchOpen: false, filter: null }),
+  openSearch: (filter = null) => set({ searchOpen: true, filter, searchFromQr: null }),
+  closeSearch: () => set({ searchOpen: false, filter: null, searchFromQr: null }),
   setKeyOpen: (keyOpen) => set({ keyOpen }),
   dismissBanner: () => set({ banner: null }),
 
@@ -229,13 +251,35 @@ export const useAppStore = create<AppState>((set, get) => ({
       lastScan: scan,
       route: null,
       here: { id: qr.id, floor: qr.floor, x: qr.position[0], z: qr.position[1], facingDeg: qr.facingDeg },
+      hereOpen: true,
+      hereMoved: false,
+      searchOpen: false,
+      searchFromQr: null,
       view: qr.floor,
       selectedRoomId: null,
       banner: null,
       previousFloor: null,
-      focus: { tick: ++tick, x: qr.position[0], z: qr.position[1], floor: qr.floor, azimuth: (qr.facingDeg * Math.PI) / 180 },
+      highlightDeptId: null,
+      focus: hereFocus(qr),
     })
     return true
+  },
+
+  closeHere: () => set({ hereOpen: false }),
+
+  recenterHere: () => {
+    const qr = data.qrPoints.find((q) => q.id === get().here?.id)
+    if (!qr) return
+    set({ hereMoved: false, view: qr.floor, selectedRoomId: null, banner: null, previousFloor: null, highlightDeptId: null, focus: hereFocus(qr) })
+  },
+
+  markMoved: () => {
+    if (get().here && !get().hereMoved) set({ hereMoved: true })
+  },
+
+  openSearchFromHere: () => {
+    const id = get().here?.id
+    if (id) set({ searchOpen: true, filter: null, searchFromQr: id })
   },
 
   highlightDept: (highlightDeptId) => set({ highlightDeptId, ...(highlightDeptId ? { selectedRoomId: null, view: 'all' as const } : {}) }),
@@ -276,6 +320,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       filter: null,
       selectedRoomId: toId,
       snap: 'peek',
+      hereOpen: false,
+      // A route from another place replaces the QR pin; one from the QR keeps it.
+      here: from.kind === 'qr' && get().here?.id === from.id ? get().here : null,
+      searchFromQr: null,
       banner: null,
       previousFloor: null,
       highlightDeptId: null,

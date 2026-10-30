@@ -8,6 +8,7 @@ import { AskButton, AssistantSheet } from './assistant/Assistant'
 import { useChatStore } from './assistant/chatStore'
 import { Banner, BottomBar, Chips, FloorPicker, StatusRow, TopBar, Toast } from './ui/MapChrome'
 import { FromPicker } from './ui/FromPicker'
+import { BackToMe, HereBanner, NearSheet } from './ui/HereScreen'
 import { RoomSheet } from './ui/RoomSheet'
 import { StepsCard } from './ui/StepsCard'
 import { MapPlaceholder } from './ui/MapPlaceholder'
@@ -47,7 +48,11 @@ function RouteEffects() {
         go('/', true)
       }
     } else if (route.name === 'at') {
-      s.showHere(route.id) // an unknown QR id just leaves the normal map
+      if (!s.showHere(route.id)) {
+        // An unknown QR id: say so and show the overview.
+        s.showNotice('qrGone')
+        go('/', true)
+      }
     } else if (route.name === 'dept' && !deptById.has(route.id)) {
       s.showNotice('deptGone')
       go('/', true)
@@ -66,6 +71,7 @@ export default function App() {
   const keyOpen = useAppStore((s) => s.keyOpen)
   const routing = useAppStore((s) => s.route !== null)
   const picking = useAppStore((s) => s.fromPicker !== null)
+  const nearSheet = useAppStore((s) => s.hereOpen && s.here !== null)
   const [sceneReady, setSceneReady] = useState(false)
 
   useEffect(() => {
@@ -83,10 +89,12 @@ export default function App() {
       <RouteEffects />
       <TopBar />
       <Banner />
+      <HereBanner />
       <Chips />
       <StatusRow />
       <FloorPicker />
-      {routing ? <StepsCard /> : selected ? <RoomSheet /> : <BottomBar />}
+      {routing ? <StepsCard /> : selected ? <RoomSheet /> : nearSheet ? <NearSheet /> : <BottomBar />}
+      <BackToMe />
       {searchOpen && <SearchScreen />}
       {picking && <FromPicker />}
       {route.name === 'dept' && <DepartmentScreen id={route.id} />}

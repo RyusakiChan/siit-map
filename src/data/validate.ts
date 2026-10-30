@@ -109,6 +109,24 @@ export function validate(data: BuildingData): Problem[] {
   // QR points and amenities
   for (const id of dup(data.qrPoints.map((q) => q.id))) add({ code: 'qr-duplicate', message: `QR id ${id} is used twice.`, ids: [id] })
   for (const id of dup(data.amenities.map((a) => a.id))) add({ code: 'amenity-duplicate', message: `Amenity id ${id} is used twice.`, ids: [id] })
+  const roomIds = new Set(rooms.map((r) => r.id))
+  const amenityIds = new Set(data.amenities.map((a) => a.id))
+  const reserved = new Set(data.usedIds ?? [])
+  for (const q of data.qrPoints) {
+    const at = q.position
+    if (!q.label?.trim() || !q.labelTh?.trim()) add({ code: 'qr-label', message: `QR point ${q.id} needs a place name in English and in Thai.`, floor: q.floor, at, ids: [q.id] })
+    if (!Number.isFinite(q.facingDeg) || q.facingDeg < 0 || q.facingDeg > 359) add({ code: 'qr-facing', message: `QR point ${q.id}: facing must be 0 to 359 degrees.`, floor: q.floor, at, ids: [q.id] })
+    if (!q.sample) {
+      // A printed QR id is permanent: it may not be a room or amenity id, and the trace tool keeps it in usedIds once it exists.
+      if (roomIds.has(q.id) || amenityIds.has(q.id)) add({ code: 'qr-id-taken', message: `QR id ${q.id} is already a room or amenity id.`, floor: q.floor, at, ids: [q.id] })
+      if (!reserved.has(q.id)) add({ code: 'qr-id-unreserved', severity: 'warning', message: `QR id ${q.id} is not in usedIds, so it could be reused after a delete.`, floor: q.floor, at, ids: [q.id] })
+    }
+    if (!q.sample && levels.has(q.floor) && inOutline(q.position, building.outline)) {
+      const room = roomsOn(q.floor).find((r) => r.polygon.length >= 3 && pointInPolygon(q.position, r.polygon) && boundaryDistance(q.position, r.polygon) > 0.05)
+      if (room) add({ code: 'qr-in-room', message: `QR point ${q.id} is inside room ${room.number ?? room.id}; put it in the corridor.`, floor: q.floor, at, ids: [q.id, room.id] })
+      if (voidsOn(q.floor).some((v) => v.length >= 3 && pointInPolygon(q.position, v))) add({ code: 'qr-in-void', message: `QR point ${q.id} is inside the open atrium.`, floor: q.floor, at, ids: [q.id] })
+    }
+  }
   for (const item of [...data.qrPoints, ...data.amenities]) {
     if (!levels.has(item.floor)) add({ code: 'point-floor', message: `${item.id}: floor ${item.floor} does not exist.`, ids: [item.id] })
     else if (!inOutline(item.position, building.outline)) {

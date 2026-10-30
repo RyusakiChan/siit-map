@@ -58,7 +58,8 @@ export function StatusRow() {
   const hl = useAppStore((s) => (s.highlightDeptId ? deptById.get(s.highlightDeptId) : undefined))
   const lang = useAppStore((s) => s.lang)
   const highlightDept = useAppStore((s) => s.highlightDept)
-  const away = useAppStore((s) => s.banner !== null)
+  // Either banner takes the status line's place.
+  const away = useAppStore((s) => s.banner !== null || (s.hereOpen && s.here !== null && s.route === null))
   return (
     <div className={away ? 'status-row is-away' : 'status-row'}>
       {data.building.sampleData && <span className="sample-badge">{t('sampleData')}</span>}

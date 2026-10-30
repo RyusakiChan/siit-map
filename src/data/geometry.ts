@@ -43,7 +43,10 @@ export function boundaryDistance(p: Point, poly: Point[]): number {
 
 /** Test points for overlap: vertices and edge midpoints. */
 function samples(poly: Point[]): Point[] {
-  return edges(poly).flatMap(([a, b]): Point[] => [a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]])
+  const pts = edges(poly).flatMap(([a, b]): Point[] => [a, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]])
+  // The centre catches two identical rooms stacked on each other.
+  const c = polygonCentroid(poly)
+  return pointInPolygon(c, poly) ? [...pts, c] : pts
 }
 
 /**
@@ -84,4 +87,15 @@ export function polygonCentroid(poly: Point[]): Point {
 
 export function polygonArea(poly: Point[]): number {
   return Math.abs(edges(poly).reduce((s, [p, q]) => s + p[0] * q[1] - q[0] * p[1], 0)) / 2
+}
+
+/** Whether the segment ab crosses a wall of the polygon or runs through its inside (walking along a wall is fine). */
+export function segmentThroughPolygon(a: Point, b: Point, poly: Point[]): boolean {
+  for (const [p, q] of edges(poly)) if (segmentsCross([a, b], [p, q])) return true
+  const steps = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.25))
+  for (let i = 0; i <= steps; i++) {
+    const pt: Point = [a[0] + ((b[0] - a[0]) * i) / steps, a[1] + ((b[1] - a[1]) * i) / steps]
+    if (pointInPolygon(pt, poly) && boundaryDistance(pt, poly) > 0.05) return true
+  }
+  return false
 }

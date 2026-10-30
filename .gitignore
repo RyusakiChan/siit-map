@@ -22,6 +22,9 @@ test-results/
 .agents/skills/web-design-guidelines/
 .agents/skills/write-prose/
 
+# Trace tool backups of building.json
+.trace-backups/
+
 # OS and editor
 .DS_Store
 Thumbs.db

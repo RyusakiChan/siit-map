@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
-import { deptName, deptOf, roomById, roomName } from '../data/lookup'
+import { deptName, deptsOf, roomById, roomName } from '../data/lookup'
 import { useT } from '../i18n'
 import { go, roomUrl } from '../router'
 import { useAppStore } from '../state/store'
@@ -51,7 +51,8 @@ export function RoomSheet() {
   }, [id])
 
   if (!room) return null
-  const dept = deptOf(room)
+  const depts = deptsOf(room)
+  const shortName = (d: (typeof depts)[number]) => d.aliases?.[0] ?? deptName(d, lang)
   const other = lang === 'th' ? (room.nameTh ? room.name : undefined) : room.nameTh
 
   const onDown = (e: ReactPointerEvent) => {
@@ -117,12 +118,21 @@ export function RoomSheet() {
               {room.number && <span className="mono ink">{room.number}</span>}
               {room.number && ' · '}
               {t('floor', { n: room.floor })}
-              {dept && (
+              {depts.length === 1 && (
                 <>
                   {' · '}
                   <span className="dept-inline">
-                    <DeptBadge dept={dept} />
-                    {deptName(dept, lang)}
+                    <DeptBadge dept={depts[0]!} />
+                    {deptName(depts[0]!, lang)}
+                  </span>
+                </>
+              )}
+              {depts.length > 1 && (
+                <>
+                  {' · '}
+                  <span className="dept-inline">
+                    {depts.map((d) => <DeptBadge key={d.id} dept={d} />)}
+                    {depts.map(shortName).join(' / ')}
                   </span>
                 </>
               )}
@@ -152,11 +162,23 @@ export function RoomSheet() {
 
       {snap === 'full' && <Credit className="credit-float" />}
       <div className="sheet-body" inert={snap === 'peek'}>
+        {room.photo && (
+          <img
+            className="room-banner"
+            src={`${import.meta.env.BASE_URL}${room.photo}`}
+            width={1200}
+            height={600}
+            loading="lazy"
+            alt={t('photoAlt', { name: roomName(room, lang) })}
+          />
+        )}
         <div className="sheet-intro">
-          <div className="photo-ph">
-            <PhotoIcon />
-            <span>{t('noPhoto')}</span>
-          </div>
+          {!room.photo && (
+            <div className="photo-ph">
+              <PhotoIcon />
+              <span>{t('noPhoto')}</span>
+            </div>
+          )}
           <div className="sheet-intro-text">
             {other && <p className="room-other">{other}</p>}
             <dl className="details">
@@ -170,11 +192,19 @@ export function RoomSheet() {
           </div>
         </div>
         {room.description && <p className="body-text">{room.description}</p>}
-        {dept && (
-          <button type="button" className="action-btn" onClick={() => go(`/dept/${dept.id}`)}>
-            {t('departmentDetails')}
-          </button>
-        )}
+        {depts.map((d) => (
+          <div key={d.id} className="dept-detail">
+            {depts.length > 1 && (
+              <span className="dept-inline">
+                <DeptBadge dept={d} />
+                {deptName(d, lang)}
+              </span>
+            )}
+            <button type="button" className="action-btn" onClick={() => go(`/dept/${d.id}`)}>
+              {t('departmentDetails')}
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   )

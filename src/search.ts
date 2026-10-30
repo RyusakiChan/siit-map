@@ -1,3 +1,4 @@
+import { roomDeptIds } from './data/departments'
 import type { BuildingData, Department, Room, RoomType } from './data/types'
 
 /** Lower-case and drop spaces and dashes, so "2 03", "2-03" and "203" all match. */
@@ -45,7 +46,7 @@ export function search(query: string, data: BuildingData): SearchResults {
 
   const rooms = data.rooms
     .map((room) => {
-      const dept = room.departmentId ? deptById.get(room.departmentId) : undefined
+      const depts = roomDeptIds(room).flatMap((id) => deptById.get(id) ?? [])
       const s = score(q, [
         { text: room.number ?? undefined, weight: 100 },
         { text: room.name, weight: 95 },
@@ -53,9 +54,11 @@ export function search(query: string, data: BuildingData): SearchResults {
         ...(room.aliases ?? []).map((text) => ({ text, weight: 90 })),
         ...(room.aliasesTh ?? []).map((text) => ({ text, weight: 90 })),
         ...typeWords[room.type].map((text) => ({ text, weight: 70 })),
-        { text: dept?.name, weight: 50 },
-        { text: dept?.nameTh, weight: 50 },
-        ...(dept?.aliases ?? []).map((text) => ({ text, weight: 50 })),
+        ...depts.flatMap((dept) => [
+          { text: dept.name, weight: 50 },
+          { text: dept.nameTh, weight: 50 },
+          ...(dept.aliases ?? []).map((text) => ({ text, weight: 50 })),
+        ]),
       ])
       return { room, s }
     })
@@ -72,7 +75,7 @@ export function search(query: string, data: BuildingData): SearchResults {
         ...(d.aliases ?? []).map((text) => ({ text, weight: 90 })),
         ...(d.aliasesTh ?? []).map((text) => ({ text, weight: 90 })),
         // "lab" also finds departments that have labs.
-        ...data.rooms.filter((r) => r.departmentId === d.id).flatMap((r) => typeWords[r.type]).map((text) => ({ text, weight: 30 })),
+        ...data.rooms.filter((r) => roomDeptIds(r).includes(d.id)).flatMap((r) => typeWords[r.type]).map((text) => ({ text, weight: 30 })),
       ]),
     }))
     .filter((x) => x.s > 0)

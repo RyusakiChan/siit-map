@@ -32,6 +32,7 @@ const deptBySlot = new Map(buildingData.departments.map((d) => [d.id, d]))
 
 export function roomColor(room: Room): RoomColor {
   if (room.type === 'stairs' || room.type === 'elevator') return circulation
+  // A shared room (departmentIds) gets the neutral no-department colour.
   if (room.departmentId) return deptColor(deptBySlot.get(room.departmentId)) ?? facility
   return facility
 }

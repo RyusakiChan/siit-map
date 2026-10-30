@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { buildingData as data } from '../data'
-import { deptName, deptOf, deptRooms, roomById, roomName, typeLabelKey } from '../data/lookup'
+import { deptName, deptNames, deptRooms, roomById, roomName, typeLabelKey } from '../data/lookup'
 import type { Department, Room, RoomType } from '../data/types'
 import { useT, type T } from '../i18n'
 import type { Lang } from '../i18n/strings'
@@ -51,9 +51,8 @@ function useOpenRoom() {
 }
 
 function RoomRow({ room, query = '', lang, t, onOpen }: { room: Room; query?: string; lang: Lang; t: T; onOpen: (r: Room) => void }) {
-  const dept = deptOf(room)
   const color = roomColor(room).top
-  const sub = [dept ? deptName(dept, lang) : t(typeLabelKey[room.type]), t('floor', { n: room.floor })].join(' · ')
+  const sub = [deptNames(room, lang) ?? t(typeLabelKey[room.type]), t('floor', { n: room.floor })].join(' · ')
   return (
     <li>
       <button type="button" className="row" onClick={() => onOpen(room)}>

@@ -21,27 +21,27 @@
     "id": "faq-transcripts",
     "task": "Request a transcript or certificate",
     "taskTh": "ขอใบรับรองผลการเรียน",
-    "answer": "Sample Registrar Desk handles sample transcript requests. It is in Sample Office 2-01 on floor 2. Dummy text.",
+    "answer": "Sample Registrar Desk handles sample transcript requests. It is in Sample Office 5-06 on floor 5. Dummy text.",
     "deptId": "sample-dept-a",
-    "roomId": "sample-off-2-01",
+    "roomId": "sample-off-5-06",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
     "id": "faq-scholarships",
     "task": "Ask about scholarships",
     "taskTh": "สอบถามทุนการศึกษา",
-    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 3-02 on floor 3. Dummy text.",
+    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 1-05 on floor 1. Dummy text.",
     "deptId": "sample-dept-a",
-    "roomId": "sample-off-3-02",
+    "roomId": "sample-off-1-05",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
     "id": "faq-it-help",
     "task": "Get IT help (Wi-Fi, accounts)",
     "taskTh": "ขอความช่วยเหลือด้านไอที (ไวไฟ บัญชีผู้ใช้)",
-    "answer": "Sample IT Help Desk fixes sample Wi-Fi and account problems. It is in Sample Lab 4-01 on floor 4. Dummy text.",
+    "answer": "Sample IT Help Desk fixes sample Wi-Fi and account problems. It is in Sample Lab 5-04 on floor 5. Dummy text.",
     "deptId": "sample-dept-b",
-    "roomId": "sample-lab-4-01",
+    "roomId": "sample-lab-5-04",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
@@ -56,8 +56,8 @@
     "id": "faq-library",
     "task": "Borrow books or study quietly",
     "taskTh": "ยืมหนังสือหรือนั่งอ่านเงียบ ๆ",
-    "answer": "Sample Library is on floor 3. Borrowing rules here are dummy text.",
-    "roomId": "sample-f3-library",
+    "answer": "Sample answer about borrowing books. Dummy text; the SIIT Library itself is on floor 2.",
+    "roomId": "f2-library",
     "url": "https://www.siit.tu.ac.th/"
   },
   {

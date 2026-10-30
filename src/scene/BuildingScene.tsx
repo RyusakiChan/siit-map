@@ -3,7 +3,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { buildingData as data } from '../data'
-import { roomById } from '../data/lookup'
+import { roomById, deptsOf } from '../data/lookup'
+import { roomDeptIds } from '../data/departments'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
@@ -37,13 +38,18 @@ const topElevation = Math.max(...data.floors.map((f) => elevationOf(f.level)))
 
 // The shape lives in the XY plane. After rotating -90deg about X, shape y maps
 // to world -z and the extrusion depth maps to world +y (up).
-function toShape(points: Point[]): THREE.Shape {
-  return new THREE.Shape(points.map(([x, z]) => new THREE.Vector2(x, -z)))
+function toShape(points: Point[], holes: Point[][] = []): THREE.Shape {
+  const shape = new THREE.Shape(points.map(([x, z]) => new THREE.Vector2(x, -z)))
+  // Holes (open atriums) are cut out of the slab; their walls use the same side material as the slab edge.
+  shape.holes = holes.map((h) => new THREE.Path(h.map(([x, z]) => new THREE.Vector2(x, -z))))
+  return shape
 }
 
-function extrude(points: Point[], depth: number): THREE.ExtrudeGeometry {
-  return new THREE.ExtrudeGeometry(toShape(points), { depth, bevelEnabled: false })
+function extrude(points: Point[], depth: number, holes: Point[][] = []): THREE.ExtrudeGeometry {
+  return new THREE.ExtrudeGeometry(toShape(points, holes), { depth, bevelEnabled: false })
 }
+
+const voidsOf = (level: number): Point[][] => data.floors.find((f) => f.level === level)?.voids ?? []
 
 // ExtrudeGeometry material groups: 0 = top and bottom caps, 1 = side walls.
 function makeMaterials(): [THREE.MeshBasicMaterial, THREE.MeshLambertMaterial] {
@@ -92,7 +98,7 @@ function FloorLayer({ level }: { level: number }) {
     to: { offset: 0, slab: allSlab, g: 1, viewed: 0 } as FloorVals,
     cur: { offset: 0, slab: allSlab, g: 1, viewed: 0 } as FloorVals,
   })
-  const slabGeometry = useMemo(() => extrude(outline, SLAB_THICKNESS), [])
+  const slabGeometry = useMemo(() => extrude(outline, SLAB_THICKNESS, voidsOf(level)), [level])
   const slab = useMemo(() => makeMaterials(), [])
   const items = useMemo<RoomItem[]>(
     () =>
@@ -146,7 +152,7 @@ function FloorLayer({ level }: { level: number }) {
         const l = live.current.get(it.room.id)
         if (!l) continue
         const isSel = it.room.id === selectedRoomId
-        const dim = !isSel && ((selected && selected.floor === level) || (highlightDeptId && it.room.departmentId !== highlightDeptId))
+        const dim = !isSel && ((selected && selected.floor === level) || (highlightDeptId && !roomDeptIds(it.room).includes(highlightDeptId)))
         l.from = { ...l.cur }
         l.to = { raise: isSel ? 1 : 0, dim: dim ? 1 : 0 }
         if (first) l.from = { ...l.to }
@@ -219,7 +225,10 @@ function FloorLayer({ level }: { level: number }) {
 /** Thin slab kept under the viewed floor when the other floors are hidden. */
 function BaseSlab() {
   const ref = useRef<THREE.Mesh>(null)
-  const geometry = useMemo(() => extrude(outline, 0.15), [])
+  // The thin base under the viewed floor has the same holes, so an atrium stays open all the way down.
+  const view = useAppStore((s) => s.view)
+  const geometry = useMemo(() => extrude(outline, 0.15, view === 'all' ? [] : voidsOf(view)), [view])
+  useEffect(() => () => geometry.dispose(), [geometry])
   const mats = useMemo(() => makeMaterials(), [])
   const s = useRef({ epoch: -1, from: { alpha: 0, y: 0 }, to: { alpha: 0, y: 0 }, cur: { alpha: 0, y: 0 } })
   useFrame(() => {
@@ -307,7 +316,10 @@ function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
             return [lo(x, w, size.width), lo(y, h, size.height)]
           }}
         >
-          <div className="room-tag" ref={tagRef}>{room.number ?? room.name}</div>
+          <div className="room-tag" ref={tagRef}>
+            {room.number ?? room.name}
+            {room.departmentIds && deptsOf(room).map((d) => <span key={d.id} className="tag-badge" style={{ borderColor: departmentBadgeColor(d.id) }}>{d.letter}</span>)}
+          </div>
         </Html>
       )}
     </group>
@@ -553,7 +565,7 @@ function FloorLabels({ floor }: { floor: number }) {
           room,
           big: polygonArea(room.polygon) >= BIG_ROOM_AREA,
           at: polygonCentroid(room.polygon),
-          letter: data.departments.find((d) => d.id === room.departmentId)?.letter,
+          letters: roomDeptIds(room).flatMap((id) => data.departments.find((d) => d.id === id) ?? []).map((d) => ({ letter: d.letter, color: departmentBadgeColor(d.id) })),
         })),
     [floor],
   )
@@ -569,13 +581,15 @@ function FloorLabels({ floor }: { floor: number }) {
   const y = elevationOf(floor) + ROOM_HEIGHT + 0.1
   return (
     <group ref={group}>
-      {rooms.map(({ room, big, at, letter }) => {
+      {rooms.map(({ room, big, at, letters }) => {
         if (room.id === selectedId || !(big || zoomedIn)) return null
         const keep = (e: HTMLElement | null) => {
           if (e) els.current.add(e)
         }
-        const badge = letter ? (
-          <span ref={keep} className="map-badge" style={{ borderColor: departmentBadgeColor(room.departmentId), opacity: 0 }}>{letter}</span>
+        const badge = letters.length ? (
+          <span ref={keep} className="map-badges" style={{ opacity: 0 }}>
+            {letters.map((l) => <span key={l.letter} className="map-badge" style={{ borderColor: l.color }}>{l.letter}</span>)}
+          </span>
         ) : hasIcon(room.type) ? (
           <span ref={keep} className="map-icon" style={{ opacity: 0 }}><FacilityIcon type={room.type} /></span>
         ) : null

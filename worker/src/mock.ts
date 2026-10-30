@@ -12,8 +12,8 @@ export function mockChat(req: ChatRequest): ChatResponse {
   const thai = THAI.test(text)
   const lower = text.toLowerCase()
 
-  // "How do I get to 3-06?"
-  const num = lower.match(/\b([1-5]-\d{2})\b/)?.[1]
+  // "How do I get to 1-301?"
+  const num = lower.match(/\b(\d-\d{2,3})\b/)?.[1]
   const target = num ? data.rooms.find((r) => r.number === num) : undefined
   if (target) {
     return {

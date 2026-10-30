@@ -135,8 +135,12 @@ function RoomForm({ room }: { room: Room }) {
         </select>
       </Field>
       <Field label="Department">
-        <select value={room.departmentId ?? ''} onChange={(e) => set('departmentId', e.target.value || null)}>
+        <select
+          value={room.departmentIds ? '__shared' : (room.departmentId ?? '')}
+          onChange={(e) => updateRoom(room.id, { departmentId: e.target.value || null, departmentIds: undefined })}
+        >
           <option value="">(none)</option>
+          {room.departmentIds && <option value="__shared">Shared: {room.departmentIds.map((id) => draft.departments.find((d) => d.id === id)?.letter ?? id).join(' + ')}</option>}
           {draft.departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
       </Field>

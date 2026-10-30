@@ -43,23 +43,23 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/sample-cla-2-02/sample-lab-2-03`)
+      await page.goto(`${base}#/route/f2-1-207/f2-1-205`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1500)
       check((await page.getByTestId('route-header').innerText()).startsWith('Floor 2 · about'), `${size.name}: same-floor header`)
-      check((await stepText(page)).startsWith('Leave Sample Classroom 2-02'), `${size.name}: first step leaves the start room`)
+      check((await stepText(page)).startsWith('Leave Document Room'), `${size.name}: first step leaves the start room`)
       await shot('01-same-floor-start')
       let guard = 0
       while (!(await page.getByRole('button', { name: 'Done' }).count()) && guard++ < 10) {
         await page.getByRole('button', { name: 'Next', exact: true }).tap()
         await page.waitForTimeout(500)
       }
-      check(/Sample Lab 2-03 is the \d+(st|nd|rd|th) door on your (left|right)/.test(await stepText(page)), `${size.name}: last step names the door`)
+      check(/Meeting Room is the \d+(st|nd|rd|th) door on your (left|right)/.test(await stepText(page)), `${size.name}: last step names the door`)
       check((await floorText(page)).includes('Floor 2'), `${size.name}: stays on floor 2`)
       await shot('02-same-floor-end')
       await page.getByRole('button', { name: 'Done' }).tap()
       await page.waitForTimeout(800)
-      check((await page.locator('.sheet').innerText()).includes('2-03'), `${size.name}: Done returns to the room card`)
+      check((await page.locator('.sheet').innerText()).includes('1-205'), `${size.name}: Done returns to the room card`)
       check((await page.locator('.sheet.peek').count()) === 1, `${size.name}: room card is the peek card`)
       await shot('03-back-to-room-card')
       await ctx.close()
@@ -69,7 +69,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/sample-f2-lift/sample-lab-5-02`)
+      await page.goto(`${base}#/route/f2-lifts/sample-lab-5-02`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1500)
       check((await page.getByTestId('route-header').innerText()).startsWith('Floor 2 → Floor 5'), `${size.name}: cross-floor header`)

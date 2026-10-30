@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { findShipped } from '../scripts/check-not-shipped.mjs'
 import type { BuildingData } from '../src/data/types'
+import { replaceFloor, sliceFloor } from '../src/trace/saveFloor'
 import { saveDepartmentsToFile, saveFloorToFile } from './trace-plugin'
 
 const sample: BuildingData = {
@@ -96,6 +97,40 @@ describe('saveDepartmentsToFile', () => {
     expect(JSON.parse(readFileSync(backup, 'utf8'))).toEqual(sample)
     expect(() => saveDepartmentsToFile(file, backups, [])).toThrow(/still used/)
     expect(JSON.parse(readFileSync(file, 'utf8')).departments).toHaveLength(2)
+  })
+})
+
+describe('voids and amenities through a floor save', () => {
+  const withVoid = (): BuildingData => ({
+    ...structuredClone(sample),
+    floors: [{ level: 1, label: 'Floor 1', elevation: 0 }, { level: 2, label: 'Floor 2', elevation: 4, voids: [[[8, 2], [12, 2], [12, 6], [8, 6]]] }],
+    amenities: [{ id: 'old-water', floor: 2, position: [15, 8], type: 'drinkingfountain' }, { id: 'f1-water', floor: 1, position: [2, 8], type: 'drinkingfountain' }],
+  })
+  const base = { floor: 2, rooms: [], nodes: [], edges: [], qrPoints: [], connectors: [] }
+
+  it('keeps the voids and amenities of the floor when the slice does not mention them (the trace tool own save)', () => {
+    const out = replaceFloor(withVoid(), base)
+    expect(out.floors[1]!.voids).toEqual([[[8, 2], [12, 2], [12, 6], [8, 6]]])
+    expect(out.floors[1]!.traced).toBe(true)
+    expect(out.amenities.map((a) => a.id).sort()).toEqual(['f1-water', 'old-water'])
+  })
+  it('carries voids through sliceFloor and back', () => {
+    const d = withVoid()
+    const slice = sliceFloor(d, 2)
+    expect(slice.voids).toHaveLength(1)
+    expect(replaceFloor(d, slice).floors[1]!.voids).toEqual(d.floors[1]!.voids)
+  })
+  it('sets new voids, replaces the amenities of the floor and retires the old amenity ids', () => {
+    const out = replaceFloor(withVoid(), { ...base, voids: [[[1, 1], [2, 1], [2, 2]]], amenities: [{ id: 'new-prayer', floor: 2, position: [3, 3], type: 'prayerroom' }] })
+    expect(out.floors[1]!.voids).toEqual([[[1, 1], [2, 1], [2, 2]]])
+    expect(out.amenities.map((a) => a.id).sort()).toEqual(['f1-water', 'new-prayer'])
+    expect(out.usedIds).toEqual(expect.arrayContaining(['old-water', 'new-prayer']))
+  })
+  it('refuses to reuse a retired or foreign amenity id, and an empty voids list removes the voids', () => {
+    expect(() => replaceFloor(withVoid(), { ...base, amenities: [{ id: 'f1-water', floor: 2, position: [3, 3], type: 'prayerroom' }] })).toThrow(/already used/)
+    const once = replaceFloor(withVoid(), { ...base, amenities: [] })
+    expect(() => replaceFloor(once, { ...base, amenities: [{ id: 'old-water', floor: 2, position: [3, 3], type: 'prayerroom' }] })).toThrow(/retired/)
+    expect(replaceFloor(withVoid(), { ...base, voids: [] }).floors[1]!.voids).toBeUndefined()
   })
 })
 

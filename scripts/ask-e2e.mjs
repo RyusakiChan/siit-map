@@ -66,6 +66,17 @@ try {
     check((await page.locator('.sheet').innerText()).includes('1-05'), `${size.name}: the map opens room 1-05`)
     await shot('04-room-on-map')
 
+    // A real traced room (the mock answers a room number with show_room and show_route).
+    await page.getByRole('button', { name: 'Ask', exact: true }).tap()
+    await page.getByPlaceholder('Ask a question').fill('How do I get to 1-301?')
+    await page.getByRole('button', { name: 'Send', exact: true }).tap()
+    await page.getByRole('button', { name: 'Show on map' }).last().waitFor()
+    await page.getByRole('button', { name: 'Show on map' }).last().tap()
+    await page.locator('.ask-sheet').waitFor({ state: 'detached' })
+    await page.waitForTimeout(1500)
+    check((await page.locator('.sheet').innerText()).includes('1-301'), `${size.name}: the map opens real room 1-301 on floor 3`)
+    await shot('04b-real-room-on-map')
+
     // Thai question: switch the UI language, then ask in Thai.
     await page.getByRole('button', { name: 'Switch language to Thai' }).tap()
     await page.getByRole('button', { name: 'ถาม', exact: true }).tap()

@@ -110,14 +110,19 @@ class BoxBuilder {
 
 const WALL = 0.25 // thickness of the low wall round a stair core
 const WALL_H = 0.3
-const STEP_RISE = 0.19 // the target height of one step
+const SLAB = 0.25 // a flight is a stepped slab this thick under its treads, not a solid block, so you can see each step
+const STEP_RISE = 0.12 // the target height of one step
+
+/** Stair cores stand at 60% of a room's height, so the camera looks down into them. */
+export const STAIR_HEIGHT_RATIO = 0.6
 
 /**
  * Stairs inside a rectangular room: a switchback (two flights and a half landing) when the room is at
  * least 2.4 m across its short side, otherwise one straight flight. The first step is at the end of the room
- * nearest `door`. Group 0 is every top (treads, wall tops), group 1 every riser and wall. Null for other shapes.
+ * nearest `door`. Group 0 is every top (treads, wall tops), group 1 every riser and wall. `nosing` has one line
+ * segment along the front edge of every tread. Null for other shapes.
  */
-export function stairsGeometry(poly: Point[], door: Point | undefined, height: number): THREE.BufferGeometry | null {
+export function stairsGeometry(poly: Point[], door: Point | undefined, height: number): { geometry: THREE.BufferGeometry; nosing: THREE.BufferGeometry } | null {
   const f = frameOf(poly)
   if (!f) return null
   const b = new BoxBuilder(f)
@@ -130,9 +135,17 @@ export function stairsGeometry(poly: Point[], door: Point | undefined, height: n
     const c = flip ? L - s1 : s1
     return [Math.min(a, c), Math.max(a, c)]
   }
-  const sbox = (s0: number, s1: number, v0: number, v1: number, y1: number, y0 = 0) => {
+  const nosing: number[] = []
+  const sbox = (s0: number, s1: number, v0: number, v1: number, y1: number, front: 'low' | 'high' = 'low') => {
     const [u0, u1] = U(s0, s1)
-    b.box(u0, u1, v0, v1, y0, y1)
+    b.box(u0, u1, v0, v1, Math.max(0, y1 - SLAB), y1)
+    // the tread's front edge is the one on the lower side of the flight
+    const sf = front === 'low' ? s0 : s1
+    const uf = flip ? L - sf : sf
+    for (const lv of [v0, v1]) {
+      const [x, z] = toWorld(f, uf, lv)
+      nosing.push(x, y1 + 0.01, z)
+    }
   }
   // low wall round the edge
   b.box(0, L, 0, WALL, 0, WALL_H)
@@ -152,15 +165,17 @@ export function stairsGeometry(poly: Point[], door: Point | undefined, height: n
     const d = lf / n
     const mid = W / 2
     for (let i = 0; i < n; i++) sbox(s0 + i * d, s0 + (i + 1) * d, v0, mid - 0.04, (i + 1) * h) // up
-    sbox(s0 + lf, s1, v0, v1, half) // landing
-    for (let j = 0; j < n; j++) sbox(s0 + lf - (j + 1) * d, s0 + lf - j * d, mid + 0.04, v1, half + (j + 1) * h) // back down the other side
+    b.box(...U(s0 + lf, s1), v0, v1, Math.max(0, half - SLAB), half) // landing, a thin slab too
+    for (let j = 0; j < n; j++) sbox(s0 + lf - (j + 1) * d, s0 + lf - j * d, mid + 0.04, v1, half + (j + 1) * h, 'high') // back down the other side
   } else {
     const n = Math.max(6, Math.round(height / STEP_RISE))
     const h = height / n
     const d = (s1 - s0) / n
     for (let i = 0; i < n; i++) sbox(s0 + i * d, s0 + (i + 1) * d, v0, v1, (i + 1) * h)
   }
-  return b.build()
+  const line = new THREE.BufferGeometry()
+  line.setAttribute('position', new THREE.Float32BufferAttribute(nosing, 3))
+  return { geometry: b.build(), nosing: line }
 }
 
 /** Two door leaves on the face of a rectangular room nearest `door`, just proud of the wall. Null for other shapes. */

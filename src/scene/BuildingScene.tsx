@@ -8,7 +8,7 @@ import { roomDeptIds } from '../data/departments'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
-import { liftDoorGeometry, shadeExtrusion, stairsGeometry } from './connectors'
+import { liftDoorGeometry, shadeExtrusion, stairsGeometry, STAIR_HEIGHT_RATIO } from './connectors'
 import { useAppStore, type FloorView } from '../state/store'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
@@ -65,9 +65,10 @@ function makeMaterials(double = false): [THREE.MeshBasicMaterial, THREE.MeshBasi
   ]
 }
 
-const TREAD = new THREE.Color('#BDB3BE')
+const TREAD = new THREE.Color('#CFC7D0')
 const LIFT_DOOR = new THREE.Color('#CFC7D0')
 const LIFT_DOOR_DIM = new THREE.Color('#DDD6DE')
+const NOSING_MATERIAL = new THREE.LineBasicMaterial({ color: tokens.ink, transparent: true, opacity: 0.2, depthWrite: false })
 const EDGE_MATERIAL = new THREE.LineBasicMaterial({ color: tokens.ink, transparent: true, opacity: 0.14, depthWrite: false })
 
 const ringPoints = (poly: Point[], y: number) => [...poly, poly[0]!].map(([x, z]) => new THREE.Vector3(x, y, z))
@@ -90,6 +91,10 @@ interface RoomItem {
   colors: { top: THREE.Color; side: THREE.Color }
   /** Thin line round the room top that keeps neighbours of the same type apart. */
   edge: THREE.BufferGeometry | null
+  /** Height of the block (stair cores stand lower than other rooms). */
+  height: number
+  /** Dark line along the front edge of every stair tread. */
+  nosing: THREE.BufferGeometry | null
   /** Lift door leaves. */
   door: { geometry: THREE.BufferGeometry; material: THREE.MeshBasicMaterial } | null
 }
@@ -129,12 +134,14 @@ function FloorLayer({ level }: { level: number }) {
         .map((room): RoomItem => {
           const c = roomColor(room)
           const doorAt = room.door ? doorPos.get(room.door) : undefined
-          const stairs = room.type === 'stairs' ? stairsGeometry(room.polygon, doorAt, ROOM_HEIGHT) : null
+          const stairs = room.type === 'stairs' ? stairsGeometry(room.polygon, doorAt, ROOM_HEIGHT * STAIR_HEIGHT_RATIO) : null
           const [top, side] = makeMaterials(!!stairs)
           const liftDoor = room.type === 'elevator' ? liftDoorGeometry(room.polygon, doorAt) : null
           return {
             room,
-            geometry: stairs ?? extrude(room.polygon, ROOM_HEIGHT),
+            geometry: stairs?.geometry ?? extrude(room.polygon, ROOM_HEIGHT),
+            height: stairs ? ROOM_HEIGHT * STAIR_HEIGHT_RATIO : ROOM_HEIGHT,
+            nosing: stairs?.nosing ?? null,
             rotated: !stairs,
             top,
             side,
@@ -177,6 +184,7 @@ function FloorLayer({ level }: { level: number }) {
         i.top.dispose()
         i.side.dispose()
         i.edge?.dispose()
+        i.nosing?.dispose()
         i.door?.geometry.dispose()
         i.door?.material.dispose()
       })
@@ -247,7 +255,7 @@ function FloorLayer({ level }: { level: number }) {
         l.group.visible = c.g > 0.002
         l.group.scale.y = Math.max(sy, 0.001)
       }
-      roomState.set(it.room.id, { top: c.offset + elevation + ROOM_HEIGHT * sy, g: c.g })
+      roomState.set(it.room.id, { top: c.offset + elevation + it.height * sy, g: c.g })
     }
   })
 
@@ -263,6 +271,7 @@ function FloorLayer({ level }: { level: number }) {
           live.current.set(it.room.id, l)
         }} position={[0, elevation, 0]}>
           {it.edge && <lineLoop geometry={it.edge} material={EDGE_MATERIAL} />}
+          {it.nosing && <lineSegments geometry={it.nosing} material={NOSING_MATERIAL} />}
           {it.door && <mesh geometry={it.door.geometry} material={it.door.material} />}
           <mesh
             geometry={it.geometry}
@@ -622,7 +631,8 @@ function FloorLabels({ floor }: { floor: number }) {
         .filter((r) => r.floor === floor)
         .map((room) => ({
           room,
-          big: polygonArea(room.polygon) >= BIG_ROOM_AREA,
+          // Big rooms, and the lifts and stairs (their glyph badge shows at the default zoom), are always labelled.
+          big: polygonArea(room.polygon) >= BIG_ROOM_AREA || room.type === 'stairs' || room.type === 'elevator',
           at: polygonCentroid(room.polygon),
           letters: roomDeptIds(room).flatMap((id) => data.departments.find((d) => d.id === id) ?? []).map((d) => ({ letter: d.letter, color: departmentBadgeColor(d.id) })),
         })),
@@ -638,6 +648,7 @@ function FloorLabels({ floor }: { floor: number }) {
     }
   })
   const y = elevationOf(floor) + ROOM_HEIGHT + 0.1
+  const stairY = elevationOf(floor) + ROOM_HEIGHT * STAIR_HEIGHT_RATIO + 0.1
   return (
     <group ref={group}>
       {rooms.map(({ room, big, at, letters }) => {
@@ -657,7 +668,7 @@ function FloorLabels({ floor }: { floor: number }) {
           <span ref={keep} className="map-icon" style={{ opacity: 0 }}><FacilityIcon type={room.type} /></span>
         ) : null
         return badge && (
-          <Html key={room.id} position={[at[0], y, at[1]]} center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
+          <Html key={room.id} position={[at[0], room.type === 'stairs' ? stairY : y, at[1]]} center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
             {badge}
           </Html>
         )

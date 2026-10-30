@@ -34,11 +34,11 @@ export interface TypeTint extends RoomColor {
   shade: string
 }
 export const typeTints = {
-  study: { top: '#E3DAF2', side: '#C9BEDD', shade: '#B5A9CB', badge: tokens.muted }, // classrooms, laboratories
-  office: { top: '#F2E1EA', side: '#DAC5D1', shade: '#C6B0BD', badge: tokens.muted }, // offices, conference rooms
-  library: { top: '#DDEBDD', side: '#BFD3BF', shade: '#A9C0A9', badge: tokens.muted },
-  facility: { top: '#DCEDF0', side: '#BED6DA', shade: '#A8C2C7', badge: tokens.muted }, // restrooms and other facilities
-  other: { top: '#EEE8EF', side: '#D6CDD8', shade: '#C2B8C5', badge: tokens.muted },
+  study: { top: '#E6D7FD', side: '#CCBAEC', shade: '#B8A4DB', badge: tokens.muted }, // classrooms, laboratories
+  office: { top: '#F9DEEC', side: '#E2C1D4', shade: '#CEABC0', badge: tokens.muted }, // offices, conference rooms
+  library: { top: '#D7EED7', side: '#B7D7B7', shade: '#9FC49F', badge: tokens.muted },
+  facility: { top: '#D4EFF4', side: '#B2D9E0', shade: '#9AC5CD', badge: tokens.muted }, // restrooms and other facilities
+  other: { top: '#F0E7F2', side: '#D9CBDD', shade: '#C6B6CA', badge: tokens.muted },
 } satisfies Record<string, TypeTint>
 
 export type TintKey = keyof typeof typeTints

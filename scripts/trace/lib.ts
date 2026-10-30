@@ -111,6 +111,8 @@ export interface RoomSpec {
   photo?: string
   /** polygon in poster pixels */
   px: Point[]
+  /** Use this metre polygon as is (no clipping, no inset): a shaft snapped onto another floor's room. */
+  metres?: Point[]
   /** a click near the wall the door goes on (poster pixels) */
   door: Point
   /** optional point on the corridor to join (poster pixels); otherwise the nearest corridor edge */
@@ -142,10 +144,19 @@ export function build(plan: Plan): Built {
   const rooms: Room[] = []
   const polys = new Map<string, Point[]>()
   for (const spec of plan.rooms) {
-    const full = spec.px.map((p) => fit.to(p))
-    const clipped = clipToOutline(full, outline)
-    if (clipped.keptFraction < 0.999) report.push(`clip ${spec.id}: kept ${(clipped.keptFraction * 100).toFixed(0)}% of its area${clipped.keptFraction < 0.75 ? ' (MORE THAN A QUARTER REMOVED)' : ''}`)
-    const p = clean(inset(clean(clipped.poly), plan.gap / 2).map(roundP))
+    let p: Point[]
+    if (spec.metres) {
+      p = spec.metres
+      const c = p.reduce((s, q) => [s[0] + q[0] / p.length, s[1] + q[1] / p.length], [0, 0])
+      const f = clean(inset(clean(clipToOutline(spec.px.map((q) => fit.to(q)), outline).poly), plan.gap / 2).map(roundP))
+      const fc = f.reduce((s, q) => [s[0] + q[0] / f.length, s[1] + q[1] / f.length], [0, 0])
+      report.push(`snap ${spec.id}: floor-3 shaft centre [${c.map(round2)}], this poster put it at [${fc.map(round2)}] (${Math.hypot(c[0] - fc[0], c[1] - fc[1]).toFixed(1)} m apart)`)
+    } else {
+      const full = spec.px.map((q) => fit.to(q))
+      const clipped = clipToOutline(full, outline)
+      if (clipped.keptFraction < 0.999) report.push(`clip ${spec.id}: kept ${(clipped.keptFraction * 100).toFixed(0)}% of its area${clipped.keptFraction < 0.75 ? ' (MORE THAN A QUARTER REMOVED)' : ''}`)
+      p = clean(inset(clean(clipped.poly), plan.gap / 2).map(roundP))
+    }
     polys.set(spec.id, p)
     rooms.push({
       id: spec.id, number: spec.number, name: spec.name, ...(spec.nameTh ? { nameTh: spec.nameTh } : {}),

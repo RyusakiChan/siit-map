@@ -73,7 +73,8 @@
     {
       "level": 2,
       "label": "Floor 2",
-      "elevation": 4
+      "elevation": 4,
+      "traced": true
     },
     {
       "level": 3,
@@ -597,480 +598,6 @@
       ],
       "floor": 1,
       "door": "f1-door-stairs-e"
-    },
-    {
-      "id": "sample-off-2-01",
-      "number": "2-01",
-      "name": "Sample Office 2-01",
-      "nameTh": "สำนักงานตัวอย่าง 2-01",
-      "departmentId": "sample-dept-a",
-      "type": "office",
-      "polygon": [
-        [
-          -36.75,
-          5.25
-        ],
-        [
-          -31.25,
-          5.25
-        ],
-        [
-          -31.25,
-          19.75
-        ],
-        [
-          -36.75,
-          19.75
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-off-2-01"
-    },
-    {
-      "id": "sample-cla-2-02",
-      "number": "2-02",
-      "name": "Sample Classroom 2-02",
-      "departmentId": "sample-dept-a",
-      "type": "classroom",
-      "polygon": [
-        [
-          -30.75,
-          5.25
-        ],
-        [
-          -20.25,
-          5.25
-        ],
-        [
-          -20.25,
-          28.75
-        ],
-        [
-          -30.75,
-          28.75
-        ]
-      ],
-      "popular": true,
-      "aliases": [
-        "lecture hall"
-      ],
-      "floor": 2,
-      "door": "f2-door-cla-2-02"
-    },
-    {
-      "id": "sample-lab-2-03",
-      "number": "2-03",
-      "name": "Sample Lab 2-03",
-      "nameTh": "ห้องปฏิบัติการตัวอย่าง 2-03",
-      "departmentId": "sample-dept-a",
-      "type": "laboratory",
-      "polygon": [
-        [
-          -19.75,
-          5.25
-        ],
-        [
-          -8.25,
-          5.25
-        ],
-        [
-          -8.25,
-          28.75
-        ],
-        [
-          -19.75,
-          28.75
-        ]
-      ],
-      "aliases": [
-        "computer lab"
-      ],
-      "floor": 2,
-      "door": "f2-door-lab-2-03"
-    },
-    {
-      "id": "sample-off-2-04",
-      "number": "2-04",
-      "name": "Sample Office 2-04",
-      "departmentId": "sample-dept-b",
-      "type": "office",
-      "polygon": [
-        [
-          -7.75,
-          5.25
-        ],
-        [
-          -0.25,
-          5.25
-        ],
-        [
-          -0.25,
-          28.75
-        ],
-        [
-          -7.75,
-          28.75
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-off-2-04"
-    },
-    {
-      "id": "sample-cla-2-05",
-      "number": "2-05",
-      "name": "Sample Classroom 2-05",
-      "nameTh": "ห้องเรียนตัวอย่าง 2-05",
-      "departmentId": "sample-dept-b",
-      "type": "classroom",
-      "polygon": [
-        [
-          0.25,
-          5.25
-        ],
-        [
-          9.75,
-          5.25
-        ],
-        [
-          9.75,
-          28.75
-        ],
-        [
-          0.25,
-          28.75
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-cla-2-05"
-    },
-    {
-      "id": "sample-con-2-06",
-      "number": "2-06",
-      "name": "Sample Meeting Room 2-06",
-      "departmentId": "sample-dept-c",
-      "type": "conferenceroom",
-      "polygon": [
-        [
-          10.25,
-          5.25
-        ],
-        [
-          19.75,
-          5.25
-        ],
-        [
-          19.75,
-          28.75
-        ],
-        [
-          10.25,
-          28.75
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-con-2-06"
-    },
-    {
-      "id": "sample-lab-2-07",
-      "number": "2-07",
-      "name": "Sample Lab 2-07",
-      "nameTh": "ห้องปฏิบัติการตัวอย่าง 2-07",
-      "departmentId": "sample-dept-b",
-      "type": "laboratory",
-      "polygon": [
-        [
-          20.25,
-          5.25
-        ],
-        [
-          30.75,
-          5.25
-        ],
-        [
-          30.75,
-          28.75
-        ],
-        [
-          25.25,
-          28.75
-        ],
-        [
-          25.25,
-          15.25
-        ],
-        [
-          20.25,
-          15.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-lab-2-07"
-    },
-    {
-      "id": "sample-cla-2-08",
-      "number": "2-08",
-      "name": "Sample Classroom 2-08",
-      "departmentId": "sample-dept-a",
-      "type": "classroom",
-      "polygon": [
-        [
-          -31.75,
-          -27.75
-        ],
-        [
-          -21.25,
-          -27.75
-        ],
-        [
-          -21.25,
-          -5.25
-        ],
-        [
-          -31.75,
-          -5.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-cla-2-08"
-    },
-    {
-      "id": "sample-lab-2-09",
-      "number": "2-09",
-      "name": "Sample Lab 2-09",
-      "nameTh": "ห้องปฏิบัติการตัวอย่าง 2-09",
-      "departmentId": "sample-dept-b",
-      "type": "laboratory",
-      "polygon": [
-        [
-          -20.75,
-          -27.75
-        ],
-        [
-          -10.25,
-          -27.75
-        ],
-        [
-          -10.25,
-          -5.25
-        ],
-        [
-          -20.75,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "computer lab"
-      ],
-      "floor": 2,
-      "door": "f2-door-lab-2-09"
-    },
-    {
-      "id": "sample-cla-2-10",
-      "number": "2-10",
-      "name": "Sample Classroom 2-10",
-      "departmentId": "sample-dept-c",
-      "type": "classroom",
-      "polygon": [
-        [
-          0.25,
-          -27.75
-        ],
-        [
-          9.75,
-          -27.75
-        ],
-        [
-          9.75,
-          -5.25
-        ],
-        [
-          0.25,
-          -5.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-cla-2-10"
-    },
-    {
-      "id": "sample-off-2-11",
-      "number": "2-11",
-      "name": "Sample Office 2-11",
-      "nameTh": "สำนักงานตัวอย่าง 2-11",
-      "departmentId": "sample-dept-c",
-      "type": "office",
-      "polygon": [
-        [
-          10.25,
-          -27.75
-        ],
-        [
-          19.75,
-          -27.75
-        ],
-        [
-          19.75,
-          -5.25
-        ],
-        [
-          10.25,
-          -5.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-off-2-11"
-    },
-    {
-      "id": "sample-lab-2-12",
-      "number": "2-12",
-      "name": "Sample Lab 2-12",
-      "departmentId": "sample-dept-c",
-      "type": "laboratory",
-      "polygon": [
-        [
-          20.25,
-          -27.75
-        ],
-        [
-          25.75,
-          -27.75
-        ],
-        [
-          25.75,
-          -5.25
-        ],
-        [
-          20.25,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "computer lab"
-      ],
-      "floor": 2,
-      "door": "f2-door-lab-2-12"
-    },
-    {
-      "id": "sample-f2-restroom",
-      "number": null,
-      "name": "Sample Restrooms F2",
-      "nameTh": "ห้องน้ำตัวอย่าง ชั้น 2",
-      "departmentId": null,
-      "type": "restroom",
-      "polygon": [
-        [
-          -9.75,
-          -27.75
-        ],
-        [
-          -4.25,
-          -27.75
-        ],
-        [
-          -4.25,
-          -5.25
-        ],
-        [
-          -9.75,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "toilet",
-        "wc"
-      ],
-      "aliasesTh": [
-        "ห้องส้วม"
-      ],
-      "popular": false,
-      "floor": 2,
-      "door": "f2-door-restroom"
-    },
-    {
-      "id": "sample-f2-lift",
-      "number": null,
-      "name": "Sample Lift F2",
-      "nameTh": "ลิฟต์ตัวอย่าง ชั้น 2",
-      "departmentId": null,
-      "type": "elevator",
-      "polygon": [
-        [
-          -3.75,
-          -27.75
-        ],
-        [
-          -0.25,
-          -27.75
-        ],
-        [
-          -0.25,
-          -5.25
-        ],
-        [
-          -3.75,
-          -5.25
-        ]
-      ],
-      "aliases": [
-        "elevator"
-      ],
-      "floor": 2,
-      "door": "f2-door-lift"
-    },
-    {
-      "id": "sample-f2-stairs-w",
-      "number": null,
-      "name": "Sample Stairs West F2",
-      "nameTh": "บันไดตัวอย่างฝั่งตะวันตก",
-      "departmentId": null,
-      "type": "stairs",
-      "polygon": [
-        [
-          -36.75,
-          -27.75
-        ],
-        [
-          -32.25,
-          -27.75
-        ],
-        [
-          -32.25,
-          -5.25
-        ],
-        [
-          -36.75,
-          -5.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-stairs-w"
-    },
-    {
-      "id": "sample-f2-stairs-e",
-      "number": null,
-      "name": "Sample Stairs East F2",
-      "nameTh": "บันไดตัวอย่างฝั่งตะวันออก",
-      "departmentId": null,
-      "type": "stairs",
-      "polygon": [
-        [
-          26.25,
-          -27.75
-        ],
-        [
-          30.75,
-          -27.75
-        ],
-        [
-          30.75,
-          -5.25
-        ],
-        [
-          26.25,
-          -5.25
-        ]
-      ],
-      "floor": 2,
-      "door": "f2-door-stairs-e"
     },
     {
       "id": "sample-lab-4-01",
@@ -2649,18 +2176,644 @@
         ]
       ],
       "door": "f3-d24"
+    },
+    {
+      "id": "f2-library",
+      "number": null,
+      "name": "SIIT Library",
+      "nameTh": "ห้องสมุด",
+      "floor": 2,
+      "departmentId": null,
+      "type": "library",
+      "polygon": [
+        [
+          -38.89,
+          -29.83
+        ],
+        [
+          -0.11,
+          -29.76
+        ],
+        [
+          -0.15,
+          -26.25
+        ],
+        [
+          -7.57,
+          -26.28
+        ],
+        [
+          -7.85,
+          -3.46
+        ],
+        [
+          -15.84,
+          -3.56
+        ],
+        [
+          -16.19,
+          22.64
+        ],
+        [
+          -19.94,
+          22.55
+        ],
+        [
+          -20.05,
+          30.99
+        ],
+        [
+          -21.81,
+          31.03
+        ],
+        [
+          -31.28,
+          30.77
+        ],
+        [
+          -31.48,
+          21.96
+        ],
+        [
+          -38.88,
+          21.97
+        ],
+        [
+          -38.88,
+          18.75
+        ]
+      ],
+      "door": "f2-d1"
+    },
+    {
+      "id": "f2-1-208",
+      "number": "1-208",
+      "name": "International Affairs and Corporate Relations",
+      "aliases": [
+        "International and Career"
+      ],
+      "floor": 2,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          -7.37,
+          -11.5
+        ],
+        [
+          -7.19,
+          -26.02
+        ],
+        [
+          -0.05,
+          -26
+        ],
+        [
+          -0.16,
+          -16.84
+        ],
+        [
+          -1.98,
+          -16.85
+        ],
+        [
+          -2.04,
+          -11.45
+        ]
+      ],
+      "door": "f2-d2"
+    },
+    {
+      "id": "f2-1-207",
+      "number": "1-207",
+      "name": "Document Room",
+      "nameTh": "ห้องเก็บเอกสาร",
+      "floor": 2,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -15.28,
+          4.99
+        ],
+        [
+          -15.17,
+          -2.84
+        ],
+        [
+          -7.86,
+          -2.74
+        ],
+        [
+          -7.92,
+          1.8
+        ],
+        [
+          -11.34,
+          1.75
+        ],
+        [
+          -11.39,
+          5.05
+        ]
+      ],
+      "door": "f2-d3"
+    },
+    {
+      "id": "f2-1-206",
+      "number": "1-206",
+      "name": "Conference Room",
+      "nameTh": "ห้องประชุม",
+      "floor": 2,
+      "departmentId": null,
+      "type": "conferenceroom",
+      "polygon": [
+        [
+          -5.32,
+          4.46
+        ],
+        [
+          -5.16,
+          -8.62
+        ],
+        [
+          8.63,
+          -8.48
+        ],
+        [
+          8.5,
+          4.68
+        ]
+      ],
+      "door": "f2-d4"
+    },
+    {
+      "id": "f2-1-203",
+      "number": "1-203",
+      "name": "Meeting Room",
+      "nameTh": "ห้องประชุม",
+      "floor": 2,
+      "departmentId": null,
+      "type": "conferenceroom",
+      "polygon": [
+        [
+          -5.22,
+          5.07
+        ],
+        [
+          0.03,
+          5.16
+        ],
+        [
+          -0.06,
+          13.24
+        ],
+        [
+          -5,
+          13.14
+        ]
+      ],
+      "door": "f2-d5"
+    },
+    {
+      "id": "f2-1-204",
+      "number": "1-204",
+      "name": "Meeting Room",
+      "nameTh": "ห้องประชุม",
+      "floor": 2,
+      "departmentId": null,
+      "type": "conferenceroom",
+      "polygon": [
+        [
+          0.52,
+          13.25
+        ],
+        [
+          0.61,
+          5.17
+        ],
+        [
+          3.49,
+          5.21
+        ],
+        [
+          3.4,
+          13.3
+        ]
+      ],
+      "door": "f2-d6"
+    },
+    {
+      "id": "f2-1-205",
+      "number": "1-205",
+      "name": "Meeting Room",
+      "nameTh": "ห้องประชุม",
+      "floor": 2,
+      "departmentId": null,
+      "type": "conferenceroom",
+      "polygon": [
+        [
+          4.02,
+          13.31
+        ],
+        [
+          4.1,
+          5.22
+        ],
+        [
+          8.36,
+          5.29
+        ],
+        [
+          8.28,
+          13.4
+        ]
+      ],
+      "door": "f2-d7"
+    },
+    {
+      "id": "f2-1-202",
+      "number": "1-202",
+      "name": "Faculty and Staff Lounge",
+      "nameTh": "ห้องพักอาจารย์และเจ้าหน้าที่",
+      "floor": 2,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -7.78,
+          22.1
+        ],
+        [
+          -7.73,
+          17.86
+        ],
+        [
+          -3.86,
+          17.94
+        ],
+        [
+          -3.84,
+          16.26
+        ],
+        [
+          8.25,
+          16.51
+        ],
+        [
+          8.1,
+          31.68
+        ],
+        [
+          2.7,
+          31.54
+        ],
+        [
+          -4.01,
+          31.19
+        ],
+        [
+          -3.91,
+          22.19
+        ]
+      ],
+      "door": "f2-d8"
+    },
+    {
+      "id": "f2-1-210",
+      "number": "1-210",
+      "name": "Research and QA, Student Affairs and Alumni, Supplies and Procurement",
+      "aliases": [
+        "Research and Academic Quality Assurance",
+        "Student Affairs and Alumni Relations",
+        "Supplies and Procurement",
+        "R&QA",
+        "R&OA",
+        "SA&AR",
+        "SP"
+      ],
+      "floor": 2,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          11.06,
+          -8.85
+        ],
+        [
+          11.19,
+          -22.66
+        ],
+        [
+          32.39,
+          -23.02
+        ],
+        [
+          32.29,
+          -8.62
+        ]
+      ],
+      "door": "f2-d9"
+    },
+    {
+      "id": "f2-1-211",
+      "number": "1-211",
+      "name": "Academic Services and Registration, Finance and Budget",
+      "aliases": [
+        "AS&R",
+        "FIN",
+        "Academic Services and Registration Division",
+        "Finance and Budget Division"
+      ],
+      "floor": 2,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          10.94,
+          3.51
+        ],
+        [
+          11.05,
+          -8.2
+        ],
+        [
+          32.29,
+          -7.97
+        ],
+        [
+          32.21,
+          3.84
+        ]
+      ],
+      "door": "f2-d10"
+    },
+    {
+      "id": "f2-1-212",
+      "number": "1-212",
+      "name": "Central Coordinating and Accounting",
+      "aliases": [
+        "CCo",
+        "Acc",
+        "Central Coordinating Division",
+        "Accounting Division"
+      ],
+      "floor": 2,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          10.81,
+          16.24
+        ],
+        [
+          10.93,
+          4.23
+        ],
+        [
+          32.21,
+          4.57
+        ],
+        [
+          32.13,
+          16.68
+        ]
+      ],
+      "door": "f2-d11"
+    },
+    {
+      "id": "f2-1-213",
+      "number": "1-213",
+      "name": "Office of the Director",
+      "floor": 2,
+      "departmentId": null,
+      "type": "office",
+      "polygon": [
+        [
+          10.67,
+          31.42
+        ],
+        [
+          10.81,
+          17.04
+        ],
+        [
+          32.12,
+          17.48
+        ],
+        [
+          32.03,
+          31.98
+        ]
+      ],
+      "door": "f2-d12"
+    },
+    {
+      "id": "f2-restroom-top-mid",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 2,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          0.39,
+          -22.27
+        ],
+        [
+          0.47,
+          -29.54
+        ],
+        [
+          7.98,
+          -29.52
+        ],
+        [
+          7.9,
+          -22.23
+        ]
+      ],
+      "door": "f2-d13"
+    },
+    {
+      "id": "f2-restroom-top-right",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 2,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          11.22,
+          -25.99
+        ],
+        [
+          11.26,
+          -29.73
+        ],
+        [
+          22.13,
+          -29.71
+        ],
+        [
+          22.1,
+          -25.95
+        ]
+      ],
+      "door": "f2-d14"
+    },
+    {
+      "id": "f2-restroom-mid-left",
+      "number": null,
+      "name": "Restrooms",
+      "nameTh": "ห้องน้ำ",
+      "floor": 2,
+      "departmentId": null,
+      "type": "restroom",
+      "polygon": [
+        [
+          -14.03,
+          7.66
+        ],
+        [
+          -14.01,
+          6.02
+        ],
+        [
+          -11.15,
+          6.07
+        ],
+        [
+          -11.11,
+          2.73
+        ],
+        [
+          -7.7,
+          2.78
+        ],
+        [
+          -7.76,
+          7.77
+        ]
+      ],
+      "door": "f2-d15"
+    },
+    {
+      "id": "f2-stairs-top-mid",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 2,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          1.91,
+          -20.32
+        ],
+        [
+          7.46,
+          -20.42
+        ],
+        [
+          7.48,
+          -14.39
+        ],
+        [
+          1.95,
+          -14.33
+        ]
+      ],
+      "door": "f2-d16"
+    },
+    {
+      "id": "f2-stairs-top-right",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 2,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          26.71,
+          -23.69
+        ],
+        [
+          26.73,
+          -29.68
+        ],
+        [
+          32.43,
+          -29.83
+        ],
+        [
+          32.41,
+          -23.81
+        ]
+      ],
+      "door": "f2-d17"
+    },
+    {
+      "id": "f2-stairs-bottom",
+      "number": null,
+      "name": "Stairs",
+      "nameTh": "บันได",
+      "floor": 2,
+      "departmentId": null,
+      "type": "stairs",
+      "polygon": [
+        [
+          -14.63,
+          16.97
+        ],
+        [
+          -9.17,
+          17.07
+        ],
+        [
+          -9.12,
+          23.28
+        ],
+        [
+          -14.57,
+          23.16
+        ]
+      ],
+      "door": "f2-d18"
+    },
+    {
+      "id": "f2-lifts",
+      "number": null,
+      "name": "Lifts",
+      "nameTh": "ลิฟต์",
+      "floor": 2,
+      "departmentId": null,
+      "type": "elevator",
+      "polygon": [
+        [
+          -14.33,
+          8.18
+        ],
+        [
+          -8.57,
+          8.23
+        ],
+        [
+          -8.54,
+          11.83
+        ],
+        [
+          -14.29,
+          11.76
+        ]
+      ],
+      "door": "f2-d19"
     }
   ],
   "qrPoints": [
-    {
-      "id": "sample-f2-lift",
-      "floor": 2,
-      "position": [
-        -2,
-        1.5
-      ],
-      "facingDeg": 180
-    },
     {
       "id": "sample-f1-lobby",
       "floor": 1,
@@ -2669,6 +2822,15 @@
         8
       ],
       "facingDeg": 0
+    },
+    {
+      "id": "sample-f2-lift",
+      "floor": 2,
+      "position": [
+        -8.3,
+        10.8
+      ],
+      "facingDeg": 180
     }
   ],
   "amenities": [
@@ -2700,15 +2862,6 @@
       "type": "drinkingfountain"
     },
     {
-      "id": "sample-f2-water",
-      "floor": 2,
-      "position": [
-        -7,
-        -2
-      ],
-      "type": "drinkingfountain"
-    },
-    {
       "id": "sample-f4-water",
       "floor": 4,
       "position": [
@@ -2725,15 +2878,6 @@
         -2
       ],
       "type": "drinkingfountain"
-    },
-    {
-      "id": "sample-f2-prayer",
-      "floor": 2,
-      "position": [
-        24,
-        -2
-      ],
-      "type": "prayerroom"
     },
     {
       "id": "f3-prayer-1-308",
@@ -2942,238 +3086,6 @@
       {
         "id": "f1-c285",
         "floor": 1,
-        "position": [
-          28.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-off-2-01",
-        "floor": 2,
-        "position": [
-          -34.5,
-          5
-        ]
-      },
-      {
-        "id": "f2-cm345",
-        "floor": 2,
-        "position": [
-          -34.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-cla-2-02",
-        "floor": 2,
-        "position": [
-          -25.5,
-          5
-        ]
-      },
-      {
-        "id": "f2-cm255",
-        "floor": 2,
-        "position": [
-          -25.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-lab-2-03",
-        "floor": 2,
-        "position": [
-          -14,
-          5
-        ]
-      },
-      {
-        "id": "f2-cm140",
-        "floor": 2,
-        "position": [
-          -14,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-off-2-04",
-        "floor": 2,
-        "position": [
-          -4,
-          5
-        ]
-      },
-      {
-        "id": "f2-cm40",
-        "floor": 2,
-        "position": [
-          -4,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-cla-2-05",
-        "floor": 2,
-        "position": [
-          5,
-          5
-        ]
-      },
-      {
-        "id": "f2-c50",
-        "floor": 2,
-        "position": [
-          5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-con-2-06",
-        "floor": 2,
-        "position": [
-          15,
-          5
-        ]
-      },
-      {
-        "id": "f2-c150",
-        "floor": 2,
-        "position": [
-          15,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-lab-2-07",
-        "floor": 2,
-        "position": [
-          25.5,
-          5
-        ]
-      },
-      {
-        "id": "f2-c255",
-        "floor": 2,
-        "position": [
-          25.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-cla-2-08",
-        "floor": 2,
-        "position": [
-          -26.5,
-          -5
-        ]
-      },
-      {
-        "id": "f2-cm265",
-        "floor": 2,
-        "position": [
-          -26.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-lab-2-09",
-        "floor": 2,
-        "position": [
-          -15.5,
-          -5
-        ]
-      },
-      {
-        "id": "f2-cm155",
-        "floor": 2,
-        "position": [
-          -15.5,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-cla-2-10",
-        "floor": 2,
-        "position": [
-          5,
-          -5
-        ]
-      },
-      {
-        "id": "f2-door-off-2-11",
-        "floor": 2,
-        "position": [
-          15,
-          -5
-        ]
-      },
-      {
-        "id": "f2-door-lab-2-12",
-        "floor": 2,
-        "position": [
-          23,
-          -5
-        ]
-      },
-      {
-        "id": "f2-c230",
-        "floor": 2,
-        "position": [
-          23,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-restroom",
-        "floor": 2,
-        "position": [
-          -7,
-          -5
-        ]
-      },
-      {
-        "id": "f2-cm70",
-        "floor": 2,
-        "position": [
-          -7,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-lift",
-        "floor": 2,
-        "position": [
-          -2,
-          -5
-        ]
-      },
-      {
-        "id": "f2-cm20",
-        "floor": 2,
-        "position": [
-          -2,
-          0
-        ]
-      },
-      {
-        "id": "f2-door-stairs-w",
-        "floor": 2,
-        "position": [
-          -34.5,
-          -5
-        ]
-      },
-      {
-        "id": "f2-door-stairs-e",
-        "floor": 2,
-        "position": [
-          28.5,
-          -5
-        ]
-      },
-      {
-        "id": "f2-c285",
-        "floor": 2,
         "position": [
           28.5,
           0
@@ -4042,6 +3954,350 @@
           -11.46,
           15.14
         ]
+      },
+      {
+        "id": "f2-c1",
+        "floor": 2,
+        "position": [
+          -6.36,
+          -10.06
+        ]
+      },
+      {
+        "id": "f2-c2",
+        "floor": 2,
+        "position": [
+          9.84,
+          -9.9
+        ]
+      },
+      {
+        "id": "f2-c3",
+        "floor": 2,
+        "position": [
+          9.98,
+          -24.45
+        ]
+      },
+      {
+        "id": "f2-c4",
+        "floor": 2,
+        "position": [
+          23.96,
+          -24.4
+        ]
+      },
+      {
+        "id": "f2-c5",
+        "floor": 2,
+        "position": [
+          9.59,
+          15.24
+        ]
+      },
+      {
+        "id": "f2-c6",
+        "floor": 2,
+        "position": [
+          -6.66,
+          14.91
+        ]
+      },
+      {
+        "id": "f2-c7",
+        "floor": 2,
+        "position": [
+          -15.01,
+          14.74
+        ]
+      },
+      {
+        "id": "f2-c8",
+        "floor": 2,
+        "position": [
+          -14.93,
+          9.29
+        ]
+      },
+      {
+        "id": "f2-c9",
+        "floor": 2,
+        "position": [
+          9.52,
+          22.63
+        ]
+      },
+      {
+        "id": "f2-d1",
+        "floor": 2,
+        "position": [
+          -7.56,
+          -6.63
+        ]
+      },
+      {
+        "id": "f2-c10",
+        "floor": 2,
+        "position": [
+          -6.4,
+          -6.62
+        ]
+      },
+      {
+        "id": "f2-d2",
+        "floor": 2,
+        "position": [
+          -4.83,
+          -11.23
+        ]
+      },
+      {
+        "id": "f2-c11",
+        "floor": 2,
+        "position": [
+          -4.84,
+          -10.05
+        ]
+      },
+      {
+        "id": "f2-d3",
+        "floor": 2,
+        "position": [
+          -7.64,
+          -0.5
+        ]
+      },
+      {
+        "id": "f2-c12",
+        "floor": 2,
+        "position": [
+          -6.47,
+          -0.49
+        ]
+      },
+      {
+        "id": "f2-d4",
+        "floor": 2,
+        "position": [
+          -5.49,
+          -2.36
+        ]
+      },
+      {
+        "id": "f2-c13",
+        "floor": 2,
+        "position": [
+          -6.45,
+          -2.37
+        ]
+      },
+      {
+        "id": "f2-d5",
+        "floor": 2,
+        "position": [
+          -5.36,
+          8.99
+        ]
+      },
+      {
+        "id": "f2-c14",
+        "floor": 2,
+        "position": [
+          -6.59,
+          8.97
+        ]
+      },
+      {
+        "id": "f2-d6",
+        "floor": 2,
+        "position": [
+          1.95,
+          13.52
+        ]
+      },
+      {
+        "id": "f2-c15",
+        "floor": 2,
+        "position": [
+          1.92,
+          15.08
+        ]
+      },
+      {
+        "id": "f2-d7",
+        "floor": 2,
+        "position": [
+          8.57,
+          9.24
+        ]
+      },
+      {
+        "id": "f2-c16",
+        "floor": 2,
+        "position": [
+          9.65,
+          9.25
+        ]
+      },
+      {
+        "id": "f2-d8",
+        "floor": 2,
+        "position": [
+          2.19,
+          16.13
+        ]
+      },
+      {
+        "id": "f2-d9",
+        "floor": 2,
+        "position": [
+          10.88,
+          -15.94
+        ]
+      },
+      {
+        "id": "f2-c17",
+        "floor": 2,
+        "position": [
+          9.9,
+          -15.95
+        ]
+      },
+      {
+        "id": "f2-d10",
+        "floor": 2,
+        "position": [
+          10.74,
+          -2.15
+        ]
+      },
+      {
+        "id": "f2-c18",
+        "floor": 2,
+        "position": [
+          9.76,
+          -2.16
+        ]
+      },
+      {
+        "id": "f2-d11",
+        "floor": 2,
+        "position": [
+          10.62,
+          10.23
+        ]
+      },
+      {
+        "id": "f2-c19",
+        "floor": 2,
+        "position": [
+          9.64,
+          10.22
+        ]
+      },
+      {
+        "id": "f2-d12",
+        "floor": 2,
+        "position": [
+          10.49,
+          24.09
+        ]
+      },
+      {
+        "id": "f2-d13",
+        "floor": 2,
+        "position": [
+          8.19,
+          -25.88
+        ]
+      },
+      {
+        "id": "f2-d14",
+        "floor": 2,
+        "position": [
+          16.51,
+          -25.72
+        ]
+      },
+      {
+        "id": "f2-c20",
+        "floor": 2,
+        "position": [
+          16.51,
+          -24.43
+        ]
+      },
+      {
+        "id": "f2-d15",
+        "floor": 2,
+        "position": [
+          -7.48,
+          5.17
+        ]
+      },
+      {
+        "id": "f2-c21",
+        "floor": 2,
+        "position": [
+          -6.54,
+          5.18
+        ]
+      },
+      {
+        "id": "f2-d16",
+        "floor": 2,
+        "position": [
+          7.72,
+          -18.34
+        ]
+      },
+      {
+        "id": "f2-c22",
+        "floor": 2,
+        "position": [
+          9.92,
+          -18.32
+        ]
+      },
+      {
+        "id": "f2-d17",
+        "floor": 2,
+        "position": [
+          26.47,
+          -27.23
+        ]
+      },
+      {
+        "id": "f2-d18",
+        "floor": 2,
+        "position": [
+          -8.91,
+          18.89
+        ]
+      },
+      {
+        "id": "f2-c23",
+        "floor": 2,
+        "position": [
+          -8.83,
+          14.87
+        ]
+      },
+      {
+        "id": "f2-d19",
+        "floor": 2,
+        "position": [
+          -8.3,
+          10.8
+        ]
+      },
+      {
+        "id": "f2-c24",
+        "floor": 2,
+        "position": [
+          -6.61,
+          10.82
+        ]
       }
     ],
     "edges": [
@@ -4140,118 +4396,6 @@
       {
         "a": "f1-c255",
         "b": "f1-c285"
-      },
-      {
-        "a": "f2-door-off-2-01",
-        "b": "f2-cm345"
-      },
-      {
-        "a": "f2-door-cla-2-02",
-        "b": "f2-cm255"
-      },
-      {
-        "a": "f2-door-lab-2-03",
-        "b": "f2-cm140"
-      },
-      {
-        "a": "f2-door-off-2-04",
-        "b": "f2-cm40"
-      },
-      {
-        "a": "f2-door-cla-2-05",
-        "b": "f2-c50"
-      },
-      {
-        "a": "f2-door-con-2-06",
-        "b": "f2-c150"
-      },
-      {
-        "a": "f2-door-lab-2-07",
-        "b": "f2-c255"
-      },
-      {
-        "a": "f2-door-cla-2-08",
-        "b": "f2-cm265"
-      },
-      {
-        "a": "f2-door-lab-2-09",
-        "b": "f2-cm155"
-      },
-      {
-        "a": "f2-door-cla-2-10",
-        "b": "f2-c50"
-      },
-      {
-        "a": "f2-door-off-2-11",
-        "b": "f2-c150"
-      },
-      {
-        "a": "f2-door-lab-2-12",
-        "b": "f2-c230"
-      },
-      {
-        "a": "f2-door-restroom",
-        "b": "f2-cm70"
-      },
-      {
-        "a": "f2-door-lift",
-        "b": "f2-cm20"
-      },
-      {
-        "a": "f2-door-stairs-w",
-        "b": "f2-cm345"
-      },
-      {
-        "a": "f2-door-stairs-e",
-        "b": "f2-c285"
-      },
-      {
-        "a": "f2-cm345",
-        "b": "f2-cm265"
-      },
-      {
-        "a": "f2-cm265",
-        "b": "f2-cm255"
-      },
-      {
-        "a": "f2-cm255",
-        "b": "f2-cm155"
-      },
-      {
-        "a": "f2-cm155",
-        "b": "f2-cm140"
-      },
-      {
-        "a": "f2-cm140",
-        "b": "f2-cm70"
-      },
-      {
-        "a": "f2-cm70",
-        "b": "f2-cm40"
-      },
-      {
-        "a": "f2-cm40",
-        "b": "f2-cm20"
-      },
-      {
-        "a": "f2-cm20",
-        "b": "f2-c50"
-      },
-      {
-        "a": "f2-c50",
-        "b": "f2-c150"
-      },
-      {
-        "a": "f2-c150",
-        "b": "f2-c230"
-      },
-      {
-        "a": "f2-c230",
-        "b": "f2-c255"
-      },
-      {
-        "a": "f2-c255",
-        "b": "f2-c285"
       },
       {
         "a": "f4-door-lab-4-01",
@@ -4676,6 +4820,178 @@
       {
         "a": "f3-d24",
         "b": "f3-c28"
+      },
+      {
+        "a": "f2-c1",
+        "b": "f2-c11"
+      },
+      {
+        "a": "f2-c11",
+        "b": "f2-c2"
+      },
+      {
+        "a": "f2-c2",
+        "b": "f2-c17"
+      },
+      {
+        "a": "f2-c17",
+        "b": "f2-c22"
+      },
+      {
+        "a": "f2-c22",
+        "b": "f2-c3"
+      },
+      {
+        "a": "f2-c3",
+        "b": "f2-c20"
+      },
+      {
+        "a": "f2-c20",
+        "b": "f2-c4"
+      },
+      {
+        "a": "f2-c2",
+        "b": "f2-c18"
+      },
+      {
+        "a": "f2-c18",
+        "b": "f2-c16"
+      },
+      {
+        "a": "f2-c16",
+        "b": "f2-c19"
+      },
+      {
+        "a": "f2-c19",
+        "b": "f2-c5"
+      },
+      {
+        "a": "f2-c5",
+        "b": "f2-c9"
+      },
+      {
+        "a": "f2-c5",
+        "b": "f2-c15"
+      },
+      {
+        "a": "f2-c15",
+        "b": "f2-c6"
+      },
+      {
+        "a": "f2-c6",
+        "b": "f2-c24"
+      },
+      {
+        "a": "f2-c24",
+        "b": "f2-c14"
+      },
+      {
+        "a": "f2-c14",
+        "b": "f2-c21"
+      },
+      {
+        "a": "f2-c21",
+        "b": "f2-c12"
+      },
+      {
+        "a": "f2-c12",
+        "b": "f2-c13"
+      },
+      {
+        "a": "f2-c13",
+        "b": "f2-c10"
+      },
+      {
+        "a": "f2-c10",
+        "b": "f2-c1"
+      },
+      {
+        "a": "f2-c6",
+        "b": "f2-c23"
+      },
+      {
+        "a": "f2-c23",
+        "b": "f2-c7"
+      },
+      {
+        "a": "f2-c7",
+        "b": "f2-c8"
+      },
+      {
+        "a": "f2-d1",
+        "b": "f2-c10"
+      },
+      {
+        "a": "f2-d2",
+        "b": "f2-c11"
+      },
+      {
+        "a": "f2-d3",
+        "b": "f2-c12"
+      },
+      {
+        "a": "f2-d4",
+        "b": "f2-c13"
+      },
+      {
+        "a": "f2-d5",
+        "b": "f2-c14"
+      },
+      {
+        "a": "f2-d6",
+        "b": "f2-c15"
+      },
+      {
+        "a": "f2-d7",
+        "b": "f2-c16"
+      },
+      {
+        "a": "f2-d8",
+        "b": "f2-c15"
+      },
+      {
+        "a": "f2-d9",
+        "b": "f2-c17"
+      },
+      {
+        "a": "f2-d10",
+        "b": "f2-c18"
+      },
+      {
+        "a": "f2-d11",
+        "b": "f2-c19"
+      },
+      {
+        "a": "f2-d12",
+        "b": "f2-c9"
+      },
+      {
+        "a": "f2-d13",
+        "b": "f2-c3"
+      },
+      {
+        "a": "f2-d14",
+        "b": "f2-c20"
+      },
+      {
+        "a": "f2-d15",
+        "b": "f2-c21"
+      },
+      {
+        "a": "f2-d16",
+        "b": "f2-c22"
+      },
+      {
+        "a": "f2-d17",
+        "b": "f2-c4"
+      },
+      {
+        "a": "f2-d18",
+        "b": "f2-c23"
+      },
+      {
+        "a": "f2-d19",
+        "b": "f2-c24"
       }
     ],
     "connectors": [
@@ -4685,7 +5001,7 @@
         "costPerFloor": 20,
         "nodes": {
           "1": "f1-door-lift",
-          "2": "f2-door-lift",
+          "2": "f2-d19",
           "3": "f3-d24",
           "4": "f4-door-lift",
           "5": "f5-door-lift"
@@ -4697,7 +5013,7 @@
         "costPerFloor": 14,
         "nodes": {
           "1": "f1-door-stairs-w",
-          "2": "f2-door-stairs-w",
+          "2": "f2-d16",
           "3": "f3-d21",
           "4": "f4-door-stairs-w",
           "5": "f5-door-stairs-w"
@@ -4709,7 +5025,7 @@
         "costPerFloor": 14,
         "nodes": {
           "1": "f1-door-stairs-e",
-          "2": "f2-door-stairs-e",
+          "2": "f2-d17",
           "3": "f3-d22",
           "4": "f4-door-stairs-e",
           "5": "f5-door-stairs-e"
@@ -4762,6 +5078,43 @@
     "f3-lifts",
     "sample-f3-water",
     "sample-f3-charging",
-    "f3-prayer-1-308"
+    "f3-prayer-1-308",
+    "sample-off-2-01",
+    "sample-cla-2-02",
+    "sample-lab-2-03",
+    "sample-off-2-04",
+    "sample-cla-2-05",
+    "sample-con-2-06",
+    "sample-lab-2-07",
+    "sample-cla-2-08",
+    "sample-lab-2-09",
+    "sample-cla-2-10",
+    "sample-off-2-11",
+    "sample-lab-2-12",
+    "sample-f2-restroom",
+    "sample-f2-lift",
+    "sample-f2-stairs-w",
+    "sample-f2-stairs-e",
+    "f2-library",
+    "f2-1-208",
+    "f2-1-207",
+    "f2-1-206",
+    "f2-1-203",
+    "f2-1-204",
+    "f2-1-205",
+    "f2-1-202",
+    "f2-1-210",
+    "f2-1-211",
+    "f2-1-212",
+    "f2-1-213",
+    "f2-restroom-top-mid",
+    "f2-restroom-top-right",
+    "f2-restroom-mid-left",
+    "f2-stairs-top-mid",
+    "f2-stairs-top-right",
+    "f2-stairs-bottom",
+    "f2-lifts",
+    "sample-f2-water",
+    "sample-f2-prayer"
   ]
 }

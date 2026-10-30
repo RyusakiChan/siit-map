@@ -98,4 +98,17 @@ if (which === 'floor3') {
   if (align && !process.env.ONLY) await traceShot(3, '09-trace-floor3-over-poster', align)
 }
 
+if (which === 'floors24') {
+  const align = JSON.parse(process.env.ALIGN_F4 ?? 'null')
+  await appShots([
+    { name: 'f2-01-floor2-single', run: view(2), settle: 3000 },
+    { name: 'f4-01-floor4-single', run: view(4), settle: 3000 },
+    { name: 'f2-02-stacked-2-3-4', run: view('all'), settle: 3000 },
+    { name: 'f2-03-route-1-206-to-1-301', hash: '#/route/f2-1-206/f3-1-301', settle: 3500 },
+    { name: 'f4-02-route-1-301-to-1-410-all', hash: '#/route/f3-1-301/f4-1-410', run: view('all'), settle: 3500 },
+    { name: 'f4-03-card-1-414-bcet-msme', run: async (p) => { await view(4)(p); await wait(1500); await sel('f4-1-414', 'full')(p) }, settle: 2500 },
+  ])
+  if (align && !process.env.ONLY) await traceShot(4, 'f4-04-trace-floor4-over-poster', align)
+}
+
 await browser.close()

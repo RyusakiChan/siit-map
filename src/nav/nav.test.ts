@@ -1,24 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { buildingData as data } from '../data'
-import { findRoute, planRoute, heading, turnBetween } from './index'
+import { findRoute, planRoute } from './index'
 import type { RoutePlan } from './index'
 
 const room = (id: string): { kind: 'room'; id: string } => ({ kind: 'room', id })
 const types = (p: RoutePlan) => p.steps.map((s) => s.type)
-
-describe('headings and turns (x east, z south)', () => {
-  it('measures headings clockwise from north', () => {
-    expect(heading([0, 0], [0, -5])).toBeCloseTo(0) // north is -z
-    expect(heading([0, 0], [5, 0])).toBeCloseTo(90) // east
-    expect(heading([0, 0], [0, 5])).toBeCloseTo(180) // south
-  })
-
-  it('calls east-then-north a left turn and east-then-south a right turn', () => {
-    expect(turnBetween(heading([0, 0], [5, 0]), heading([5, 0], [5, -5]))).toBeLessThan(0)
-    expect(turnBetween(heading([0, 0], [5, 0]), heading([5, 0], [5, 5]))).toBeGreaterThan(0)
-    expect(turnBetween(350, 10)).toBeCloseTo(20) // across north
-  })
-})
+const connectorIdsOn = (floor: number, lift: boolean) =>
+  data.rooms.filter((r) => r.floor === floor && (r.type === 'elevator' || (!lift && r.type === 'stairs'))).map((r) => r.id)
 
 describe('route on one floor', () => {
   // Real floor 2: the Document Room (1-207) to meeting room 1-205, both on the corridor round the conference block.
@@ -33,25 +21,16 @@ describe('route on one floor', () => {
     expect(plan.minutes).toBeGreaterThanOrEqual(1)
   })
 
-  it('starts by leaving the start room and ends by arriving at the destination', () => {
-    expect(plan.steps[0]).toMatchObject({ type: 'leave', roomId: 'f2-1-207' })
-    expect(plan.steps.at(-1)).toMatchObject({ type: 'arrive', roomId: 'f2-1-205' })
+  it('gives a single follow-the-line step', () => {
+    expect(plan.steps).toHaveLength(1)
+    expect(plan.steps[0]).toMatchObject({ type: 'follow', roomId: 'f2-1-205', floor: 2, leg: 0 })
+    expect(plan.legs[0]!.points.length).toBeGreaterThan(1)
   })
 
   it('returns null for the same room twice and for an unknown room', () => {
     expect(planRoute(room('f2-1-207'), 'f2-1-207')).toBeNull()
     expect(planRoute(room('f2-1-207'), 'nope')).toBeNull()
     expect(planRoute(room('nope'), 'f2-1-207')).toBeNull()
-  })
-
-  it('counts doors on one side when it arrives', () => {
-    const p = planRoute({ kind: 'qr', id: 'sample-f2-lift' }, 'f2-1-205')!
-    const arrive = p.steps.at(-1)!
-    expect(arrive.type).toBe('arrive')
-    if (arrive.type !== 'arrive') return
-    expect(['left', 'right']).toContain(arrive.side)
-    expect(Number.isInteger(arrive.nth)).toBe(true)
-    expect(arrive.nth).toBeGreaterThanOrEqual(1)
   })
 })
 
@@ -61,8 +40,8 @@ describe('route across floors', () => {
   it('splits into one leg per floor and rides the lift from the lift room', () => {
     expect(lift.legs.map((l) => l.floor)).toEqual([2, 5])
     expect(lift.legs[0]!.ride).toMatchObject({ kind: 'elevator', toFloor: 5 })
-    expect(types(lift)).toEqual(['ride', 'leave', 'walk', 'arrive'])
-    expect(lift.steps.map((s) => s.floor)).toEqual([2, 5, 5, 5])
+    expect(types(lift)).toEqual(['goFloor', 'find'])
+    expect(lift.steps.map((s) => s.floor)).toEqual([2, 5])
   })
 
   it('each leg starts where the last one ended, in the same shaft', () => {
@@ -75,11 +54,52 @@ describe('route across floors', () => {
   it('takes the stairs when they are cheaper, and the lift when stairs are avoided', () => {
     const stairs = planRoute(room('sample-f1-lobby'), 'sample-off-5-07')!
     expect(stairs.usesStairs).toBe(true)
-    expect(types(stairs)).toContain('ride')
     const avoid = planRoute(room('sample-f1-lobby'), 'sample-off-5-07', { avoidStairs: true })!
     expect(avoid.usesStairs).toBe(false)
     expect(avoid.usesLift).toBe(true)
     expect(avoid.legs.every((l) => !l.ride || l.ride.kind === 'elevator')).toBe(true)
+  })
+
+  describe('broad steps, floor 2 to floor 4', () => {
+    const either = planRoute(room('f2-1-211'), 'f4-1-413')!
+    const liftOnly = planRoute(room('f2-1-211'), 'f4-1-413', { avoidStairs: true })!
+
+    it('is exactly two steps: go to the floor, then find the room', () => {
+      expect(either.steps).toHaveLength(2)
+      expect(either.steps[0]).toMatchObject({ type: 'goFloor', floor: 2, toFloor: 4, liftOnly: false })
+      expect(either.steps[1]).toMatchObject({ type: 'find', floor: 4, roomId: 'f4-1-413' })
+    })
+
+    it('highlights every lift and every stairs on the start floor', () => {
+      const step = either.steps[0]!
+      if (step.type !== 'goFloor') throw new Error('expected goFloor')
+      expect(step.connectorIds.length).toBeGreaterThan(1)
+      expect([...step.connectorIds].sort()).toEqual(connectorIdsOn(2, false).sort())
+      expect(step.connectorIds).toContain('f2-lifts')
+      expect(step.connectorIds).toContain('f2-stairs-bottom')
+    })
+
+    it('with Avoid stairs it says lift and highlights only the lifts', () => {
+      const step = liftOnly.steps[0]!
+      if (step.type !== 'goFloor') throw new Error('expected goFloor')
+      expect(step.liftOnly).toBe(true)
+      expect(step.connectorIds).toEqual(connectorIdsOn(2, true))
+      expect(step.connectorIds.every((id) => data.rooms.find((r) => r.id === id)!.type === 'elevator')).toBe(true)
+      expect(liftOnly.steps).toHaveLength(2)
+    })
+
+    it('keeps the time from the shortest path', () => {
+      expect(either.minutes).toBeGreaterThanOrEqual(1)
+      expect(either.legs.map((l) => l.floor)).toEqual([2, 4])
+    })
+
+    it('a start that is itself a lift still gives the same two steps', () => {
+      const p = planRoute(room('f2-lifts'), 'f4-1-413')!
+      expect(types(p)).toEqual(['goFloor', 'find'])
+      const step = p.steps[0]!
+      if (step.type !== 'goFloor') throw new Error('expected goFloor')
+      expect(step.connectorIds).toContain('f2-lifts')
+    })
   })
 
   it('treats a multi-floor ride as one hop', () => {
@@ -95,12 +115,13 @@ describe('route across floors', () => {
 })
 
 describe('route from a QR spot', () => {
-  it('starts on the QR floor without a leave step', () => {
+  it('starts on the QR floor with the same two broad steps', () => {
     const p = planRoute({ kind: 'qr', id: 'sample-f2-lift' }, 'sample-lab-5-02')!
     expect(p.legs[0]!.floor).toBe(2)
     expect(p.legs[0]!.startRoomId).toBeNull()
     expect(p.legs[0]!.points[0]).toEqual(data.qrPoints.find((q) => q.id === 'sample-f2-lift')!.position)
-    expect(p.steps[0]!.type).not.toBe('leave')
+    expect(types(p)).toEqual(['goFloor', 'find'])
+    expect(p.steps[0]!.floor).toBe(2)
     expect(p.legs.at(-1)!.endRoomId).toBe('sample-lab-5-02')
   })
 
@@ -117,7 +138,7 @@ describe('every room can be reached from every floor', () => {
         const p = planRoute(room('sample-f1-lobby'), r.id, { avoidStairs })
         expect(p, `${r.id} avoidStairs=${avoidStairs}`).not.toBeNull()
         expect(p!.legs.at(-1)!.floor).toBe(r.floor)
-        expect(p!.steps.at(-1)!.type === 'arrive' || p!.steps.at(-1)!.type === 'ride').toBe(true)
+        expect(p!.steps.at(-1)!.type === 'find' || p!.steps.at(-1)!.type === 'follow').toBe(true)
       }
     }
   })

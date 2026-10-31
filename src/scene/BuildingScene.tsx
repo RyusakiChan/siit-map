@@ -510,7 +510,9 @@ function RouteLayer() {
   const route = useAppStore((s) => s.route)
   const routeTap = useAppStore((s) => s.routeTap)
   const legs = route?.plan.legs
-  const ribbons = useMemo(() => (legs ?? []).map((l) => ribbonGeometry(l.points)), [legs])
+  // A line is drawn only on a same-floor trip: across floors the visitor picks the lift or stairs, so no line fits.
+  const oneFloor = !!legs && legs.length === 1
+  const ribbons = useMemo(() => (legs ?? []).map((l) => (oneFloor ? ribbonGeometry(l.points) : null)), [legs, oneFloor])
   useEffect(() => () => ribbons.forEach((g) => g?.dispose()), [ribbons])
   const refs = useRef<(THREE.Group | null)[]>([])
   const links = useRef<(THREE.Group | null)[]>([])
@@ -570,8 +572,9 @@ function RouteLayer() {
   const back = Math.hypot(before[0] - tip[0], before[1] - tip[1]) || 1
   // The flag stands a little toward the door, so the room's number tag does not cover it.
   const end: Point = [tip[0] + ((before[0] - tip[0]) / back) * 3, tip[1] + ((before[1] - tip[1]) / back) * 3]
-  // The lift or stairs of each leg: the room it leaves by, and the room it arrives in.
-  const connectorRooms = new Set(legs.flatMap((l, i) => [l.ride ? l.endRoomId : null, i > 0 ? l.startRoomId : null]).filter((x): x is string => !!x))
+  // While the person is told to change floors, every lift and stairs on the start floor is outlined.
+  const current = route.plan.steps[route.step]
+  const connectorRooms = new Set(current?.type === 'goFloor' ? current.connectorIds : [])
   return (
     <>
       {legs.map((_leg, i) => {
@@ -588,7 +591,7 @@ function RouteLayer() {
       })}
       {legs.map((leg, i) => {
         const next = legs[i + 1]
-        if (!leg.ride || !next) return null
+        if (!oneFloor || !leg.ride || !next) return null
         const [x, z] = leg.points[leg.points.length - 1]!
         const pts = [new THREE.Vector3(x, elevationOf(leg.floor) + 0.2, z), new THREE.Vector3(x, elevationOf(leg.ride.toFloor) + 0.2, z)]
         return (

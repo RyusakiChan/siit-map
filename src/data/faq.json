@@ -3,36 +3,32 @@
     "id": "faq-tuition-fees",
     "task": "Pay tuition fees",
     "taskTh": "จ่ายค่าเล่าเรียน",
-    "answer": "Sample Finance Office handles sample fees. It is in Sample Office 1-05 on floor 1. This is dummy text until the group writes the real FAQ.",
-    "deptId": "sample-dept-c",
-    "roomId": "sample-off-1-05",
+    "answer": "Pay at the finance desk in room 1-211 on floor 2. It takes fees from students and visitors and gives you a receipt.",
+    "roomId": "f2-1-211",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
     "id": "faq-student-id",
     "task": "Get or replace a student ID card",
     "taskTh": "ทำหรือขอบัตรนักศึกษาใหม่",
-    "answer": "Sample Student Card Desk issues sample ID cards. It is in Sample Office 1-01 on floor 1. Dummy text.",
-    "deptId": "sample-dept-a",
-    "roomId": "sample-off-1-01",
+    "answer": "Academic Services and Registration in room 1-211 on floor 2 issues student ID cards.",
+    "roomId": "f2-1-211",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
     "id": "faq-transcripts",
     "task": "Request a transcript or certificate",
     "taskTh": "ขอใบรับรองผลการเรียน",
-    "answer": "Sample Registrar Desk handles sample transcript requests. It is in Sample Office 5-06 on floor 5. Dummy text.",
-    "deptId": "sample-dept-a",
-    "roomId": "sample-off-5-06",
+    "answer": "Academic Services and Registration in room 1-211 on floor 2 handles transcripts, academic records and certificates.",
+    "roomId": "f2-1-211",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
     "id": "faq-scholarships",
     "task": "Ask about scholarships",
     "taskTh": "สอบถามทุนการศึกษา",
-    "answer": "Sample Scholarship Office answers sample scholarship questions. It is in Sample Office 1-05 on floor 1. Dummy text.",
-    "deptId": "sample-dept-a",
-    "roomId": "sample-off-1-05",
+    "answer": "Student Affairs and Alumni Relations in room 1-210 on floor 2 handles scholarships and student loans.",
+    "roomId": "f2-1-210",
     "url": "https://www.siit.tu.ac.th/"
   },
   {
@@ -48,8 +44,8 @@
     "id": "faq-lost-and-found",
     "task": "Report or collect a lost item",
     "taskTh": "แจ้งของหายหรือรับของที่ตกหล่น",
-    "answer": "Sample Lost and Found is kept at the Sample Lobby on floor 1. Dummy text.",
-    "roomId": "sample-f1-lobby",
+    "answer": "Lost and found is kept by Academic Services and Registration in room 1-211 on floor 2.",
+    "roomId": "f2-1-211",
     "url": "https://www.siit.tu.ac.th/"
   },
   {

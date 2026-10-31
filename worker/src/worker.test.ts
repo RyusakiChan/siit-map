@@ -167,7 +167,7 @@ describe('handler', () => {
     expect(res.status).toBe(200)
     expect(res.headers.get('access-control-allow-origin')).toBe(ORIGIN)
     const body = (await res.json()) as { reply: string; actions: { type: string }[] }
-    expect(body.reply).toContain('Sample')
+    expect(body.reply).toContain('1-211')
     expect(body.actions.some((a) => a.type === 'show_room')).toBe(true)
   })
 

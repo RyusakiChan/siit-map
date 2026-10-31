@@ -1181,11 +1181,20 @@
       "number": "1-208",
       "name": "International Affairs and Corporate Relations",
       "aliases": [
-        "International and Career"
+        "International and Career",
+        "International Affairs and Corporate Relations Division",
+        "Internship",
+        "Exchange",
+        "Partnership"
+      ],
+      "aliasesTh": [
+        "ฝึกงาน",
+        "แลกเปลี่ยน"
       ],
       "floor": 2,
       "departmentId": null,
       "type": "office",
+      "description": "Helps students, companies and other universities work with SIIT: internships, hiring graduates, student and staff exchanges, and joint projects.",
       "polygon": [
         [
           -7.37,
@@ -1425,11 +1434,23 @@
         "R&QA",
         "R&OA",
         "SA&AR",
-        "SP"
+        "SP",
+        "Scholarship",
+        "Student loan",
+        "Student activities",
+        "Alumni",
+        "Research"
+      ],
+      "aliasesTh": [
+        "ทุนการศึกษา",
+        "กิจการนักศึกษา",
+        "กู้ยืม",
+        "ศิษย์เก่า"
       ],
       "floor": 2,
       "departmentId": null,
       "type": "office",
+      "description": "Three divisions share this office. Student Affairs and Alumni Relations handles scholarships, student loans, student activities and contact with alumni. Research and Academic Quality Assurance supports research by faculty and tracks the institute’s quality reports. Supplies and Procurement buys equipment and furniture and keeps track of SIIT’s assets.",
       "polygon": [
         [
           11.06,
@@ -1459,11 +1480,34 @@
         "AS&R",
         "FIN",
         "Academic Services and Registration Division",
-        "Finance and Budget Division"
+        "Finance and Budget Division",
+        "Financial and Investment Division",
+        "Finance",
+        "Registration",
+        "Registrar",
+        "Student ID card",
+        "Transcript",
+        "Certificate",
+        "Add or drop a course",
+        "Graduation",
+        "Lost and found",
+        "Pay fees",
+        "Tuition fees",
+        "Receipt"
+      ],
+      "aliasesTh": [
+        "ทะเบียน",
+        "ลงทะเบียน",
+        "บัตรนักศึกษา",
+        "ใบรับรองผลการเรียน",
+        "ค่าเล่าเรียน",
+        "จ่ายเงิน",
+        "ของหาย"
       ],
       "floor": 2,
       "departmentId": null,
       "type": "office",
+      "description": "Go here for registration: adding or dropping courses, student ID cards, transcripts and certificates, exams, changing program and graduation. It also keeps lost and found. The finance desk takes payments and fees from students and visitors and gives receipts.",
       "polygon": [
         [
           10.94,
@@ -1492,11 +1536,15 @@
         "CCo",
         "Acc",
         "Central Coordinating Division",
-        "Accounting Division"
+        "Accounting Division",
+        "Human resources",
+        "HR",
+        "Documents for international students"
       ],
       "floor": 2,
       "departmentId": null,
       "type": "office",
+      "description": "Two divisions share this office. Central Coordinating handles general matters between units, staff rules, and official documents for staff and international students. Accounting keeps the institute’s accounts and pays its bills.",
       "polygon": [
         [
           10.81,
@@ -1522,9 +1570,14 @@
       "id": "f2-1-213",
       "number": "1-213",
       "name": "Office of the Director",
+      "aliases": [
+        "Director",
+        "Director’s office"
+      ],
       "floor": 2,
       "departmentId": null,
       "type": "office",
+      "description": "The institute’s central office. It plans and coordinates the work of every other SIIT unit, on both the academic and the administrative side.",
       "polygon": [
         [
           10.67,

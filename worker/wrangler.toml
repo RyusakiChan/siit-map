@@ -13,8 +13,8 @@ namespace_id = "1001"
   limit = 30
   period = 60
 
-# Optional daily cap (60 a day per IP): create a KV namespace, then uncomment.
-#   npx wrangler kv namespace create DAILY
-# [[kv_namespaces]]
-# binding = "DAILY"
-# id = "<id printed by the command above>"
+# Daily cap: 100 questions a day per IP, counted in this KV namespace (created with
+#   npx wrangler kv namespace create DAILY). The limit itself is DAILY_LIMIT in src/index.ts.
+[[kv_namespaces]]
+binding = "DAILY"
+id = "0b6bf257c7104647a8fcc5e8c5a3bbf5"

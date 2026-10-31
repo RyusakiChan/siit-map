@@ -5,7 +5,7 @@ import type { Env } from './types'
 import { parseRequest } from './validate'
 
 const PAGES_ORIGIN = 'https://ryusakichan.github.io'
-const DAILY_LIMIT = 60
+const DAILY_LIMIT = 100
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/
 
 function allowedOrigin(origin: string | null, env: Env): string | null {

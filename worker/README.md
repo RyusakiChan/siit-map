@@ -51,15 +51,15 @@ You create the accounts and the key. Nobody else should handle the key.
 7. **Check it:** open that address in a browser. You should see `{"ok":true,"mock":false}`. `mock:true` means the key is missing.
 8. **Switch the assistant on:** put the address in `assistantUrl` in `src/config.ts` (no trailing slash), then build and publish the site as usual. An empty `assistantUrl` hides the button.
 
-### Optional: a daily limit
+### Daily limit
 
-The Worker already limits each IP address to 30 questions a minute (`wrangler.toml`, `[[ratelimits]]`). Cloudflare's limiter only counts 10 or 60 seconds, so the 60-a-day limit needs a KV store:
+The Worker limits each IP address to 30 questions a minute (`wrangler.toml`, `[[ratelimits]]`) and 100 questions a day (`DAILY_LIMIT` in `src/index.ts`). Cloudflare's limiter only counts 10 or 60 seconds, so the daily limit uses a KV store, already set up for the live Worker. On a new Cloudflare account, create one:
 
 ```bash
 npx wrangler kv namespace create DAILY --config worker/wrangler.toml
 ```
 
-Copy the id it prints into the commented `[[kv_namespaces]]` block in `wrangler.toml`, remove the `#` signs and deploy again. Without it the per-minute limit and your spend cap still protect you.
+Put the id it prints in the `[[kv_namespaces]]` block in `wrangler.toml` and deploy again. Without the block, the per-minute limit and your spend cap still protect you.
 
 ## Updating the answers
 

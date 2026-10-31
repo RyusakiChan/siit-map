@@ -205,14 +205,14 @@ describe('handler', () => {
     expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(429)
   })
 
-  it('returns 429 after 60 questions in a day when KV is bound', async () => {
+  it('returns 429 after 100 questions in a day when KV is bound', async () => {
     const store = new Map<string, string>()
     const env: Env = {
       ANTHROPIC_API_KEY: 'test',
       DAILY: { get: async (k) => store.get(k) ?? null, put: async (k, v) => void store.set(k, v) },
     }
     const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
-    for (let i = 0; i < 60; i++) expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(200)
+    for (let i = 0; i < 100; i++) expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(200)
     expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(429)
   })
 

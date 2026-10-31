@@ -6,6 +6,8 @@ import { parseRequest } from './validate'
 
 const PAGES_ORIGIN = 'https://ryusakichan.github.io'
 const DAILY_LIMIT = 100
+/** The largest request body read, in bytes. Ten turns of Thai text stay well under it. */
+const MAX_BODY = 65536
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/
 
 function allowedOrigin(origin: string | null, env: Env): string | null {
@@ -57,9 +59,12 @@ export async function handle(request: Request, env: Env, client?: MessagesClient
   if (request.method !== 'POST' || url.pathname !== '/chat') return json({ error: 'not_found' }, 404, origin)
   if (!origin) return json({ error: 'forbidden' }, 403, null)
 
+  if (Number(request.headers.get('content-length') ?? 0) > MAX_BODY) return json({ error: 'too_large' }, 413, origin)
   let body: unknown
   try {
-    body = await request.json()
+    const text = await request.text()
+    if (text.length > MAX_BODY) return json({ error: 'too_large' }, 413, origin)
+    body = JSON.parse(text)
   } catch {
     return json({ error: 'bad_body' }, 400, origin)
   }

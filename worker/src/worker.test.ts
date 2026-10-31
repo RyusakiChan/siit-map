@@ -199,6 +199,11 @@ describe('handler', () => {
     expect((await post(ask('x'.repeat(301)))).status).toBe(400)
   })
 
+  it('refuses bodies over 64 KB with 413 before parsing them', async () => {
+    const huge = { lang: 'en', messages: [{ role: 'user', content: 'hi' }], pad: 'x'.repeat(70000) }
+    expect((await post(huge)).status).toBe(413)
+  })
+
   it('returns 429 when the per-minute limit trips', async () => {
     const { client } = fakeClient('{}')
     const env: Env = { ANTHROPIC_API_KEY: 'test', MINUTE_LIMIT: { limit: async () => ({ success: false }) } }

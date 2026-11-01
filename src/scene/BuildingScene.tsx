@@ -7,6 +7,7 @@ import { roomById, deptsOf } from '../data/lookup'
 import { roomDeptIds } from '../data/departments'
 import { polygonArea, polygonCentroid } from '../data/geometry'
 import type { Point, Room } from '../data/types'
+import { posterSpot } from '../nav/orient'
 import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
 import { liftDoorGeometry, shadeExtrusion, stairsGeometry, STAIR_HEIGHT_RATIO } from './connectors'
 import { useT } from '../i18n'
@@ -472,6 +473,122 @@ function HerePin() {
       <mesh geometry={geo.dot} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]} renderOrder={8}>
         <meshBasicMaterial color={tokens.ink} toneMapped={false} depthTest={false} />
       </mesh>
+    </group>
+  )
+}
+
+const POSTER_W = 1.2 // bigger than a real sign so it reads at map scale
+const POSTER_H = 1.6
+const POSTER_BOTTOM = 0.8 // metres above the slab
+const POSTER_FRAME = 0.08
+// A QR-like glyph: 1 = ink module. Three corner finders and a fixed scatter, drawn once on a small canvas (no image files).
+const GLYPH = [
+  '111010111',
+  '101001101',
+  '111011111',
+  '000101000',
+  '110010110',
+  '001101001',
+  '111000101',
+  '101011010',
+  '111010111',
+]
+
+function glyphTexture(): THREE.CanvasTexture {
+  const cell = 16
+  const n = GLYPH.length
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = cell * n
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.fillStyle = tokens.ink
+    GLYPH.forEach((row, y) => [...row].forEach((c, x) => c === '1' && ctx.fillRect(x * cell, y * cell, cell, cell)))
+  }
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.magFilter = THREE.NearestFilter
+  tex.colorSpace = THREE.SRGBColorSpace
+  return tex
+}
+
+/** A flat arrow lying on the floor, 3 m long, pointing north (-z) from the origin; the mesh turns it. */
+function arrowGeometry(): THREE.BufferGeometry {
+  const hw = 0.17
+  const head = 0.6
+  const v = [
+    [-hw, -0.6], [hw, -0.6], [hw, -2.2], [-hw, -0.6], [hw, -2.2], [-hw, -2.2],
+    [-head, -2.2], [head, -2.2], [0, -3],
+  ]
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(v.flatMap(([x, z]) => [x!, 0, z!]), 3))
+  return g
+}
+
+/**
+ * The poster the person scanned, as a board on the wall in front of the pin, and (during a "face the poster" step)
+ * a pink arrow along the first walking direction. Both ride the pin's floor; nothing loops.
+ */
+function HerePoster() {
+  const here = useAppStore((s) => s.here)
+  const arrowBearing = useAppStore((s) => {
+    const st = s.route?.plan.steps[s.route.step]
+    return st?.type === 'orient' && st.turn !== 'beside' ? st.bearing : null
+  })
+  const group = useRef<THREE.Group>(null)
+  const assets = useMemo(
+    () => ({
+      outer: new THREE.PlaneGeometry(POSTER_W + 0.04, POSTER_H + 0.04),
+      frame: new THREE.PlaneGeometry(POSTER_W, POSTER_H),
+      face: new THREE.PlaneGeometry(POSTER_W - 2 * POSTER_FRAME, POSTER_H - 2 * POSTER_FRAME),
+      glyph: new THREE.PlaneGeometry(0.72, 0.72),
+      dot: new THREE.CircleGeometry(0.07, 20),
+      arrow: arrowGeometry(),
+      tex: glyphTexture(),
+    }),
+    [],
+  )
+  useEffect(
+    () => () => {
+      Object.values(assets).forEach((a) => a.dispose())
+    },
+    [assets],
+  )
+  const spot = useMemo(() => (here ? posterSpot(here, data) : null), [here])
+  useFrame(() => {
+    if (!group.current || !here) return
+    const f = floorState.get(here.floor)
+    const g = f?.g ?? 0
+    group.current.visible = g > 0.01
+    group.current.position.y = elevationOf(here.floor) + (f?.offset ?? 0)
+    group.current.scale.setScalar(Math.max(g, 0.001))
+  })
+  if (!here || !spot) return null
+  const layer = (n: number) => ({ polygonOffset: true, polygonOffsetFactor: -n, polygonOffsetUnits: -n })
+  return (
+    <group ref={group} position={[here.x, elevationOf(here.floor), here.z]}>
+      <group position={[spot.x - here.x, POSTER_BOTTOM + POSTER_H / 2, spot.z - here.z]} rotation={[0, -THREE.MathUtils.degToRad(here.facingDeg), 0]}>
+        <mesh geometry={assets.outer}>
+          <meshBasicMaterial color={tokens.ink} toneMapped={false} side={THREE.DoubleSide} {...layer(1)} />
+        </mesh>
+        <mesh geometry={assets.frame} position={[0, 0, 0.004]}>
+          <meshBasicMaterial color={tokens.youAreHere} toneMapped={false} side={THREE.DoubleSide} {...layer(2)} />
+        </mesh>
+        <mesh geometry={assets.face} position={[0, 0, 0.008]}>
+          <meshBasicMaterial color="#ffffff" toneMapped={false} side={THREE.DoubleSide} {...layer(3)} />
+        </mesh>
+        <mesh geometry={assets.glyph} position={[0, 0.12, 0.012]}>
+          <meshBasicMaterial map={assets.tex} toneMapped={false} side={THREE.DoubleSide} {...layer(4)} />
+        </mesh>
+        <mesh geometry={assets.dot} position={[0, -0.6, 0.012]}>
+          <meshBasicMaterial color={tokens.youAreHere} toneMapped={false} side={THREE.DoubleSide} {...layer(4)} />
+        </mesh>
+      </group>
+      {arrowBearing !== null && (
+        <mesh geometry={assets.arrow} position={[0, 0.2, 0]} rotation={[0, -THREE.MathUtils.degToRad(arrowBearing), 0]} renderOrder={5}>
+          <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.9} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+        </mesh>
+      )}
     </group>
   )
 }
@@ -1008,6 +1125,7 @@ export default function BuildingScene({ onReady }: { onReady: () => void }) {
       ))}
       <Selection />
       <HerePin />
+      <HerePoster />
       <RouteLayer />
       <Labels />
       <Rig />

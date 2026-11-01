@@ -115,12 +115,12 @@ describe('route across floors', () => {
 })
 
 describe('route from a QR spot', () => {
-  it('starts on the QR floor with the same two broad steps', () => {
+  it('starts on the QR floor with a face-the-poster step, then the two broad steps', () => {
     const p = planRoute({ kind: 'qr', id: 'sample-f2-lift' }, 'sample-lab-5-02')!
     expect(p.legs[0]!.floor).toBe(2)
     expect(p.legs[0]!.startRoomId).toBeNull()
     expect(p.legs[0]!.points[0]).toEqual(data.qrPoints.find((q) => q.id === 'sample-f2-lift')!.position)
-    expect(types(p)).toEqual(['goFloor', 'find'])
+    expect(types(p)).toEqual(['orient', 'goFloor', 'find'])
     expect(p.steps[0]!.floor).toBe(2)
     expect(p.legs.at(-1)!.endRoomId).toBe('sample-lab-5-02')
   })

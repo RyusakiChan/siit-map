@@ -319,6 +319,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return false
     }
     const step = plan.steps[0]!
+    const qr = from.kind === 'qr' ? data.qrPoints.find((q) => q.id === from.id) : undefined
     set({
       route: { from, toId, plan, step: 0 },
       fromPicker: null,
@@ -334,7 +335,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       previousFloor: null,
       highlightDeptId: null,
       view: step.floor,
-      focus: { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
+      focus: step.type === 'orient' && qr ? hereFocus(qr) : { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
     })
     return true
   },
@@ -344,10 +345,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!route) return
     const i = Math.max(0, Math.min(route.plan.steps.length - 1, index))
     const step = route.plan.steps[i]!
+    const qr = step.type === 'orient' ? data.qrPoints.find((q) => q.id === step.qrId) : undefined
     set({
       route: { ...route, step: i },
       view: step.floor,
-      focus: { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
+      focus: qr ? hereFocus(qr) : { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
     })
   },
 

@@ -15,6 +15,13 @@ export function stepText(step: Step, t: T, lang: Lang): string {
       return t(step.liftOnly ? 'stepGoFloorLift' : 'stepGoFloor', { n: step.toFloor })
     case 'find':
       return t('stepFind', { n: step.floor, room: placeName(step.roomId, lang) })
+    case 'orient': {
+      const place = step.place.kind === 'lifts' ? t('placeLifts') : step.place.kind === 'stairs' ? t('placeStairs') : placeName(step.place.roomId ?? '', lang)
+      if (step.turn === 'beside') return t('stepOrientBeside', { place })
+      if (step.turn === 'around') return t('stepOrientAround', { place })
+      if (step.turn === 'ahead') return t('stepOrientAhead', { place })
+      return t('stepOrientTurn', { side: t(step.turn === 'left' ? 'sideLeft' : 'sideRight'), place })
+    }
     case 'follow':
       return t('stepFollow', { room: placeName(step.roomId, lang), m: Math.max(5, Math.round(step.meters / 5) * 5) })
   }
@@ -29,5 +36,7 @@ export function stepGlyph(step: Step): string {
       return '⚑'
     case 'follow':
       return '↑'
+    case 'orient':
+      return step.turn === 'left' ? '↰' : step.turn === 'right' ? '↱' : step.turn === 'around' ? '↶' : '↑'
   }
 }

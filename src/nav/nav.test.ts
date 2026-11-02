@@ -35,7 +35,7 @@ describe('route on one floor', () => {
 })
 
 describe('route across floors', () => {
-  const lift = planRoute(room('f2-lifts'), 'sample-lab-5-02')!
+  const lift = planRoute(room('f2-lifts'), 'f5-1-502', { avoidStairs: true })!
 
   it('splits into one leg per floor and rides the lift from the lift room', () => {
     expect(lift.legs.map((l) => l.floor)).toEqual([2, 5])
@@ -48,13 +48,13 @@ describe('route across floors', () => {
     const first = lift.legs[0]!
     const second = lift.legs[1]!
     expect(first.endRoomId).toBe('f2-lifts')
-    expect(second.startRoomId).toBe('sample-f5-lift')
+    expect(second.startRoomId).toBe('f5-lifts')
   })
 
   it('takes the stairs when they are cheaper, and the lift when stairs are avoided', () => {
-    const stairs = planRoute(room('sample-f1-lobby'), 'sample-off-5-07')!
+    const stairs = planRoute(room('f1-lobby'), 'f5-1-507')!
     expect(stairs.usesStairs).toBe(true)
-    const avoid = planRoute(room('sample-f1-lobby'), 'sample-off-5-07', { avoidStairs: true })!
+    const avoid = planRoute(room('f1-lobby'), 'f5-1-507', { avoidStairs: true })!
     expect(avoid.usesStairs).toBe(false)
     expect(avoid.usesLift).toBe(true)
     expect(avoid.legs.every((l) => !l.ride || l.ride.kind === 'elevator')).toBe(true)
@@ -103,43 +103,63 @@ describe('route across floors', () => {
   })
 
   it('treats a multi-floor ride as one hop', () => {
-    const p = planRoute(room('sample-f1-lobby'), 'sample-off-5-07', { avoidStairs: true })!
+    const p = planRoute(room('f1-lobby'), 'f5-1-507', { avoidStairs: true })!
     expect(p.legs).toHaveLength(2)
     expect(p.legs[0]!.ride).toMatchObject({ toFloor: 5 })
   })
 
   it('costs the ride in the total time', () => {
-    const geo = findRoute(room('sample-f1-lobby'), 'sample-off-5-07', { avoidStairs: true })!
+    const geo = findRoute(room('f1-lobby'), 'f5-1-507', { avoidStairs: true })!
     expect(geo.cost).toBeGreaterThan(geo.meters)
   })
 })
 
 describe('route from a QR spot', () => {
   it('starts on the QR floor with a face-the-poster step, then the two broad steps', () => {
-    const p = planRoute({ kind: 'qr', id: 'sample-f2-lift' }, 'sample-lab-5-02')!
+    const p = planRoute({ kind: 'qr', id: 'sample-f2-lift' }, 'f5-1-502')!
     expect(p.legs[0]!.floor).toBe(2)
     expect(p.legs[0]!.startRoomId).toBeNull()
     expect(p.legs[0]!.points[0]).toEqual(data.qrPoints.find((q) => q.id === 'sample-f2-lift')!.position)
     expect(types(p)).toEqual(['orient', 'goFloor', 'find'])
     expect(p.steps[0]!.floor).toBe(2)
-    expect(p.legs.at(-1)!.endRoomId).toBe('sample-lab-5-02')
+    expect(p.legs.at(-1)!.endRoomId).toBe('f5-1-502')
   })
 
   it('returns null for an unknown QR id', () => {
-    expect(planRoute({ kind: 'qr', id: 'nope' }, 'sample-lab-5-02')).toBeNull()
+    expect(planRoute({ kind: 'qr', id: 'nope' }, 'f5-1-502')).toBeNull()
   })
 })
 
 describe('every room can be reached from every floor', () => {
   it('plans a route from the lobby to each room, with and without stairs', () => {
     for (const r of data.rooms) {
-      if (r.id === 'sample-f1-lobby') continue
+      if (r.id === 'f1-lobby') continue
       for (const avoidStairs of [false, true]) {
-        const p = planRoute(room('sample-f1-lobby'), r.id, { avoidStairs })
+        const p = planRoute(room('f1-lobby'), r.id, { avoidStairs })
         expect(p, `${r.id} avoidStairs=${avoidStairs}`).not.toBeNull()
         expect(p!.legs.at(-1)!.floor).toBe(r.floor)
         expect(p!.steps.at(-1)!.type === 'find' || p!.steps.at(-1)!.type === 'follow').toBe(true)
       }
     }
   })
+})
+
+describe('routes from the real floor 1 and to floor 5', () => {
+  const cases: [string, string, number][] = [
+    ['f1-lobby', 'f3-1-301', 3],
+    ['f1-cafe-amazon', 'f4-1-413', 4],
+    ['f1-lobby', 'f5-1-502', 5],
+    ['f5-1-507', 'f3-1-301', 3],
+  ]
+  for (const [from, to, floor] of cases) {
+    for (const avoidStairs of [false, true]) {
+      it(`${from} to ${to} with avoidStairs=${avoidStairs}`, () => {
+        const p = planRoute(room(from), to, { avoidStairs })!
+        expect(p).not.toBeNull()
+        expect(p.legs.at(-1)!.floor).toBe(floor)
+        expect(p.legs.at(-1)!.endRoomId).toBe(to)
+        if (avoidStairs) expect(p.usesStairs).toBe(false)
+      })
+    }
+  }
 })

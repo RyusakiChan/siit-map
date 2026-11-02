@@ -111,4 +111,23 @@ if (which === 'floors24') {
   if (align && !process.env.ONLY) await traceShot(4, 'f4-04-trace-floor4-over-poster', align)
 }
 
+if (which === 'floor1') {
+  await appShots([
+    { name: 'f1-01-floor1-single', run: view(1), settle: 3000 },
+    { name: 'f1-02-all-cores-line-up', run: view('all'), settle: 3000 },
+    { name: 'f1-03-route-main-entrance-to-1-301', hash: '#/route/f1-lobby/f3-1-301', settle: 3500 },
+    { name: 'f1-04-thai-floor1', run: async (p) => { await store(p, () => window.__store.getState().setLang('th')); await view(1)(p) }, settle: 3000 },
+    { name: 'f1-05-card-first-aid', run: async (p) => { await view(1)(p); await wait(1500); await sel('f1-first-aid', 'full')(p) }, settle: 2500 },
+  ])
+}
+
+if (which === 'floor5') {
+  await appShots([
+    { name: 'f5-01-floor5-single', run: view(5), settle: 3000 },
+    { name: 'f5-02-all-cores-line-up', run: view('all'), settle: 3000 },
+    { name: 'f5-03-route-main-entrance-to-1-502', hash: '#/route/f1-lobby/f5-1-502', settle: 3500 },
+    { name: 'f5-04-thai-floor5', run: async (p) => { await store(p, () => window.__store.getState().setLang('th')); await view(5)(p) }, settle: 3000 },
+  ])
+}
+
 await browser.close()

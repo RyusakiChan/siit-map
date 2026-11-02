@@ -36,8 +36,8 @@ describe('department ids', () => {
 
 describe('deleting a department', () => {
   it('is blocked while rooms use it and says how many', () => {
-    const id = data.rooms.find((r) => r.departmentId)!.departmentId!
-    const n = data.rooms.filter((r) => r.departmentId === id).length
+    const id = 'd-cet'
+    const n = data.rooms.filter((r) => r.departmentId === id || r.departmentIds?.includes(id)).length
     expect(deleteBlock(data, id)).toContain(`${n} room`)
     expect(deleteBlock({ rooms: [] }, id)).toBeNull()
   })
@@ -46,7 +46,7 @@ describe('deleting a department', () => {
     const d = clone()
     const used = d.departments[0]!.id
     expect(() => replaceDepartments(d, d.departments.slice(1))).toThrow(/still used/)
-    const free = { ...d, rooms: d.rooms.filter((r) => r.departmentId !== used) }
+    const free = { ...d, rooms: d.rooms.filter((r) => r.departmentId !== used && !r.departmentIds?.includes(used)) }
     const out = replaceDepartments(free, free.departments.slice(1))
     expect(out.departments.some((x) => x.id === used)).toBe(false)
     expect(out.usedIds).toContain(used)
@@ -99,20 +99,21 @@ describe('colour slots', () => {
     for (const [i, c] of slotColors.entries()) expect(1.05 / (lum(c.badge) + 0.05), `slot ${i}`).toBeGreaterThanOrEqual(3)
     expect(slotNames).toHaveLength(slotColors.length)
     expect(slotColors[0]!.side).toBe('#5AAEE0')
-    expect(departmentBadgeColor(data.departments[0]!.id)).toBe(slotColors[0]!.badge)
+    expect(departmentBadgeColor(data.departments[0]!.id)).toBe(slotColors[data.departments[0]!.colorSlot]!.badge)
   })
 
   it('reads a department colour from its slot, not its id', () => {
     expect(deptColor({ colorSlot: 5 })).toBe(slotColors[5])
     expect(deptColor({ colorSlot: 99 })).toBeUndefined()
     expect(deptColor(undefined)).toBeUndefined()
-    data.departments.forEach((dep, i) => expect(deptColor(dep)).toBe(slotColors[i]))
+    data.departments.forEach((dep) => expect(deptColor(dep)).toBe(slotColors[dep.colorSlot]))
   })
 
-  it('colours sample rooms as before: department slot, grey for lifts and stairs, the type tint otherwise', () => {
+  it('colours rooms: department slot, grey for lifts and stairs, the type tint otherwise', () => {
     const room = data.rooms.find((r) => r.departmentId === data.departments[0]!.id && r.type !== 'stairs' && r.type !== 'elevator')!
-    expect(roomColor(room)).toBe(slotColors[0])
-    expect(departmentBadgeColor(room.departmentId)).toBe(slotColors[0]!.badge)
+    const slot = data.departments.find((d) => d.id === room.departmentId)!.colorSlot
+    expect(roomColor(room)).toBe(slotColors[slot])
+    expect(departmentBadgeColor(room.departmentId)).toBe(slotColors[slot]!.badge)
     expect(roomColor(data.rooms.find((r) => r.type === 'elevator')!).top).toBe('#A89EA9')
     expect(roomColor({ ...room, departmentId: null }).top).toBe(typeTints[tintKeyOf(room.type) as 'other'].top)
   })

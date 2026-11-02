@@ -121,4 +121,13 @@ if (which === 'floor1') {
   ])
 }
 
+if (which === 'floor5') {
+  await appShots([
+    { name: 'f5-01-floor5-single', run: view(5), settle: 3000 },
+    { name: 'f5-02-all-cores-line-up', run: view('all'), settle: 3000 },
+    { name: 'f5-03-route-main-entrance-to-1-502', hash: '#/route/f1-lobby/f5-1-502', settle: 3500 },
+    { name: 'f5-04-thai-floor5', run: async (p) => { await store(p, () => window.__store.getState().setLang('th')); await view(5)(p) }, settle: 3000 },
+  ])
+}
+
 await browser.close()

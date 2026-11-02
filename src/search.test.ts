@@ -4,14 +4,14 @@ import { roomsOfTypes, search } from './search'
 
 describe('search', () => {
   it('finds a room number with or without the dash', () => {
-    for (const q of ['5-02', '502', '5 02']) {
-      expect(search(q, data).rooms.some((r) => r.number === '5-02'), q).toBe(true)
+    for (const q of ['1-502', '1502', '1 502']) {
+      expect(search(q, data).rooms.some((r) => r.number === '1-502'), q).toBe(true)
     }
   })
 
   it('is case-insensitive and ranks exact numbers first', () => {
-    const rooms = search('SAMPLE LAB 5-02', data).rooms
-    expect(rooms[0]?.number).toBe('5-02')
+    const rooms = search('1-502', data).rooms
+    expect(rooms[0]?.number).toBe('1-502')
   })
 
   it('finds rooms by alias and Thai name', () => {
@@ -20,8 +20,8 @@ describe('search', () => {
   })
 
   it('finds departments by name and by their rooms', () => {
-    expect(search('dept b', data).departments.map((d) => d.id)).toContain('sample-dept-b')
-    expect(search('lab', data).departments.length).toBeGreaterThan(0)
+    expect(search('bcet', data).departments.map((d) => d.id)).toContain('d-bcet')
+    expect(search('school', data).departments.length).toBeGreaterThan(0)
   })
 
   it('returns nothing for an empty or unknown query', () => {

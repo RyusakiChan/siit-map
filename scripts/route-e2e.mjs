@@ -69,7 +69,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/f2-lifts/sample-lab-5-02`)
+      await page.goto(`${base}#/route/f2-lifts/f5-1-502`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1500)
       check((await page.getByTestId('route-header').innerText()).startsWith('Floor 2 → Floor 5'), `${size.name}: cross-floor header`)
@@ -97,7 +97,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`)
+      await page.goto(`${base}#/route/f1-lobby/f5-1-507`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1200)
       const steps = async () => {
@@ -114,7 +114,7 @@ try {
       const withStairs = await steps()
       check(withStairs.some((s) => s.includes('stairs')), `${size.name}: default route uses the stairs`)
       await shot('07-stairs-route')
-      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`) // same hash: reload the page to start at step 1
+      await page.goto(`${base}#/route/f1-lobby/f5-1-507`) // same hash: reload the page to start at step 1
       await page.reload()
       await page.getByTestId('route-header').waitFor()
       await page.getByRole('switch', { name: 'Avoid stairs' }).tap()
@@ -135,18 +135,18 @@ try {
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
       await page.goto(`${base}#/at/sample-f2-lift`)
       await page.waitForTimeout(1500)
-      await page.goto(`${base}#/room/sample-lab-5-02`)
+      await page.goto(`${base}#/room/f5-1-502`)
       await page.getByRole('button', { name: 'Directions' }).waitFor()
       await shot('09-room-card-directions')
       await page.getByRole('button', { name: 'Directions' }).tap()
       await page.getByTestId('route-header').waitFor()
-      check(page.url().includes('#/route/%40sample-f2-lift/sample-lab-5-02'), `${size.name}: the hash names the QR spot`)
+      check(page.url().includes('#/route/%40sample-f2-lift/f5-1-502'), `${size.name}: the hash names the QR spot`)
       check((await page.locator('.route-from').innerText()).includes('where you scanned'), `${size.name}: From says where you scanned`)
       await page.waitForTimeout(1200)
       await shot('10-route-from-qr')
       // Without a scan, Directions asks where from.
       const fresh = await newPage()
-      await fresh.page.goto(`${base}#/room/sample-lab-5-02`)
+      await fresh.page.goto(`${base}#/room/f5-1-502`)
       await fresh.page.getByRole('button', { name: 'Directions' }).tap()
       await fresh.page.getByRole('dialog', { name: 'Directions to Sample Lab 5-02' }).waitFor()
       await fresh.page.screenshot({ path: join(out, `${tag('11-from-picker')}.png`) })
@@ -161,7 +161,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`)
+      await page.goto(`${base}#/route/f1-lobby/f5-1-507`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1200)
       await page.getByTestId('route-step').tap()
@@ -180,7 +180,7 @@ try {
       await page.getByRole('button', { name: 'Floor 1', exact: true }).tap()
       await page.waitForTimeout(800)
       check((await stepText(page)).startsWith('Leave Sample Lobby'), `${size.name}: floor picker jumps to that floor's first step`)
-      await page.evaluate(() => window.__store.getState().selectRoom('sample-lab-5-02', { focus: true }))
+      await page.evaluate(() => window.__store.getState().selectRoom('f5-1-502', { focus: true }))
       await page.waitForTimeout(500)
       check((await page.getByTestId('route-header').count()) === 1 && (await page.locator('.sheet').count()) === 0, `${size.name}: a room tap keeps the route and opens no card`)
       await page.getByRole('button', { name: 'All floors' }).tap()
@@ -190,7 +190,7 @@ try {
       await page.waitForTimeout(800)
       check((await page.locator('.sheet.peek').innerText()).includes('5-07'), `${size.name}: Close returns to the destination's peek card`)
       await page.getByRole('button', { name: 'Floor 2', exact: true }).tap()
-      await page.evaluate(() => window.__store.getState().selectRoom('sample-lab-5-02', { focus: true, cross: true }))
+      await page.evaluate(() => window.__store.getState().selectRoom('f5-1-502', { focus: true, cross: true }))
       await page.waitForTimeout(1200)
       await shot('16-cross-floor-banner')
       await ctx.close()
@@ -207,7 +207,7 @@ try {
           headers: { 'access-control-allow-origin': '*' },
           body: JSON.stringify({
             reply: 'Sample Lab 5-02 is on floor 5. This is mock mode with sample data.',
-            actions: [{ type: 'show_room', roomId: 'sample-lab-5-02' }, { type: 'show_route', fromId: null, toId: 'sample-lab-5-02' }],
+            actions: [{ type: 'show_room', roomId: 'f5-1-502' }, { type: 'show_route', fromId: null, toId: 'f5-1-502' }],
           }),
         }),
       )

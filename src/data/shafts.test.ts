@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { buildingData as data } from './index'
 
-describe('real floors 1 to 4', () => {
-  const real = [1, 2, 3, 4]
+describe('real floors 1 to 5', () => {
+  const real = [1, 2, 3, 4, 5]
 
   it('put every stair core and lift at the same x,z on each real floor it serves', () => {
     for (const c of data.walkways.connectors) {
@@ -15,9 +15,9 @@ describe('real floors 1 to 4', () => {
     }
   })
 
-  it('gives the lower-floor shafts a connector on floors 1 to 4, new cores included', () => {
+  it('gives the lower-floor shafts a connector on floors 1 to 5, new cores included', () => {
     const s = data.walkways.connectors.find((c) => c.id === 'stairs-s')
-    expect(Object.keys(s?.nodes ?? {}).sort()).toEqual(['1', '2', '3', '4'])
+    expect(Object.keys(s?.nodes ?? {}).sort()).toEqual(['1', '2', '3', '4', '5'])
     // the plan shows no north-east stair core inside the outline on floor 1
     const e = data.walkways.connectors.find((c) => c.id === 'stairs-e')
     expect(Object.keys(e?.nodes ?? {}).sort()).toEqual(['2', '3', '4', '5'])

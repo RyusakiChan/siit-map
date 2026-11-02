@@ -117,7 +117,7 @@ if (which === 'floor1') {
     { name: 'f1-02-all-cores-line-up', run: view('all'), settle: 3000 },
     { name: 'f1-03-route-main-entrance-to-1-301', hash: '#/route/f1-lobby/f3-1-301', settle: 3500 },
     { name: 'f1-04-thai-floor1', run: async (p) => { await store(p, () => window.__store.getState().setLang('th')); await view(1)(p) }, settle: 3000 },
-    { name: 'f1-05-card-first-aid-1-102', run: async (p) => { await view(1)(p); await wait(1500); await sel('f1-1-102', 'full')(p) }, settle: 2500 },
+    { name: 'f1-05-card-first-aid', run: async (p) => { await view(1)(p); await wait(1500); await sel('f1-first-aid', 'full')(p) }, settle: 2500 },
   ])
 }
 

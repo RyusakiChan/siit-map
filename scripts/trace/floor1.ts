@@ -36,13 +36,17 @@ const lobbyM: Point[] = rect(-14.6, 25.6, -6.0, 30.5)
 const lobbyPx = [toPx([-14.6, 25.6]), toPx([-6.0, 25.6]), toPx([-6.0, 30.5]), toPx([-14.6, 30.5])]
 
 export const rooms: RoomSpec[] = [
-  { ...none, id: 'f1-library', number: null, name: 'SIIT Library', nameTh: 'ห้องสมุด', type: 'library', px: poly([535, 650], [785, 650], [785, 695], [875, 695], [875, 740], [975, 740], [975, 940], [880, 940], [880, 878], [745, 878], [745, 925], [535, 925]), minus: [liftsM, stairsBottomM], door: [975, 860] },
+  { ...none, id: 'f1-library', number: null, name: 'Library and Information Services Center', nameTh: 'ห้องสมุด', aliases: ['SIIT Library', 'Library'], type: 'library', px: poly([535, 650], [785, 650], [785, 695], [875, 695], [875, 740], [975, 740], [975, 940], [880, 940], [880, 878], [745, 878], [745, 925], [535, 925]), minus: [liftsM, stairsBottomM], door: [975, 860] },
   { ...none, id: 'f1-cafe-amazon', number: null, name: 'Café Amazon', aliases: ['Amazon', 'Cafe Amazon'], type: 'foodservice', px: rect(608, 570, 775, 648), minus: [northStrip], door: [692, 570] },
   { ...none, id: 'f1-coffee-buddy', number: null, name: 'Coffee Buddy', type: 'foodservice', px: rect(528, 565, 605, 648), minus: [northStrip], door: [566, 565] },
   { ...none, id: 'f1-restroom', number: null, name: 'Restrooms', nameTh: 'ห้องน้ำ', aliases: ['Toilet'], type: 'restroom', px: rect(958, 425, 1085, 670), minus: [stairsTopMidM], door: [958, 600] },
   { ...none, id: 'f1-admission', number: null, name: 'Admission Room', nameTh: 'ห้องรับสมัคร', type: 'office', px: rect(1090, 590, 1240, 670), door: [1190, 670] },
   { ...none, id: 'f1-ai-lab', number: null, name: 'AI Lab', nameTh: 'ห้องปฏิบัติการ AI', type: 'laboratory', px: poly([1092, 908], [1148, 908], [1148, 962], [1232, 988], [1232, 1065], [1088, 1065]), door: [1092, 1000] },
-  { ...none, id: 'f1-1-102', number: '1-102', name: 'First Aid Room', nameTh: 'ห้องปฐมพยาบาล', aliases: ['Infirmary', 'Infirmary Room', 'First Aid'], type: 'other', px: rect(718, 935, 768, 1040), door: [768, 990] },
+  { ...none, id: 'f1-first-aid', number: null, name: 'First Aid Room', nameTh: 'ห้องปฐมพยาบาล', aliases: ['Infirmary', 'Infirmary Room', 'First Aid'], type: 'other', px: rect(718, 935, 768, 1040), door: [768, 990] },
+  // Row of narrow strips south-west of the library (plan x 580-715), read as First Aid / 1-102 / 1-101 side by side.
+  // Order and exact widths are guesses from the photos: 1-102 adjoins a dark pillar then the First Aid door.
+  { ...none, id: 'f1-1-102', number: '1-102', name: 'SIIT Smart Active Learning Room', nameTh: 'ห้องเรียนเชิงรุก', aliases: ['Smart Active Learning Room', 'Active Learning Room'], type: 'classroom', px: rect(645, 935, 715, 1035), door: [680, 1035] },
+  { ...none, id: 'f1-1-101', number: '1-101', name: 'Room 1-101', type: 'other', px: rect(582, 935, 640, 1035), door: [610, 1035] },
   { ...none, id: 'f1-lobby', number: null, name: 'Main Entrance', nameTh: 'ทางเข้าหลัก', aliases: ['Main Lobby', 'Lobby', 'Entrance'], type: 'lobby', px: lobbyPx, metres: lobbyM, door: toPx([-10.3, 25.6]) },
   // Shafts: polygons are floor 2's rooms (same x,z on every floor).
   { ...none, id: 'f1-lifts', number: null, name: 'Lifts', nameTh: 'ลิฟต์', type: 'elevator', px: rect(811, 886, 875, 916), metres: liftsM, door: [843, 916] },
@@ -61,11 +65,11 @@ export const plan: Plan = {
   corridorNodesPx: {
     w1: [870, 620], wn: [940, 600], w2: [940, 640], w3: [940, 715], e3: [1012, 715], a1: [1195, 715], e2: [1012, 790],
     e1: [1012, 905], c: [1012, 952], d1: [940, 952], l: [843, 938], s3: [940, 1028], s2: [843, 1028], s1: [790, 1028],
-    i1: [790, 990], al: [1052, 990],
+    i1: [790, 990], al: [1052, 990], s0: [680, 1052], s0b: [625, 1052], s1b: [790, 1052],
   },
   corridorEdges: [
     ['ar1', 'ar2'], ['ar2', 'ar3'], ['ar3', 'ar4'], ['ar4', 'w1'], ['w1', 'wn'], ['wn', 'w2'], ['w2', 'w3'], ['w3', 'e3'], ['e3', 'a1'],
-    ['e3', 'e2'], ['e2', 'e1'], ['e1', 'c'], ['c', 'd1'], ['d1', 'l'], ['d1', 's3'], ['s3', 's2'], ['s2', 's1'], ['s1', 'i1'], ['c', 'al'],
+    ['e3', 'e2'], ['e2', 'e1'], ['e1', 'c'], ['c', 'd1'], ['d1', 'l'], ['d1', 's3'], ['s3', 's2'], ['s2', 's1'], ['s1', 'i1'], ['s1', 's1b'], ['s1b', 's0'], ['s0', 's0b'], ['c', 'al'],
   ],
 }
 

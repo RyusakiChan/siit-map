@@ -12,8 +12,8 @@ const preview = (process.env.PREVIEW ?? 'f2-lift,f2-stairs-e').split(',')
 const jsqr = readFileSync(join(root, 'node_modules/jsqr/dist/jsQR.js'), 'utf8')
 
 const browser = await chromium.launch({ channel: 'chrome' })
-// 150 dpi: A4 is 210 mm = 794 CSS px at 96 dpi; scale 1.5625 gives 1240 px across.
-const page = await browser.newPage({ viewport: { width: 860, height: 1200 }, deviceScaleFactor: 1.5625 })
+// 150 dpi on either paper: 96 dpi CSS pixels x 1.5625 (A4 is 1240 px across, A3 is 1754).
+const page = await browser.newPage({ viewport: { width: 1200, height: 1600 }, deviceScaleFactor: 1.5625 })
 await page.goto(pathToFileURL(htmlPath).href)
 await page.waitForFunction(() => document.documentElement.dataset.ready === '1')
 await page.addStyleTag({ content: 'body{background:#fff!important}.page{margin:0 auto!important;box-shadow:none!important}' })

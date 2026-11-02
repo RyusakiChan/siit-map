@@ -1,8 +1,9 @@
-// Production QR posters: npm run qr-poster  ->  print/qr-posters.html (git-ignored), one A4 poster per page.
+// Production QR posters: npm run qr-poster  ->  print/qr-posters.html (git-ignored), one poster per page, A3 by default.
 // The poster is drawn as the board the 3D map shows for a scanned point (white card, pink frame, pink dot at the
 // bottom), dressed in a student scrapbook style: lilac halftone band, torn paper, stickers, tape and pill labels.
 // All key text is ink, so it still reads on a black-and-white printer. Only real QR points are printed.
 // Needs no network: the fonts are embedded. Check it with: npm run qr-poster:check
+//   PAPER=A4 npm run qr-poster     (A4 instead; the design scales evenly, A sizes share one shape)
 //   QR_BASE=https://example.org/siit-map/ npm run qr-poster     (another address, for a test)
 import qrcode from 'qrcode-generator'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
@@ -20,6 +21,8 @@ if (configured === undefined) console.warn("warning: could not read groupName fr
 const points = data.qrPoints.filter((q) => !q.sample).sort((a, b) => a.floor - b.floor || a.id.localeCompare(b.id))
 const floors = data.floors.map((f) => f.level ?? f.floor ?? f.number).filter((n) => typeof n === 'number')
 const topFloor = floors.length ? Math.max(...floors) : 5
+// The page is drawn on an A4 grid in mm and scaled to the paper: A3 is the A4 design at 1.414x.
+const PAPER = (process.env.PAPER ?? 'A3').toUpperCase() === 'A4' ? { name: 'A4', w: 210, h: 297 } : { name: 'A3', w: 297, h: 420 }
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 // Pastel Mauve tokens (src/theme/colors.ts) plus the pastel room tints for the rainbow.
@@ -143,7 +146,7 @@ function floorStack(x, y, here) {
   return g
 }
 
-// The A4 page in mm. The board: a white card in a pink frame, 7 mm in from the edge (safe for office printers).
+// The A4 design grid in mm. The board: a white card in a pink frame, 7 mm in from the edge (safe for office printers).
 const W = 210
 const H = 297
 const M = 7
@@ -168,7 +171,7 @@ function poster(q) {
   const qrSize = 110
 
   return `<section class="page" data-id="${esc(q.id)}" data-url="${esc(url)}">
-<svg class="poster" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}mm" height="${H}mm">
+<svg class="poster" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${PAPER.w}mm" height="${PAPER.h}mm">
   <defs>
     <pattern id="dots-${q.id}" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
       <circle cx="1.6" cy="1.6" r="0.62" fill="${C.lilacDot}" fill-opacity="0.55"/>
@@ -289,10 +292,10 @@ const html = `<!doctype html>
 <title>SIIT Map QR posters</title>
 <style>
 ${fonts}
-@page { size: A4 portrait; margin: 0; }
+@page { size: ${PAPER.name} portrait; margin: 0; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.page { width: 210mm; height: 297mm; break-after: page; page-break-after: always; overflow: hidden; }
+.page { width: ${PAPER.w}mm; height: ${PAPER.h}mm; break-after: page; page-break-after: always; overflow: hidden; }
 .page:last-child { break-after: auto; page-break-after: auto; }
 .poster { display: block; }
 @media screen { body { background: #ccc; } .page { margin: 8mm auto; background: #fff; box-shadow: 0 0 0 1px #999; } }
@@ -307,4 +310,4 @@ ${points.map(poster).join('\n')}
 
 mkdirSync(join(root, 'print'), { recursive: true })
 writeFileSync(join(root, 'print/qr-posters.html'), html)
-console.log(`print/qr-posters.html: ${points.length} A4 posters, linking to ${base}#/at/<id>`)
+console.log(`print/qr-posters.html: ${points.length} ${PAPER.name} posters, linking to ${base}#/at/<id>`)

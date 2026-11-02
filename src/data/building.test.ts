@@ -157,7 +157,7 @@ describe('validate()', () => {
     const d = clone()
     d.rooms[0]!.name = ''
     delete d.rooms[0]!.nameTh
-    d.walkways.nodes.push({ id: 'loose', floor: 1, position: [-10, 0.5] })
+    d.walkways.nodes.push({ id: 'loose', floor: 1, position: [8, -5] })
     const all = validate(d)
     expect(all.some((p) => p.code === 'room-unnamed' && p.severity === 'warning')).toBe(true)
     expect(all.some((p) => p.code === 'node-isolated' && p.severity === 'warning')).toBe(true)

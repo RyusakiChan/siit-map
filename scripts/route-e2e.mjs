@@ -97,7 +97,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/sample-f1-lobby/sample-off-5-07`)
+      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1200)
       const steps = async () => {
@@ -114,7 +114,7 @@ try {
       const withStairs = await steps()
       check(withStairs.some((s) => s.includes('stairs')), `${size.name}: default route uses the stairs`)
       await shot('07-stairs-route')
-      await page.goto(`${base}#/route/sample-f1-lobby/sample-off-5-07`) // same hash: reload the page to start at step 1
+      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`) // same hash: reload the page to start at step 1
       await page.reload()
       await page.getByTestId('route-header').waitFor()
       await page.getByRole('switch', { name: 'Avoid stairs' }).tap()
@@ -161,7 +161,7 @@ try {
     {
       const { ctx, page } = await newPage()
       const shot = (n) => page.screenshot({ path: join(out, `${tag(n)}.png`) })
-      await page.goto(`${base}#/route/sample-f1-lobby/sample-off-5-07`)
+      await page.goto(`${base}#/route/f1-lobby/sample-off-5-07`)
       await page.getByTestId('route-header').waitFor()
       await page.waitForTimeout(1200)
       await page.getByTestId('route-step').tap()

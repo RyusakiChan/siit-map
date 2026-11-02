@@ -5,7 +5,7 @@ import { planDoor, nearestEdge, splitEdge } from '../../src/trace/walk'
 import { polygonArea } from '../../src/data/geometry'
 import type { Point, Room, WalkNode, WalkEdge, RoomType } from '../../src/data/types'
 const require = createRequire(import.meta.url)
-const pc = require('polygon-clipping') as { intersection: (...g: unknown[]) => number[][][][] }
+const pc = require('polygon-clipping') as { intersection: (...g: unknown[]) => number[][][][]; difference: (...g: unknown[]) => number[][][][] }
 
 export const round2 = (n: number) => Math.round(n * 100) / 100
 export const roundP = (p: Point): Point => [round2(p[0]), round2(p[1])]
@@ -113,6 +113,8 @@ export interface RoomSpec {
   px: Point[]
   /** Use this metre polygon as is (no clipping, no inset): a shaft snapped onto another floor's room. */
   metres?: Point[]
+  /** Metre polygons cut out of this room after clipping (shafts it wraps around, a strip kept free for a walkway). */
+  minus?: Point[][]
   /** a click near the wall the door goes on (poster pixels) */
   door: Point
   /** optional point on the corridor to join (poster pixels); otherwise the nearest corridor edge */
@@ -128,6 +130,8 @@ export interface Plan {
   voidsMetres?: Point[][]
   rooms: RoomSpec[]
   corridorNodesPx: Record<string, Point>
+  /** Corridor nodes given in metres (a walkway the poster does not draw inside the outline). */
+  corridorNodesMetres?: Record<string, Point>
   corridorEdges: [string, string][]
   gap: number
 }
@@ -157,7 +161,17 @@ export function build(plan: Plan): Built {
       const full = spec.px.map((q) => fit.to(q))
       const clipped = clipToOutline(full, outline)
       if (clipped.keptFraction < 0.999) report.push(`clip ${spec.id}: kept ${(clipped.keptFraction * 100).toFixed(0)}% of its area${clipped.keptFraction < 0.75 ? ' (MORE THAN A QUARTER REMOVED)' : ''}`)
-      p = clean(inset(clean(clipped.poly), plan.gap / 2).map(roundP))
+      let base = clean(clipped.poly)
+      if (spec.minus?.length) {
+        const cut = pc.difference([base as unknown as number[][]], ...spec.minus.map((m) => [inset(m, -plan.gap / 2) as unknown as number[][]]))
+        const rings = cut.map((r) => r[0]!.slice(0, -1) as unknown as Point[]).sort((x, y) => polygonArea(y) - polygonArea(x))
+        if (rings[0]) {
+          const kept = polygonArea(rings[0]) / polygonArea(base)
+          report.push(`cut ${spec.id}: ${(kept * 100).toFixed(0)}% of its clipped area left after the shafts/strip were removed`)
+          base = clean(rings[0])
+        }
+      }
+      p = clean(inset(base, plan.gap / 2).map(roundP))
     }
     polys.set(spec.id, p)
     rooms.push({
@@ -177,6 +191,7 @@ export function build(plan: Plan): Built {
   let d = 0
   const newC = (pos: Point) => { const id = `f${floor}-c${++c}`; nodes.push({ id, floor, position: roundP(pos) }); return id }
   for (const [k, p] of Object.entries(plan.corridorNodesPx)) idOf.set(k, newC(fit.to(p)))
+  for (const [k, p] of Object.entries(plan.corridorNodesMetres ?? {})) idOf.set(k, newC(p))
   for (const [a, b] of plan.corridorEdges) edges.push({ a: idOf.get(a)!, b: idOf.get(b)! })
   const obstacles = [...polys.values(), ...voids]
   for (const spec of plan.rooms) {

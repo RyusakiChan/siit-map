@@ -23,7 +23,7 @@ describe('hash router', () => {
   })
 
   it('parses route links with a room or a QR start', () => {
-    expect(parseHash('#/route/sample-f1-lobby/sample-lab-2-03')).toEqual({ name: 'route', from: 'sample-f1-lobby', to: 'sample-lab-2-03' })
+    expect(parseHash('#/route/f1-lobby/f3-1-301')).toEqual({ name: 'route', from: 'f1-lobby', to: 'f3-1-301' })
     expect(parseHash('#/route/%40sample-f2-lift/sample-lab-2-03')).toEqual({ name: 'route', from: '@sample-f2-lift', to: 'sample-lab-2-03' })
     expect(parseHash('#/route/@sample-f2-lift/sample-lab-2-03')).toEqual({ name: 'route', from: '@sample-f2-lift', to: 'sample-lab-2-03' })
     expect(routePath(parseHash('#/route/a/b'))).toBe('/route/a/b')

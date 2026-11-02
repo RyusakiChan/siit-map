@@ -143,3 +143,21 @@ describe('every room can be reached from every floor', () => {
     }
   })
 })
+
+describe('routes from the real floor 1', () => {
+  const cases: [string, string, number][] = [
+    ['f1-lobby', 'f3-1-301', 3],
+    ['f1-cafe-amazon', 'f4-1-413', 4],
+  ]
+  for (const [from, to, floor] of cases) {
+    for (const avoidStairs of [false, true]) {
+      it(`${from} to ${to} with avoidStairs=${avoidStairs}`, () => {
+        const p = planRoute(room(from), to, { avoidStairs })!
+        expect(p).not.toBeNull()
+        expect(p.legs.at(-1)!.floor).toBe(floor)
+        expect(p.legs.at(-1)!.endRoomId).toBe(to)
+        if (avoidStairs) expect(p.usesStairs).toBe(false)
+      })
+    }
+  }
+})

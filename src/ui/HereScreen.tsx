@@ -33,6 +33,7 @@ export function HereBanner() {
           {t('hereWhere', { n: here.floor, place: qrLabel(qr, lang) })}
         </span>
         <span className="here-turned">{t('hereTurned')}</span>
+        <span className="here-turned">{t('herePoster')}</span>
       </div>
       <button type="button" className="square-btn small" aria-label={t('hereClose')} onClick={closeHere}>
         <CloseIcon />

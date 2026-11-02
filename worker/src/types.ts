@@ -10,11 +10,20 @@ export interface Env {
   ALLOW_LOCALHOST?: string
   /** Comma-separated extra origins (optional). */
   ALLOWED_ORIGINS?: string
-  /** Cloudflare rate-limiting binding: per IP per minute. */
-  MINUTE_LIMIT?: { limit(options: { key: string }): Promise<{ success: boolean }> }
-  /** Optional KV namespace for the per-IP daily count. */
-  DAILY?: { get(key: string): Promise<string | null>; put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void> }
+  /** Comma-separated shared campus Wi-Fi addresses. */
+  CAMPUS_IPS?: string
+  /** Cloudflare rate-limiting binding: per client per minute. */
+  MINUTE_LIMIT?: RateLimiter
+  /** Rate-limiting binding for the shared campus address. */
+  CAMPUS_MINUTE?: RateLimiter
+  /** Durable Object namespace of the daily counter (one instance, "daily"). */
+  COUNTER?: {
+    idFromName(name: string): unknown
+    get(id: never): { check(clientKey: string): Promise<{ allowed: boolean }> }
+  }
 }
+
+export type RateLimiter = { limit(options: { key: string }): Promise<{ success: boolean }> }
 
 export interface ChatMessage {
   role: 'user' | 'assistant'

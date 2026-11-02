@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import type Anthropic from '@anthropic-ai/sdk'
 import { askClaude, buildParams, MODEL, systemBlock, type MessagesClient } from './chat'
+import { DailyCounterLogic } from './counter'
+import { fakeSql } from './fake-sql'
 import { handle } from './index'
+import { clientKey, parseCampusIps } from './limits'
 import { mockChat } from './mock'
 import { buildingContext } from './prompt'
 import { data } from './data'
@@ -15,11 +18,17 @@ function fakeClient(text: string, stop_reason = 'end_turn') {
   return { client: { messages: { create } } as MessagesClient, create }
 }
 
-const post = (body: unknown, env: Env = {}, origin: string | null = ORIGIN, client?: MessagesClient) =>
+/** An in-memory stand-in for the COUNTER namespace: the real counter logic over a fake SQL. */
+function fakeCounterNs(): NonNullable<Env['COUNTER']> {
+  const logic = new DailyCounterLogic(fakeSql())
+  return { idFromName: (n) => n, get: () => ({ check: async (k: string) => logic.check(k) }) }
+}
+
+const post = (body: unknown, env: Env = {}, origin: string | null = ORIGIN, client?: MessagesClient, ip?: string) =>
   handle(
     new Request('https://worker.test/chat', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...(origin ? { origin } : {}) },
+      headers: { 'content-type': 'application/json', ...(origin ? { origin } : {}), ...(ip ? { 'cf-connecting-ip': ip } : {}) },
       body: JSON.stringify(body),
     }),
     env,
@@ -210,15 +219,94 @@ describe('handler', () => {
     expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(429)
   })
 
-  it('returns 429 after 100 questions in a day when KV is bound', async () => {
-    const store = new Map<string, string>()
+  it('returns 429 after 100 questions in a day from one client', async () => {
+    const env: Env = { ANTHROPIC_API_KEY: 'test', COUNTER: fakeCounterNs() }
+    const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
+    for (let i = 0; i < 100; i++) expect((await post(ask('hi'), env, ORIGIN, client, '203.0.113.5')).status).toBe(200)
+    expect((await post(ask('hi'), env, ORIGIN, client, '203.0.113.5')).status).toBe(429)
+    // Another client is unaffected.
+    expect((await post(ask('hi'), env, ORIGIN, client, '203.0.113.6')).status).toBe(200)
+  })
+
+  it('gives the campus address 1,000 a day and one shared key', async () => {
+    const env: Env = { ANTHROPIC_API_KEY: 'test', CAMPUS_IPS: ' 183.88.238.226 , 10.0.0.1', COUNTER: fakeCounterNs() }
+    const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
+    for (let i = 0; i < 1000; i++) expect((await post(ask('hi'), env, ORIGIN, client, i % 2 ? '183.88.238.226' : '10.0.0.1')).status).toBe(200)
+    expect((await post(ask('hi'), env, ORIGIN, client, '183.88.238.226')).status).toBe(429)
+  })
+
+  it('uses the campus minute limiter for campus and the normal one for others', async () => {
+    const campus = vi.fn(async (opts: { key: string }) => ({ success: opts.key.length > 0 }))
+    const normal = vi.fn(async (opts: { key: string }) => ({ success: opts.key.length > 0 }))
+    const env: Env = { ANTHROPIC_API_KEY: 'test', CAMPUS_IPS: '183.88.238.226', MINUTE_LIMIT: { limit: normal }, CAMPUS_MINUTE: { limit: campus } }
+    const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
+    await post(ask('hi'), env, ORIGIN, client, '183.88.238.226')
+    await post(ask('hi'), env, ORIGIN, client, '2001:db8:1:2:aaaa::9')
+    expect(campus).toHaveBeenCalledWith({ key: 'campus' })
+    expect(normal).toHaveBeenCalledWith({ key: '2001:db8:1:2::/64' })
+    expect(campus).toHaveBeenCalledTimes(1)
+    expect(normal).toHaveBeenCalledTimes(1)
+  })
+
+  it('trips the global cap at 2,000 across many clients', async () => {
+    const env: Env = { ANTHROPIC_API_KEY: 'test', COUNTER: fakeCounterNs() }
+    const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
+    for (let i = 0; i < 2000; i++) expect((await post(ask('hi'), env, ORIGIN, client, `198.51.${Math.floor(i / 50)}.${i % 50}`)).status).toBe(200)
+    expect((await post(ask('hi'), env, ORIGIN, client, '192.0.2.99')).status).toBe(429)
+  })
+
+  it('does not count a minute-limited request against the day', async () => {
+    const check = vi.fn((k: string) => ({ allowed: k.length > 0 }))
     const env: Env = {
       ANTHROPIC_API_KEY: 'test',
-      DAILY: { get: async (k) => store.get(k) ?? null, put: async (k, v) => void store.set(k, v) },
+      MINUTE_LIMIT: { limit: async () => ({ success: false }) },
+      COUNTER: { idFromName: () => 'x', get: () => ({ check: async (k: string) => check(k) }) },
+    }
+    const { client } = fakeClient('{}')
+    expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(429)
+    expect(check).not.toHaveBeenCalled()
+  })
+
+  it('fails open when the daily counter throws', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const env: Env = {
+      ANTHROPIC_API_KEY: 'test',
+      COUNTER: {
+        idFromName: () => 'x',
+        get: () => ({
+          check: async () => {
+            throw new Error('do down 203.0.113.5 secret question')
+          },
+        }),
+      },
     }
     const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
-    for (let i = 0; i < 100; i++) expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(200)
-    expect((await post(ask('hi'), env, ORIGIN, client)).status).toBe(429)
+    expect((await post(ask('secret question'), env, ORIGIN, client, '203.0.113.5')).status).toBe(200)
+    expect(spy).toHaveBeenCalled()
+    expect(JSON.stringify(spy.mock.calls)).not.toMatch(/203\.0\.113|secret/)
+    spy.mockRestore()
+  })
+
+  it('fails open when a rate-limit binding throws', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const boom = {
+      limit: async (): Promise<{ success: boolean }> => {
+        throw new Error('binding down')
+      },
+    }
+    const { client } = fakeClient(JSON.stringify({ reply: 'ok', actions: [] }))
+    const env: Env = { ANTHROPIC_API_KEY: 'test', CAMPUS_IPS: '183.88.238.226', MINUTE_LIMIT: boom, CAMPUS_MINUTE: boom }
+    expect((await post(ask('hi'), env, ORIGIN, client, '203.0.113.5')).status).toBe(200)
+    expect((await post(ask('hi'), env, ORIGIN, client, '183.88.238.226')).status).toBe(200)
+    spy.mockRestore()
+  })
+
+  it('skips every limit in mock mode', async () => {
+    const env: Env = {
+      COUNTER: { idFromName: () => 'x', get: () => ({ check: async () => ({ allowed: false }) }) },
+      MINUTE_LIMIT: { limit: async () => ({ success: false }) },
+    }
+    expect((await post(ask('hi'), env)).status).toBe(200)
   })
 
   it('maps SDK failures to 502 without echoing the text', async () => {
@@ -243,5 +331,93 @@ describe('mockChat', () => {
   it('does not know unrelated things', () => {
     const out = mockChat({ lang: 'en', messages: [{ role: 'user', content: 'zzzz qqqq' }] })
     expect(out.reply).toContain("don't have")
+  })
+})
+
+describe('clientKey', () => {
+  const campus = parseCampusIps(' 183.88.238.226, ,10.0.0.1 ')
+
+  it('parses the campus list', () => {
+    expect(campus).toEqual(['183.88.238.226', '10.0.0.1'])
+    expect(parseCampusIps(undefined)).toEqual([])
+  })
+
+  it('maps campus addresses to one key and keeps other IPv4 whole', () => {
+    expect(clientKey('183.88.238.226', campus)).toBe('campus')
+    expect(clientKey('10.0.0.1', campus)).toBe('campus')
+    expect(clientKey('203.0.113.5', campus)).toBe('203.0.113.5')
+  })
+
+  it('groups IPv6 by its /64 prefix, including :: forms', () => {
+    expect(clientKey('2001:db8:1:2:3:4:5:6', [])).toBe('2001:db8:1:2::/64')
+    expect(clientKey('2001:0DB8:0001:0002::1', [])).toBe('2001:db8:1:2::/64')
+    expect(clientKey('2001:db8:1:2::', [])).toBe('2001:db8:1:2::/64')
+    expect(clientKey('2001:db8::1', [])).toBe('2001:db8:0:0::/64')
+    expect(clientKey('::1', [])).toBe('0:0:0:0::/64')
+    expect(clientKey('::', [])).toBe('0:0:0:0::/64')
+    expect(clientKey('fe80::1%eth0', [])).toBe('fe80:0:0:0::/64')
+    expect(clientKey('::ffff:192.0.2.1', [])).toBe('0:0:0:0::/64')
+    expect(clientKey('2001:db8:1:2:aaaa:bbbb:cccc:dddd', [])).toBe(clientKey('2001:db8:1:2::ffff', []))
+    expect(clientKey('2001:db8:1:3::1', [])).not.toBe(clientKey('2001:db8:1:2::1', []))
+  })
+
+  it('keeps junk as is', () => {
+    expect(clientKey('unknown', [])).toBe('unknown')
+    expect(clientKey('1:2:3', [])).toBe('1:2:3')
+  })
+})
+
+describe('DailyCounterLogic', () => {
+  const day = (d: string) => new Date(`${d}T12:00:00Z`)
+
+  it('counts per day and resets on a new UTC day', () => {
+    const c = new DailyCounterLogic(fakeSql())
+    for (let i = 0; i < 100; i++) expect(c.check('1.1.1.1', day('2026-11-02')).allowed).toBe(true)
+    expect(c.check('1.1.1.1', day('2026-11-02')).allowed).toBe(false)
+    expect(c.check('1.1.1.1', day('2026-11-03')).allowed).toBe(true)
+  })
+
+  it('does not count refused requests', () => {
+    const c = new DailyCounterLogic(fakeSql())
+    for (let i = 0; i < 150; i++) c.check('1.1.1.1', day('2026-11-02'))
+    // 100 were allowed; refused ones added nothing, so 1,900 more fit under the global cap.
+    let ok = 0
+    for (let i = 0; i < 2000; i++) if (c.check(`9.9.${Math.floor(i / 90)}.${i % 90}`, day('2026-11-02')).allowed) ok++
+    expect(ok).toBe(1900)
+  })
+
+  it('gives campus 1,000 a day', () => {
+    const c = new DailyCounterLogic(fakeSql())
+    let campus = 0
+    for (let i = 0; i < 1100; i++) if (c.check('campus', day('2026-11-02')).allowed) campus++
+    expect(campus).toBe(1000)
+  })
+
+  it('deletes rows older than two days', () => {
+    const sql = fakeSql()
+    const c = new DailyCounterLogic(sql)
+    c.check('a', day('2026-11-01'))
+    c.check('a', day('2026-11-02'))
+    c.check('a', day('2026-11-03'))
+    const rows = sql.exec('SELECT day FROM daily').toArray().map((r) => r.day)
+    expect(rows).not.toContain('2026-11-01')
+    expect(rows).toContain('2026-11-02')
+  })
+
+  // The same logic against real SQLite (node:sqlite), to check the SQL text itself.
+  it('runs on real SQLite', async () => {
+    const mod = (await import(/* @vite-ignore */ 'node:' + 'sqlite')) as { DatabaseSync: new (p: string) => { prepare(q: string): { all(...a: unknown[]): unknown[]; run(...a: unknown[]): unknown } } }
+    const db = new mod.DatabaseSync(':memory:')
+    const sql = {
+      exec(q: string, ...b: (string | number)[]) {
+        const st = db.prepare(q)
+        const rows = /^\s*(select)/i.test(q) ? (st.all(...b) as Record<string, unknown>[]) : (st.run(...b), [])
+        return { toArray: () => rows }
+      },
+    }
+    const c = new DailyCounterLogic(sql)
+    for (let i = 0; i < 100; i++) expect(c.check('x', day('2026-11-02')).allowed).toBe(true)
+    expect(c.check('x', day('2026-11-02')).allowed).toBe(false)
+    expect(c.check('y', day('2026-11-02')).allowed).toBe(true)
   })
 })

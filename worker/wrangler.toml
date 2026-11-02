@@ -1,11 +1,16 @@
 name = "siit-map-ask"
-main = "src/index.ts"
+main = "src/entry.ts"
 compatibility_date = "2026-10-01"
 
 # No key here. The owner stores it as a secret:  npx wrangler secret put ANTHROPIC_API_KEY
 # With no key the Worker runs in mock mode (canned answers).
 
-# Per-IP rate limit: 30 requests a minute (campus Wi-Fi shares one IP). The owner can change the numbers.
+# Shared campus Wi-Fi exit address(es), comma-separated. Requests from these share one
+# bigger allowance (key "campus"). The address is dynamic and can change: update it here.
+[vars]
+CAMPUS_IPS = "183.88.238.226"
+
+# Per-client rate limit: 30 requests a minute. The owner can change the numbers.
 [[ratelimits]]
 name = "MINUTE_LIMIT"
 namespace_id = "1001"
@@ -13,8 +18,26 @@ namespace_id = "1001"
   limit = 30
   period = 60
 
-# Daily cap: 100 questions a day per IP, counted in this KV namespace (created with
-#   npx wrangler kv namespace create DAILY). The limit itself is DAILY_LIMIT in src/index.ts.
+# Campus per-minute limit: 120 a minute for everyone behind the campus address.
+[[ratelimits]]
+name = "CAMPUS_MINUTE"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 120
+  period = 60
+
+# Daily counts (per client, campus, and global) live in one SQLite Durable Object.
+# The caps are in src/limits.ts.
+[[durable_objects.bindings]]
+name = "COUNTER"
+class_name = "DailyCounter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DailyCounter"]
+
+# UNUSED: the old per-IP daily KV count. The code no longer reads or writes it; the binding
+# is kept so no Cloudflare resource is deleted.
 [[kv_namespaces]]
 binding = "DAILY"
 id = "0b6bf257c7104647a8fcc5e8c5a3bbf5"

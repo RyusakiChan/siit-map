@@ -1,11 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { askClaude, type MessagesClient } from './chat'
+import { CAMPUS_KEY, clientKey, parseCampusIps } from './limits'
 import { mockChat } from './mock'
 import type { Env } from './types'
 import { parseRequest } from './validate'
 
 const PAGES_ORIGIN = 'https://ryusakichan.github.io'
-const DAILY_LIMIT = 100
 /** The largest request body read, in bytes. Ten turns of Thai text stay well under it. */
 const MAX_BODY = 65536
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/
@@ -26,14 +26,28 @@ function json(body: unknown, status: number, origin: string | null): Response {
 
 export const isMock = (env: Env): boolean => env.MOCK === '1' || !env.ANTHROPIC_API_KEY
 
-/** Per-IP limits: a minute window from the rate-limiting binding, a day count from KV when bound. */
+/**
+ * Limits: a minute window first, then the daily counter, so a minute-limited request does not
+ * count against the day. Campus addresses share one key and a bigger minute limit. Any broken
+ * piece fails open: a failing binding never turns into a 5xx or 429.
+ */
 async function limited(env: Env, ip: string): Promise<boolean> {
-  if (env.MINUTE_LIMIT && !(await env.MINUTE_LIMIT.limit({ key: ip })).success) return true
-  if (env.DAILY) {
-    const key = `d:${ip}:${new Date().toISOString().slice(0, 10)}`
-    const n = Number((await env.DAILY.get(key)) ?? 0)
-    if (n >= DAILY_LIMIT) return true
-    await env.DAILY.put(key, String(n + 1), { expirationTtl: 172800 })
+  const key = clientKey(ip, parseCampusIps(env.CAMPUS_IPS))
+  const minute = key === CAMPUS_KEY ? env.CAMPUS_MINUTE : env.MINUTE_LIMIT
+  if (minute) {
+    try {
+      if (!(await minute.limit({ key })).success) return true
+    } catch {
+      console.error('minute limit unavailable')
+    }
+  }
+  if (env.COUNTER) {
+    try {
+      const { allowed } = await env.COUNTER.get(env.COUNTER.idFromName('daily') as never).check(key)
+      if (!allowed) return true
+    } catch {
+      console.error('daily counter unavailable')
+    }
   }
   return false
 }

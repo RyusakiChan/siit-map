@@ -3,7 +3,7 @@ export const config = {
   /** The group's name for the About credit and the printed QR signs. While it is this placeholder, the signs print [GROUP NAME] (scripts/qr-sheet.mjs). */
   groupName: 'Group 5 TU100 Project',
   /** GoatCounter site code (the part before .goatcounter.com). Empty: no script is loaded. */
-  goatcounterCode: '',
+  goatcounterCode: 'ryusaki',
   /** Link to a problem-report form. Empty: the "Report a problem" button is hidden. */
   reportUrl: '',
   /** Official SIIT page, used until each department has its own link. */

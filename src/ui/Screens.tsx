@@ -124,6 +124,12 @@ export function AboutScreen() {
             <p className="body-14">{t('askPrivacy')}</p>
           </>
         )}
+        {config.goatcounterCode && (
+          <>
+            <h2 className="section">{t('statsTitle').toUpperCase()}</h2>
+            <p className="body-14">{t('statsNote')}</p>
+          </>
+        )}
         {config.reportUrl && (
           <>
             <h2 className="section">{t('somethingWrong')}</h2>
@@ -134,7 +140,6 @@ export function AboutScreen() {
           </>
         )}
       </div>
-      <div className="foot-note">{t('noCookies')}</div>
     </div>
   )
 }

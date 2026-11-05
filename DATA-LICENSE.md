@@ -14,6 +14,10 @@ Room names, numbers and layouts were traced by the SIIT Map team from floor plan
 
 The photos in `public/photos` were taken by the SIIT Map team and are licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Credit "SIIT Map contributors".
 
+## Brand logos
+
+The logos in `public/brands` (Krungsri, Tao Bin, Café Amazon) are trademarks of their owners. They are shown unchanged, only on the map to mark where that shop or machine is, and are not covered by the licenses above. SIIT Map is not affiliated with or endorsed by these companies.
+
 ## Department summaries
 
 Department text is our own short summary. Each links to the official SIIT page, which remains SIIT's own content.

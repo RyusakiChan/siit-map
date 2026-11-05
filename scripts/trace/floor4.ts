@@ -30,13 +30,13 @@ export const departments: Department[] = [
   {
     id: 'd-bcet', name: 'School of Bio-Chemical Engineering and Technology', letter: 'BC', colorSlot: 5, aliases: ['BCET', 'Chemical Engineering'],
     summary: 'Teaches chemical engineering with a biology angle: how plants turn raw materials into products through chemical, physical and biological processes. Offers an international Bachelor of Engineering in Chemical Engineering.',
-    url: 'https://www.siit.tu.ac.th/about/schools/bcet',
+    url: 'https://www.siit.tu.ac.th/about/programs/che',
   },
   {
-    id: 'd-msme', name: 'School of Management Technology and Mechanical Engineering', letter: 'MS', colorSlot: 6,
+    id: 'd-msme', name: 'School of Manufacturing Systems and Mechanical Engineering', letter: 'MS', colorSlot: 6,
     aliases: ['MSME', 'School of MSME', 'School of Manufacturing Systems and Mechanical Engineering', 'Manufacturing Systems and Mechanical Engineering', 'Industrial Engineering', 'Logistics and Supply Chain', 'Systems Engineering', 'Mechanical Engineering'],
     summary: 'Runs two international bachelor’s programs: Industrial Engineering and Smart Logistics, on improving manufacturing and service systems and their supply chains, and Mechanical Engineering, on machines and moving systems in industry.',
-    url: 'https://www.siit.tu.ac.th/about/schools/msme',
+    url: 'https://www.siit.tu.ac.th/about/programs/ie',
   },
 ]
 

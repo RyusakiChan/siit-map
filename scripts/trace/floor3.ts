@@ -24,13 +24,13 @@ export const departments: Department[] = [
   {
     id: 'd-cet', name: 'School of Civil Engineering and Technology', letter: 'CE', colorSlot: 3, aliases: ['CET', 'Civil Engineering'],
     summary: 'One of SIIT’s founding schools. It teaches civil engineering, with study areas in structures, concrete and materials, soil and foundations, water resources, transport and construction management.',
-    url: 'https://www.siit.tu.ac.th/about/schools/cet',
+    url: 'https://cet.siit.tu.ac.th/',
   },
   {
     id: 'd-cgs', name: 'School of Integrated Science and Innovation', letter: 'IS', colorSlot: 4,
     aliases: ['ISI', 'CGS', 'Department of Common and Graduate Studies', 'Common and Graduate Studies'],
     summary: 'Brings mathematics, science and cross-subject innovation together, including dual-degree options and research tracks. The 2017 plan and some door plates still call it the Department of Common and Graduate Studies (CGS).',
-    url: 'https://www.siit.tu.ac.th/about/schools/isi',
+    url: 'https://www.siit.tu.ac.th/contact',
   },
 ]
 

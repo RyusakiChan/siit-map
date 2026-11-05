@@ -2566,6 +2566,7 @@
           -20.78
         ]
       ],
+      "logo": "brands/cafe-amazon.png",
       "door": "f1-d2"
     },
     {
@@ -2622,13 +2623,15 @@
         ]
       ],
       "description": "Drink vending kiosk.",
+      "model": "kiosk-taobin",
+      "logo": "brands/tao-bin.png",
       "door": "f1-d-tao-bin"
     },
     {
       "id": "f1-atm",
       "number": null,
-      "name": "ATM",
-      "nameTh": "ตู้ ATM",
+      "name": "Krungsri ATM",
+      "nameTh": "ตู้ ATM กรุงศรี",
       "floor": 1,
       "departmentId": null,
       "type": "other",
@@ -2650,6 +2653,8 @@
           -9.6
         ]
       ],
+      "model": "atm-krungsri",
+      "logo": "brands/krungsri.webp",
       "door": "f1-d-atm"
     },
     {

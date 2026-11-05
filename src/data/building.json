@@ -1539,8 +1539,8 @@
     {
       "id": "f3-restroom-top-mid",
       "number": null,
-      "name": "Restrooms",
-      "nameTh": "ห้องน้ำ",
+      "name": "Staff Restrooms",
+      "nameTh": "ห้องน้ำบุคลากร",
       "floor": 3,
       "departmentId": null,
       "type": "restroom",
@@ -1567,8 +1567,8 @@
     {
       "id": "f3-restroom-top-right",
       "number": null,
-      "name": "Restrooms",
-      "nameTh": "ห้องน้ำ",
+      "name": "Student Restrooms",
+      "nameTh": "ห้องน้ำนักศึกษา",
       "floor": 3,
       "departmentId": null,
       "type": "restroom",
@@ -1591,6 +1591,34 @@
         ]
       ],
       "door": "f3-d19"
+    },
+    {
+      "id": "f3-prayer-male",
+      "number": null,
+      "name": "Male Prayer Room",
+      "nameTh": "ห้องละหมาดชาย",
+      "floor": 3,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          8.1,
+          -29.6
+        ],
+        [
+          11.75,
+          -29.6
+        ],
+        [
+          11.75,
+          -25.6
+        ],
+        [
+          8.1,
+          -25.6
+        ]
+      ],
+      "door": "f3-d-prayer"
     },
     {
       "id": "f3-restroom-bottom",
@@ -2220,8 +2248,8 @@
     {
       "id": "f4-restroom-top-mid",
       "number": null,
-      "name": "Restrooms",
-      "nameTh": "ห้องน้ำ",
+      "name": "Student Restrooms",
+      "nameTh": "ห้องน้ำนักศึกษา",
       "floor": 4,
       "departmentId": null,
       "type": "restroom",
@@ -2248,8 +2276,8 @@
     {
       "id": "f4-restroom-top-right",
       "number": null,
-      "name": "Restrooms",
-      "nameTh": "ห้องน้ำ",
+      "name": "Staff Restrooms",
+      "nameTh": "ห้องน้ำบุคลากร",
       "floor": 4,
       "departmentId": null,
       "type": "restroom",
@@ -2272,6 +2300,34 @@
         ]
       ],
       "door": "f4-d18"
+    },
+    {
+      "id": "f4-prayer-female",
+      "number": null,
+      "name": "Female Prayer Room",
+      "nameTh": "ห้องละหมาดหญิง",
+      "floor": 4,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          8.65,
+          -29.58
+        ],
+        [
+          11.28,
+          -29.58
+        ],
+        [
+          11.28,
+          -26.35
+        ],
+        [
+          8.65,
+          -26.35
+        ]
+      ],
+      "door": "f4-d-prayer"
     },
     {
       "id": "f4-restroom-bottom",
@@ -2538,6 +2594,63 @@
         ]
       ],
       "door": "f1-d3"
+    },
+    {
+      "id": "f1-tao-bin",
+      "number": null,
+      "name": "Tao Bin",
+      "nameTh": "เต่าบิน",
+      "floor": 1,
+      "departmentId": null,
+      "type": "foodservice",
+      "polygon": [
+        [
+          -2.1,
+          -23.6
+        ],
+        [
+          -1.1,
+          -23.6
+        ],
+        [
+          -1.1,
+          -22.4
+        ],
+        [
+          -2.1,
+          -22.4
+        ]
+      ],
+      "description": "Drink vending kiosk.",
+      "door": "f1-d-tao-bin"
+    },
+    {
+      "id": "f1-atm",
+      "number": null,
+      "name": "ATM",
+      "nameTh": "ตู้ ATM",
+      "floor": 1,
+      "departmentId": null,
+      "type": "other",
+      "polygon": [
+        [
+          -4.6,
+          -10.4
+        ],
+        [
+          -3.4,
+          -10.4
+        ],
+        [
+          -3.4,
+          -9.6
+        ],
+        [
+          -4.6,
+          -9.6
+        ]
+      ],
+      "door": "f1-d-atm"
     },
     {
       "id": "f1-restroom",
@@ -3520,26 +3633,7 @@
       "labelTh": "ทางเดินฝั่งตะวันออก"
     }
   ],
-  "amenities": [
-    {
-      "id": "f3-prayer-1-308",
-      "floor": 3,
-      "position": [
-        -36.02,
-        -15.84
-      ],
-      "type": "prayerroom"
-    },
-    {
-      "id": "f4-prayer-top-mid",
-      "floor": 4,
-      "position": [
-        9.09,
-        -24.43
-      ],
-      "type": "prayerroom"
-    }
-  ],
+  "amenities": [],
   "walkways": {
     "nodes": [
       {
@@ -5277,6 +5371,38 @@
           -9.32,
           15.4
         ]
+      },
+      {
+        "id": "f3-d-prayer",
+        "floor": 3,
+        "position": [
+          9.93,
+          -25.35
+        ]
+      },
+      {
+        "id": "f4-d-prayer",
+        "floor": 4,
+        "position": [
+          9.97,
+          -26.1
+        ]
+      },
+      {
+        "id": "f1-d-tao-bin",
+        "floor": 1,
+        "position": [
+          -2.35,
+          -23
+        ]
+      },
+      {
+        "id": "f1-d-atm",
+        "floor": 1,
+        "position": [
+          -4,
+          -10.65
+        ]
       }
     ],
     "edges": [
@@ -6139,6 +6265,22 @@
       {
         "a": "f5-d12",
         "b": "f5-c17"
+      },
+      {
+        "a": "f3-d-prayer",
+        "b": "f3-c9"
+      },
+      {
+        "a": "f4-d-prayer",
+        "b": "f4-c11"
+      },
+      {
+        "a": "f1-d-tao-bin",
+        "b": "f1-c3"
+      },
+      {
+        "a": "f1-d-atm",
+        "b": "f1-c4"
       }
     ],
     "connectors": [
@@ -6397,6 +6539,14 @@
     "f5-lift",
     "f5-stairs-e",
     "f5-stairs-s",
-    "f5-corr-e"
+    "f5-corr-e",
+    "f3-prayer-male",
+    "f3-d-prayer",
+    "f4-prayer-female",
+    "f4-d-prayer",
+    "f1-tao-bin",
+    "f1-d-tao-bin",
+    "f1-atm",
+    "f1-d-atm"
   ]
 }

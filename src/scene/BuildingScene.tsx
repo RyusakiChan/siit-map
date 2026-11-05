@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
 import { buildingData as data } from '../data'
@@ -12,6 +12,7 @@ import { departmentBadgeColor, roomColor, tokens } from '../theme/colors'
 import { liftDoorGeometry, shadeExtrusion, stairsGeometry, STAIR_HEIGHT_RATIO } from './connectors'
 import { useT } from '../i18n'
 import { useAppStore, type FloorView } from '../state/store'
+import { buildKiosk, KIOSK_HEIGHT, setKioskDim, type KioskModel } from './kiosks'
 import { FacilityIcon } from './icons'
 import { hasIcon } from './iconTypes'
 import { clamp01, ease, easeOutExpo, floorState, reducedMotion, roomState, setFrameRequester, startTransition, stepTransition, transition } from './motion'
@@ -75,6 +76,11 @@ const EDGE_MATERIAL = new THREE.LineBasicMaterial({ color: tokens.ink, transpare
 
 const ringPoints = (poly: Point[], y: number) => [...poly, poly[0]!].map(([x, z]) => new THREE.Vector3(x, y, z))
 
+// Invisible but still hit by taps: writes neither colour nor depth.
+const HIT_MATERIAL = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })
+const HIT_HEIGHT = 2
+const LOGO_DIM = new THREE.Color(tokens.dimmedSide)
+
 function setAlpha(mats: THREE.Material[], alpha: number) {
   for (const m of mats) {
     m.opacity = alpha
@@ -99,6 +105,10 @@ interface RoomItem {
   nosing: THREE.BufferGeometry | null
   /** Lift door leaves. */
   door: { geometry: THREE.BufferGeometry; material: THREE.MeshBasicMaterial } | null
+  /** Hand-built model (ATM, drink kiosk) that stands in the room instead of the block. */
+  /** Logo picture lying on the room (roof decal) or standing on a machine's header. */
+  logo: LogoSpec | null
+  kiosk: { model: KioskModel; logoMaterial: THREE.MeshBasicMaterial; hit: THREE.BufferGeometry; hitAt: [number, number] } | null
 }
 
 interface RoomLive {
@@ -106,6 +116,8 @@ interface RoomLive {
   from: { raise: number; dim: number }
   to: { raise: number; dim: number }
   cur: { raise: number; dim: number }
+  /** Dim level last written into a machine's vertex colours. */
+  drawnDim: number
 }
 
 interface FloorVals {
@@ -116,6 +128,95 @@ interface FloorVals {
 }
 
 const lerp = THREE.MathUtils.lerp
+
+const LOGO_PLANE = new THREE.PlaneGeometry(1, 1)
+const LOGO_DIM_TINT = new THREE.Color('#E3DEE4')
+const WHITE = new THREE.Color('#ffffff')
+const ROOF_LOGO_WIDTH = 3 // m, a roof decal is bigger than a real sign so it reads at map scale
+
+interface LogoSpec {
+  src: string
+  position: [number, number, number]
+  rotation: [number, number, number]
+  /** The picture is fitted inside this box (metres), keeping its aspect ratio. */
+  box: [number, number]
+}
+
+/** A machine's logo stands just in front of its header; any other room gets a flat decal on its roof. */
+function logoSpec(room: Room, kiosk: KioskModel | null): LogoSpec {
+  const src = room.logo!
+  if (kiosk) {
+    const { center, normal, width, height } = kiosk.logo
+    return {
+      src,
+      position: [center[0] + normal[0] * 0.006, center[1], center[2] + normal[1] * 0.006],
+      rotation: [0, Math.atan2(normal[0], normal[1]), 0],
+      box: [width, height],
+    }
+  }
+  const [cx, cz] = polygonCentroid(room.polygon)
+  return { src, position: [cx, ROOM_HEIGHT + 0.03, cz], rotation: [-Math.PI / 2, 0, 0], box: [ROOF_LOGO_WIDTH, ROOF_LOGO_WIDTH] }
+}
+
+function dimLogo(m: THREE.MeshBasicMaterial, dim: number) {
+  m.color.lerpColors(WHITE, LOGO_DIM_TINT, dim)
+  m.opacity = 1 - 0.45 * dim
+}
+
+/** Unlit textured plane. The texture loads when the layer mounts and is disposed with it. */
+function LogoDecal({ roomId, spec, live }: { roomId: string; spec: LogoSpec; live: { current: Map<string, RoomLive> } }) {
+  const invalidate = useThree((s) => s.invalidate)
+  const [tex, setTex] = useState<THREE.Texture | null>(null)
+  useEffect(() => {
+    let cancelled = false
+    let loaded: THREE.Texture | null = null
+    new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}${spec.src}`, (t) => {
+      t.colorSpace = THREE.SRGBColorSpace
+      t.anisotropy = 4
+      if (cancelled) {
+        t.dispose()
+        return
+      }
+      loaded = t
+      setTex(t)
+      invalidate()
+    })
+    return () => {
+      cancelled = true
+      loaded?.dispose()
+    }
+  }, [spec.src, invalidate])
+  const material = useMemo(
+    () => (tex ? new THREE.MeshBasicMaterial({ map: tex, transparent: true, toneMapped: false, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }) : null),
+    [tex],
+  )
+  useEffect(() => () => material?.dispose(), [material])
+  const size = useMemo(() => {
+    const img = tex?.image as { width: number; height: number } | undefined
+    if (!img) return [0, 0] as const
+    const k = Math.min(spec.box[0] / img.width, spec.box[1] / img.height)
+    return [img.width * k, img.height * k] as const
+  }, [tex, spec.box])
+  useFrame(() => {
+    if (!material) return
+    const dim = live.current.get(roomId)?.cur.dim ?? 0
+    dimLogo(material, dim)
+  })
+  if (!material) return null
+  return <mesh geometry={LOGO_PLANE} material={material} position={spec.position} rotation={spec.rotation} scale={[size[0], size[1], 1]} renderOrder={3} />
+}
+
+/** The parts of a machine the scene owns: logo-face material and a tap box over the whole polygon. */
+function kioskParts(model: KioskModel, polygon: Point[]): NonNullable<RoomItem['kiosk']> {
+  const xs = polygon.map((p) => p[0])
+  const zs = polygon.map((p) => p[1])
+  return {
+    model,
+    logoMaterial: new THREE.MeshBasicMaterial({ color: model.logo.color, toneMapped: false }),
+    hit: new THREE.BoxGeometry(Math.max(...xs) - Math.min(...xs), HIT_HEIGHT, Math.max(...zs) - Math.min(...zs)),
+    hitAt: [(Math.max(...xs) + Math.min(...xs)) / 2, (Math.max(...zs) + Math.min(...zs)) / 2],
+  }
+}
 
 function FloorLayer({ level }: { level: number }) {
   const elevation = elevationOf(level)
@@ -138,17 +239,20 @@ function FloorLayer({ level }: { level: number }) {
           const doorAt = room.door ? doorPos.get(room.door) : undefined
           const stairs = room.type === 'stairs' ? stairsGeometry(room.polygon, doorAt, ROOM_HEIGHT * STAIR_HEIGHT_RATIO) : null
           const [top, side] = makeMaterials(!!stairs)
+          const kiosk = room.model ? buildKiosk(room.model, room.polygon, doorAt) : null
           const liftDoor = room.type === 'elevator' ? liftDoorGeometry(room.polygon, doorAt) : null
           return {
             room,
-            geometry: stairs?.geometry ?? extrude(room.polygon, ROOM_HEIGHT),
-            height: stairs ? ROOM_HEIGHT * STAIR_HEIGHT_RATIO : ROOM_HEIGHT,
+            geometry: kiosk?.geometry ?? stairs?.geometry ?? extrude(room.polygon, ROOM_HEIGHT),
+            height: kiosk ? kiosk.height : stairs ? ROOM_HEIGHT * STAIR_HEIGHT_RATIO : ROOM_HEIGHT,
+            kiosk: kiosk ? kioskParts(kiosk, room.polygon) : null,
+            logo: room.logo ? logoSpec(room, kiosk) : null,
             nosing: stairs?.nosing ?? null,
-            rotated: !stairs,
+            rotated: !stairs && !kiosk,
             top,
             side,
             colors: { top: new THREE.Color(stairs ? TREAD : c.top), side: new THREE.Color(c.side) },
-            edge: stairs ? null : new THREE.BufferGeometry().setFromPoints(ringPoints(room.polygon, ROOM_HEIGHT + 0.02)),
+            edge: stairs || kiosk ? null : new THREE.BufferGeometry().setFromPoints(ringPoints(room.polygon, ROOM_HEIGHT + 0.02)),
             door: liftDoor ? { geometry: liftDoor, material: new THREE.MeshBasicMaterial({ color: LIFT_DOOR, toneMapped: false, side: THREE.DoubleSide }) } : null,
           }
         }),
@@ -187,12 +291,23 @@ function FloorLayer({ level }: { level: number }) {
         i.side.dispose()
         i.edge?.dispose()
         i.nosing?.dispose()
+        i.kiosk?.model.edges.dispose()
+        i.kiosk?.model.logo.geometry.dispose()
+        i.kiosk?.logoMaterial.dispose()
+        i.kiosk?.hit.dispose()
         i.door?.geometry.dispose()
         i.door?.material.dispose()
       })
     },
     [slabGeometry, slab, items, rim, below],
   )
+
+  const onTap = (id: string) => (e: ThreeEvent<MouseEvent>) => {
+    if (e.delta > 6 || anim.current.cur.g < 0.5) return // a drag, or a floor that is leaving
+    e.stopPropagation()
+    const { selectedRoomId, selectRoom } = useAppStore.getState()
+    selectRoom(selectedRoomId === id ? null : id, { focus: selectedRoomId !== id })
+  }
 
   useFrame(() => {
     const a = anim.current
@@ -249,8 +364,17 @@ function FloorLayer({ level }: { level: number }) {
       if (!l) continue
       l.cur.raise = lerp(l.from.raise, l.to.raise, k)
       l.cur.dim = lerp(l.from.dim, l.to.dim, k)
-      it.top.color.lerpColors(it.colors.top, dimmed.top, l.cur.dim)
-      it.side.color.lerpColors(it.colors.side, dimmed.side, l.cur.dim)
+      if (it.kiosk) {
+        // Machines carry their colours in the vertices, so dimming rewrites them (only when it changes).
+        if (Math.abs(l.drawnDim - l.cur.dim) > 0.002) {
+          l.drawnDim = l.cur.dim
+          setKioskDim(it.kiosk.model, l.cur.dim)
+          it.kiosk.logoMaterial.color.lerpColors(it.kiosk.model.logo.color, LOGO_DIM, l.cur.dim * 0.9)
+        }
+      } else {
+        it.top.color.lerpColors(it.colors.top, dimmed.top, l.cur.dim)
+        it.side.color.lerpColors(it.colors.side, dimmed.side, l.cur.dim)
+      }
       it.door?.material.color.lerpColors(LIFT_DOOR, LIFT_DOOR_DIM, l.cur.dim)
       const sy = c.g * (1 + RISE * l.cur.raise)
       if (l.group) {
@@ -268,7 +392,7 @@ function FloorLayer({ level }: { level: number }) {
       {below && <mesh geometry={below.geometry} material={below.material} position={[0, below.y, 0]} rotation={[-Math.PI / 2, 0, 0]} />}
       {items.map((it) => (
         <group key={it.room.id} ref={(g) => {
-          const l = live.current.get(it.room.id) ?? { group: null, from: { raise: 0, dim: 0 }, to: { raise: 0, dim: 0 }, cur: { raise: 0, dim: 0 } }
+          const l = live.current.get(it.room.id) ?? { group: null, from: { raise: 0, dim: 0 }, to: { raise: 0, dim: 0 }, cur: { raise: 0, dim: 0 }, drawnDim: 0 }
           l.group = g
           live.current.set(it.room.id, l)
         }} position={[0, elevation, 0]}>
@@ -277,15 +401,18 @@ function FloorLayer({ level }: { level: number }) {
           {it.door && <mesh geometry={it.door.geometry} material={it.door.material} />}
           <mesh
             geometry={it.geometry}
-            material={[it.top, it.side]}
+            material={it.kiosk ? it.top : [it.top, it.side]}
             rotation={it.rotated ? [-Math.PI / 2, 0, 0] : undefined}
-            onClick={(e) => {
-              if (e.delta > 6 || anim.current.cur.g < 0.5) return // a drag, or a floor that is leaving
-              e.stopPropagation()
-              const { selectedRoomId, selectRoom } = useAppStore.getState()
-              selectRoom(selectedRoomId === it.room.id ? null : it.room.id, { focus: selectedRoomId !== it.room.id })
-            }}
+            onClick={it.kiosk ? undefined : onTap(it.room.id)}
           />
+          {it.logo && <LogoDecal roomId={it.room.id} spec={it.logo} live={live} />}
+          {it.kiosk && (
+            <>
+              <lineSegments geometry={it.kiosk.model.edges} material={EDGE_MATERIAL} />
+              <mesh geometry={it.kiosk.model.logo.geometry} material={it.kiosk.logoMaterial} />
+              <mesh geometry={it.kiosk.hit} material={HIT_MATERIAL} position={[it.kiosk.hitAt[0], HIT_HEIGHT / 2, it.kiosk.hitAt[1]]} onClick={onTap(it.room.id)} />
+            </>
+          )}
         </group>
       ))}
     </group>
@@ -775,6 +902,7 @@ function FloorLabels({ floor }: { floor: number }) {
     }
   })
   const y = elevationOf(floor) + ROOM_HEIGHT + 0.1
+  const yOf = (room: Room) => (room.model ? elevationOf(floor) + KIOSK_HEIGHT[room.model] + 0.1 : room.type === 'stairs' ? stairY : y)
   const stairY = elevationOf(floor) + ROOM_HEIGHT * STAIR_HEIGHT_RATIO + 0.1
   return (
     <group ref={group}>
@@ -795,7 +923,7 @@ function FloorLabels({ floor }: { floor: number }) {
           <span ref={keep} className="map-icon" style={{ opacity: 0 }}><FacilityIcon type={room.type} /></span>
         ) : null
         return badge && (
-          <Html key={room.id} position={[at[0], room.type === 'stairs' ? stairY : y, at[1]]} center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
+          <Html key={room.id} position={[at[0], yOf(room), at[1]]} center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
             {badge}
           </Html>
         )

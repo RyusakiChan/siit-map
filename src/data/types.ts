@@ -52,6 +52,10 @@ export type RoomType =
   | 'elevator'
   | 'other'
 
+/** Hand-built 3D models that replace the plain block for a room (src/scene/kiosks.ts). */
+export type RoomModel = 'atm-krungsri' | 'kiosk-taobin'
+export const ROOM_MODELS: readonly RoomModel[] = ['atm-krungsri', 'kiosk-taobin']
+
 export interface Room {
   id: string
   number: string | null
@@ -72,6 +76,10 @@ export interface Room {
   photo?: string
   /** Id of this room's door node in `walkways` (a point on the room's edge, facing the corridor). */
   door?: string
+  /** Draw this hand-built model standing in the room instead of the 3 m block. */
+  model?: RoomModel
+  /** Brand logo drawn on the room: a file under `public/brands/` (for example `brands/krungsri.webp`). */
+  logo?: string
 }
 
 export interface QrPoint {

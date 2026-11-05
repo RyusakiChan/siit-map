@@ -1,6 +1,6 @@
 import { DEPT_COLOR_SLOTS, SUMMARY_MAX, letterOk, roomDeptIds, urlOk } from './departments.ts'
 import { boundaryDistance, pointInPolygon, polygonInside, polygonsOverlap, segmentThroughPolygon } from './geometry'
-import type { BuildingData, Point } from './types'
+import { ROOM_MODELS, type BuildingData, type Point } from './types'
 
 export interface Problem {
   /** Short stable code, e.g. `room-overlap`. */
@@ -66,6 +66,12 @@ export function validate(data: BuildingData): Problem[] {
         if (!deptIds.has(id)) add({ code: 'room-department', message: `${label}: unknown department ${id}.`, floor: r.floor, at, ids: [r.id] })
       }
       for (const id of dup(r.departmentIds)) add({ code: 'room-departments-duplicate', message: `${label}: department ${id} is listed twice.`, floor: r.floor, at, ids: [r.id] })
+    }
+    if (r.model !== undefined && !ROOM_MODELS.includes(r.model)) {
+      add({ code: 'room-model', message: `${label}: unknown 3D model ${String(r.model)}.`, floor: r.floor, at, ids: [r.id] })
+    }
+    if (r.logo !== undefined && !/^brands\/[a-z0-9-]+\.(png|webp)$/.test(r.logo)) {
+      add({ code: 'room-logo', message: `${label}: the logo must be a png or webp file under brands/ (for example brands/name.png).`, floor: r.floor, at, ids: [r.id] })
     }
     if (r.polygon.length < 3) {
       add({ code: 'room-polygon', message: `${label}: a room needs at least 3 corners.`, floor: r.floor, at, ids: [r.id] })

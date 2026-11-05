@@ -20,7 +20,9 @@
     "booth-poster:check": "node scripts/booth-poster-check.mjs",
     "intro-phone-shot": "node scripts/intro-phone-shot.mjs",
     "intro-poster": "node scripts/intro-poster.mjs",
-    "intro-poster:check": "node scripts/intro-poster-check.mjs"
+    "intro-poster:check": "node scripts/intro-poster-check.mjs",
+    "slides-template": "node scripts/slides-template.mjs",
+    "slides-template:check": "node scripts/slides-template-check.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",
@@ -48,7 +50,9 @@
     "eslint-plugin-react-refresh": "0.5.7",
     "globals": "17.13.0",
     "jsqr": "1.4.0",
+    "jszip": "3.10.2",
     "playwright-core": "1.64.1",
+    "pptxgenjs": "4.0.1",
     "qrcode-generator": "2.0.4",
     "typescript": "6.0.3",
     "typescript-eslint": "8.72.1",

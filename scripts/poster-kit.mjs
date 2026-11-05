@@ -62,7 +62,7 @@ export const mark = (x, y, r, fill = C.pink) =>
   `<path d="M${x - r} ${y}H${x + r}M${x} ${y - r}V${y + r}" stroke="${fill}" stroke-width="${r * 0.55}" stroke-linecap="round"/>`
 
 /** Small ink icons for legend chips, about 4.6 mm across, centred on (cx, cy). */
-function chipIcon(name, cx, cy) {
+export function chipIcon(name, cx, cy) {
   const st = `fill="none" stroke="${C.ink}" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"`
   if (name === 'search') return `<circle cx="${cx - 0.4}" cy="${cy - 0.4}" r="1.55" fill="${C.pinkSoft}" stroke="${C.ink}" stroke-width="0.55"/><path d="M${cx + 0.75} ${cy + 0.75}L${cx + 2.1} ${cy + 2.1}" ${st} stroke-width="0.8"/>`
   if (name === 'stairs') return `<path d="M${cx - 2.2} ${cy + 2}H${cx - 0.9}V${cy + 0.7}H${cx + 0.4}V${cy - 0.6}H${cx + 1.7}V${cy - 1.9}H${cx + 2.3}" ${st}/><path d="M${cx - 2.2} ${cy + 2}H${cx + 2.3}V${cy - 1.9}" fill="none" stroke="${C.lilacDeep}" stroke-width="0.4"/><path d="M${cx - 2} ${cy - 0.3}l1.2-1.2m0 0h-0.9m0.9 0v0.9" ${st} stroke="${C.pink}"/>`

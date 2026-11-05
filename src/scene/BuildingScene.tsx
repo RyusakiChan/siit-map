@@ -476,7 +476,8 @@ function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
     const k = easeOutExpo(transition.p)
     const alpha = role === 'in' ? (transition.selChanged ? k : 1) * g : transition.selChanged ? (1 - k) * g : 0
     if (group.current) {
-      group.current.position.y = (r?.top ?? 0) + 0.05
+      // A machine's outline stays at floor level; blocks carry it on their roof.
+      group.current.position.y = room.model ? elevationOf(room.floor) + (floorState.get(room.floor)?.offset ?? 0) + 0.03 : (r?.top ?? 0) + 0.05
       group.current.visible = alpha > 0.01
     }
     if (matRef.current) matRef.current.opacity = alpha
@@ -498,7 +499,7 @@ function Outline({ room, role }: { room: Room; role: 'in' | 'out' }) {
       />
       {tagReady && (
         <Html
-          position={[cx, 0.6, cz]}
+          position={[cx, room.model ? KIOSK_HEIGHT[room.model] * (1 + RISE) + 0.4 : 0.6, cz]}
           center
           zIndexRange={[20, 10]}
           style={{ pointerEvents: 'none' }}
@@ -915,11 +916,12 @@ function FloorLabels({ floor }: { floor: number }) {
           // next frame; so give it its floor's opacity now.
           e.style.opacity = String(floorState.get(floor)?.g ?? 0)
         }
+        // A roof logo already says what the room is, and the badge would cover it.
         const badge = letters.length ? (
           <span ref={keep} className="map-badges" style={{ opacity: 0 }}>
             {letters.map((l) => <span key={l.letter} className="map-badge" style={{ borderColor: l.color }}>{l.letter}</span>)}
           </span>
-        ) : hasIcon(room.type) ? (
+        ) : hasIcon(room.type) && !(room.logo && !room.model) ? (
           <span ref={keep} className="map-icon" style={{ opacity: 0 }}><FacilityIcon type={room.type} /></span>
         ) : null
         return badge && (

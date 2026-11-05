@@ -21,4 +21,12 @@ After cloning on Windows, run `~/.claude/scripts/Sync-CodexWorkspace.ps1 -Projec
 
 ## Credits
 
-The building outline comes from OpenStreetMap (way 195958489). © OpenStreetMap contributors, licensed under the [ODbL](https://opendatacommons.org/licenses/odbl/). Current room data is fake sample data.
+The building outline comes from OpenStreetMap (way 195958489). © OpenStreetMap contributors, licensed under the [ODbL](https://opendatacommons.org/licenses/odbl/).
+
+## License
+
+- **Code:** [MIT](LICENSE).
+- **Building data** (`src/data/building.json`): [ODbL 1.0](DATA-LICENSE.md), built on the OpenStreetMap outline.
+- **Photos** (`public/photos`): [CC BY 4.0](DATA-LICENSE.md).
+
+See [DATA-LICENSE.md](DATA-LICENSE.md) for credit and share-alike details.

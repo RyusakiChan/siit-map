@@ -11,6 +11,8 @@ export function StepsCard() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const route = useAppStore((s) => s.route)
+  // The live compass only matters on the orient step; other steps do not re-render for it.
+  const heading = useAppStore((s) => (s.route?.plan.steps[s.route.step]?.type === 'orient' ? s.compassHeading : null))
   const avoidStairs = useAppStore((s) => s.avoidStairs)
   const setRouteStep = useAppStore((s) => s.setRouteStep)
   const endRoute = useAppStore((s) => s.endRoute)
@@ -92,9 +94,9 @@ export function StepsCard() {
       </div>
 
       <button type="button" className="route-step" aria-live="polite" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <span className="route-glyph" aria-hidden="true">{stepGlyph(step)}</span>
+        <span className="route-glyph" aria-hidden="true">{stepGlyph(step, heading)}</span>
         <div className="route-step-text">
-          <p className="route-line" data-testid="route-step">{stepText(step, t, lang)}</p>
+          <p className="route-line" data-testid="route-step">{stepText(step, t, lang, heading)}</p>
           <span className="route-count">
             {t('routeStepOf', { i: index + 1, n: plan.steps.length })} · {t('floor', { n: step.floor })}
           </span>
@@ -106,8 +108,8 @@ export function StepsCard() {
           {plan.steps.map((st, i) => (
             <li key={i} className={i === index ? 'current' : undefined} aria-current={i === index ? 'step' : undefined}>
               <button type="button" onClick={() => setRouteStep(i)}>
-                <span className="route-list-glyph" aria-hidden="true">{stepGlyph(st)}</span>
-                <span className="route-list-text">{stepText(st, t, lang)}</span>
+                <span className="route-list-glyph" aria-hidden="true">{stepGlyph(st, i === index ? heading : null)}</span>
+                <span className="route-list-text">{stepText(st, t, lang, i === index ? heading : null)}</span>
               </button>
             </li>
           ))}

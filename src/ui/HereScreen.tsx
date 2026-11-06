@@ -4,13 +4,14 @@ import { deptOf, qrById, qrLabel, roomName } from '../data/lookup'
 import type { Room } from '../data/types'
 import { useT } from '../i18n'
 import { nearestPlaces, type NearPlace } from '../nav'
+import { compassSupported, toggleCompass } from '../nav/compass'
 import { go, routeHashPath } from '../router'
 import { useAppStore } from '../state/store'
 import { FacilityIcon } from '../scene/icons'
 import { hasIcon } from '../scene/iconTypes'
 import { categories } from './categories'
 import { DeptBadge } from './DeptBadge'
-import { CloseIcon, LocateIcon } from './Icons'
+import { CloseIcon, CompassIcon, LocateIcon } from './Icons'
 
 /** "You are here · Floor 3 · Lift lobby": replaces the SAMPLE line under the chips while a QR spot is on show. */
 export function HereBanner() {
@@ -21,6 +22,7 @@ export function HereBanner() {
   const route = useAppStore((s) => s.route !== null)
   const crossFloor = useAppStore((s) => s.banner !== null)
   const closeHere = useAppStore((s) => s.closeHere)
+  const compass = useAppStore((s) => s.compass)
   const qr = here ? qrById.get(here.id) : undefined
   if (!here || !qr || !open || route || crossFloor) return null
   return (
@@ -34,6 +36,19 @@ export function HereBanner() {
         </span>
         <span className="here-turned">{t('hereTurned')}</span>
         <span className="here-turned">{t('herePoster')}</span>
+        {compassSupported() && (
+          <button
+            type="button"
+            className="compass-btn"
+            role="switch"
+            aria-checked={compass === 'on'}
+            disabled={compass === 'unavailable' || compass === 'starting'}
+            onClick={toggleCompass}
+          >
+            <CompassIcon />
+            {compass === 'unavailable' ? t('compassNA') : compass === 'on' ? t('compassOn') : t('compassShow')}
+          </button>
+        )}
       </div>
       <button type="button" className="square-btn small" aria-label={t('hereClose')} onClick={closeHere}>
         <CloseIcon />

@@ -548,12 +548,12 @@ function HerePin() {
   const showCone = useAppStore((s) => s.hereOpen) // closing the banner leaves just the small pin
   const halo = useRef<THREE.Mesh>(null)
   const group = useRef<THREE.Group>(null)
+  const coneTurn = useRef<THREE.Group>(null)
+  // The cone is built pointing north (-z); the group around it turns it to the heading, so the geometry is never rebuilt.
   const geo = useMemo(() => {
-    if (!here) return null
-    const dir = THREE.MathUtils.degToRad(here.facingDeg) // clockwise from north (-z)
     const pts: Point[] = [[0, 0]]
     for (let i = 0; i <= 16; i++) {
-      const a = dir - CONE_HALF + (2 * CONE_HALF * i) / 16
+      const a = -CONE_HALF + (2 * CONE_HALF * i) / 16
       pts.push([Math.sin(a) * CONE_LENGTH, -Math.cos(a) * CONE_LENGTH])
     }
     return {
@@ -562,8 +562,24 @@ function HerePin() {
       dot: new THREE.CircleGeometry(0.26, 32),
       halo: new THREE.CircleGeometry(0.42, 32),
     }
-  }, [here])
+  }, [])
   const invalidate = useThree((s) => s.invalidate)
+  // Live compass heading, else the scanned poster's direction. The store is read, not subscribed to, so the pin never re-renders.
+  useEffect(() => {
+    const aim = () => {
+      const st = useAppStore.getState()
+      const deg = st.compassHeading ?? st.here?.facingDeg ?? 0
+      if (coneTurn.current) coneTurn.current.rotation.y = -THREE.MathUtils.degToRad(deg)
+    }
+    aim()
+    invalidate()
+    return useAppStore.subscribe((s, prev) => {
+      if (s.compassHeading !== prev.compassHeading || s.here !== prev.here) {
+        aim()
+        invalidate()
+      }
+    })
+  }, [invalidate, here, showCone])
   useFrame(({ clock }) => {
     // The pin rides its floor and grows and shrinks with it.
     if (group.current && here) {
@@ -588,9 +604,11 @@ function HerePin() {
   return (
     <group ref={group} position={[here.x, elevationOf(here.floor) + 0.15, here.z]}>
       {showCone && (
-        <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
-          <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.25} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
-        </mesh>
+        <group ref={coneTurn}>
+          <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
+            <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.25} depthWrite={false} depthTest={false} side={THREE.DoubleSide} toneMapped={false} />
+          </mesh>
+        </group>
       )}
       <mesh ref={halo} geometry={geo.halo} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]} renderOrder={6}>
         <meshBasicMaterial color={tokens.youAreHere} transparent opacity={0.3} depthWrite={false} toneMapped={false} />

@@ -87,6 +87,10 @@ interface AppState {
   previousFloor: number | null
   banner: { floor: number; from: number } | null
   here: HerePin | null
+  /** Live compass: off, waiting for permission or the first reading, on, or not available on this phone. */
+  compass: 'off' | 'starting' | 'on' | 'unavailable'
+  /** Degrees clockwise from true north, or null when there is no reliable reading. Stays on the phone. */
+  compassHeading: number | null
   /** The "You are here" banner and Near you sheet are open (closing them keeps a small pin). */
   hereOpen: boolean
   /** The camera or floor moved away from the QR view, so "Back to where I am" shows. */
@@ -119,6 +123,7 @@ interface AppState {
   dismissBanner: () => void
   showHere: (qrId: string) => boolean
   closeHere: () => void
+  setCompass: (compass: AppState['compass'], heading: number | null) => void
   /** Brings the QR view back after the person moved the map. */
   recenterHere: () => void
   markMoved: () => void
@@ -174,6 +179,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   previousFloor: null,
   banner: null,
   here: null,
+  compass: 'off',
+  compassHeading: null,
   hereOpen: false,
   hereMoved: false,
   searchFromQr: null,
@@ -272,6 +279,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   closeHere: () => set({ hereOpen: false }),
+  setCompass: (compass, compassHeading) => set((s) => (s.compass === compass && s.compassHeading === compassHeading ? s : { compass, compassHeading })),
 
   recenterHere: () => {
     const qr = data.qrPoints.find((q) => q.id === get().here?.id)

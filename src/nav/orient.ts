@@ -22,6 +22,23 @@ export function turnFor(bearing: number, facingDeg: number): Turn {
   return 'ahead'
 }
 
+/** A route's orient step, as far as the first turn goes. */
+interface OrientLike {
+  type: string
+  turn?: Turn | 'beside'
+  bearing?: number
+}
+
+/**
+ * The first turn of an orient step. With a live compass heading the person's real facing replaces the poster direction,
+ * so "turn left" stays right after they turn round. Without a heading (or when the lift is right beside them) the planned turn stands.
+ */
+export function liveTurn(step: OrientLike, heading: number | null): Turn | 'beside' | null {
+  if (step.type !== 'orient' || step.turn === undefined) return null
+  if (step.turn === 'beside' || heading === null || step.bearing === undefined) return step.turn
+  return turnFor(step.bearing, heading)
+}
+
 /** Within this distance of the lift or stairs door the person is "right next to" it. */
 export const NEXT_TO_M = 3
 

@@ -132,7 +132,7 @@ const lerp = THREE.MathUtils.lerp
 const LOGO_PLANE = new THREE.PlaneGeometry(1, 1)
 const LOGO_DIM_TINT = new THREE.Color('#E3DEE4')
 const WHITE = new THREE.Color('#ffffff')
-const ROOF_LOGO_WIDTH = 3 // m, a roof decal is bigger than a real sign so it reads at map scale
+const ROOF_LOGO_WIDTH = 5.5 // m, a roof decal is bigger than a real sign so it reads at map scale
 
 interface LogoSpec {
   src: string
@@ -1243,7 +1243,7 @@ export default function BuildingScene({ onReady }: { onReady: () => void }) {
       role="img"
       aria-label={t('mapCanvasLabel')}
       frameloop="demand"
-      dpr={[1, 1.75]}
+      dpr={[1, 3]}
       camera={{ position: [0, 120, 200], fov: FOV, near: 1, far: 900 }}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
       onPointerMissed={() => useAppStore.getState().selectRoom(null)}

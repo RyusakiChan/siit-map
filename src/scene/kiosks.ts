@@ -2,8 +2,11 @@ import * as THREE from 'three'
 import type { Point, RoomModel } from '../data/types'
 import { wallShade } from './connectors'
 
-/** Real-world heights (m); the scene uses them for labels before the geometry is built. */
-export const KIOSK_HEIGHT: Record<RoomModel, number> = { 'atm-krungsri': 1.9, 'kiosk-taobin': 1.95 }
+/** Machines are drawn this much bigger than real life so they read at phone map zoom. */
+export const KIOSK_SCALE = 1.6
+
+/** Drawn heights (m, real height x KIOSK_SCALE); the scene uses them for labels before the geometry is built. */
+export const KIOSK_HEIGHT: Record<RoomModel, number> = { 'atm-krungsri': 1.9 * KIOSK_SCALE, 'kiosk-taobin': 1.95 * KIOSK_SCALE }
 
 const DIM_AMOUNT = 0.9
 const DIM_TOP = new THREE.Color('#EBE6EC')
@@ -62,7 +65,8 @@ class Builder {
 
   world(a: number, d: number, y: number): V3 {
     const { o, f, r } = this.fr
-    return [o[0] + a * r[0] + d * f[0], y, o[1] + a * r[1] + d * f[1]]
+    const S = KIOSK_SCALE
+    return [o[0] + S * (a * r[0] + d * f[0]), S * y, o[1] + S * (a * r[1] + d * f[1])]
   }
 
   private tri(p: V3[], c: THREE.Color, edge: boolean) {
@@ -127,7 +131,7 @@ const designs: Record<RoomModel, Design> = {
   'atm-krungsri': {
     width: ATM_W,
     depth: ATM_D,
-    height: KIOSK_HEIGHT['atm-krungsri'],
+    height: 1.9,
     build(b) {
       const w = ATM_W / 2
       const YEL = '#FFC72C'
@@ -151,7 +155,7 @@ const designs: Record<RoomModel, Design> = {
   'kiosk-taobin': {
     width: TAOBIN_W,
     depth: TAOBIN_D,
-    height: KIOSK_HEIGHT['kiosk-taobin'],
+    height: 1.95,
     build(b) {
       const w = 0.48
       b.box(-w, w, 0, 0.88, 0, 1.88, '#F7F5F2', true) // cabinet
@@ -223,8 +227,8 @@ export function buildKiosk(model: RoomModel, polygon: Point[], door: Point | und
   return {
     geometry,
     edges,
-    logo: { geometry: quad, color: new THREE.Color(logo.color), width: logo.w, height: logo.h, center: centre, normal: f },
-    height: design.height,
+    logo: { geometry: quad, color: new THREE.Color(logo.color), width: logo.w * KIOSK_SCALE, height: logo.h * KIOSK_SCALE, center: centre, normal: f },
+    height: design.height * KIOSK_SCALE,
     front: f,
     bbox: { minX: bb.min.x, maxX: bb.max.x, minZ: bb.min.z, maxZ: bb.max.z },
     triangles: b.pos.length / 9,

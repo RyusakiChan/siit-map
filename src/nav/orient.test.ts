@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { translate } from '../i18n'
 import { stepText } from '../ui/routeText'
 import { buildingData as data } from '../data'
-import { bearingDeg, posterSpot, turnFor } from './orient'
+import { bearingDeg, liveTurn, posterSpot, turnFor } from './orient'
 import { planRoute } from './index'
 
 const qr = (id: string) => ({ kind: 'qr' as const, id })
@@ -88,5 +88,27 @@ describe('posterSpot', () => {
       expect(spot.dist).toBeLessThanOrEqual(4)
       expect(Number.isFinite(spot.x)).toBe(true)
     }
+  })
+})
+
+describe('liveTurn', () => {
+  const step = { type: 'orient', turn: 'right' as const, bearing: 90 }
+  it('keeps the planned turn without a heading', () => {
+    expect(liveTurn(step, null)).toBe('right')
+  })
+  it('uses the live heading instead of the poster direction', () => {
+    expect(liveTurn(step, 0)).toBe('right') // facing north, walking east
+    expect(liveTurn(step, 180)).toBe('left') // turned round: east is now on the left
+    expect(liveTurn(step, 270)).toBe('around')
+    expect(liveTurn(step, 90)).toBe('ahead')
+    expect(liveTurn(step, 350)).toBe('right') // wraps over north
+  })
+  it('flips left and right when the heading moves 180 degrees', () => {
+    expect(liveTurn({ ...step, bearing: 60 }, 20)).toBe('right')
+    expect(liveTurn({ ...step, bearing: 60 }, 200)).toBe('left')
+  })
+  it('leaves "beside" and non-orient steps alone', () => {
+    expect(liveTurn({ type: 'orient', turn: 'beside', bearing: 0 }, 123)).toBe('beside')
+    expect(liveTurn({ type: 'follow' }, 123)).toBeNull()
   })
 })

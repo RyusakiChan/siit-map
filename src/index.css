@@ -1952,6 +1952,34 @@ html.ask-open body {
   font-size: 12px;
 }
 
+/* "Show my direction": a 44 px tap target inside the banner */
+.compass-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0 14px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.compass-btn[aria-checked='true'] {
+  border-color: #F6339A;
+}
+
+.compass-btn:disabled {
+  opacity: 0.6;
+}
+
+.compass-btn:active {
+  transform: scale(0.98);
+}
+
 .near-sheet {
   max-height: 44dvh;
   gap: 8px;

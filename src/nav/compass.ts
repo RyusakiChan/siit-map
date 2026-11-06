@@ -125,7 +125,7 @@ export async function startCompass(): Promise<void> {
   window.addEventListener('deviceorientationabsolute', onEvent)
   window.addEventListener('deviceorientation', onEvent)
   const watchdog = setInterval(() => {
-    if (!ever) return stopCompass('unavailable')
+    if (!ever) return // the start timeout below decides "not available"
     if (performance.now() - lastEvent > TIMEOUT_MS && useAppStore.getState().compassHeading !== null) {
       smooth = null
       useAppStore.getState().setCompass('on', null) // dropped out: the cone falls back to the poster direction

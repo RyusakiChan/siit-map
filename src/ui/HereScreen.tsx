@@ -27,12 +27,12 @@ export function HereBanner() {
   if (!here || !qr || !open || route || crossFloor) return null
   return (
     <div className="banner here-banner" role="status" key={here.id}>
-      <span className="banner-floor" aria-hidden="true">{here.floor}</span>
+      <span className="banner-floor" aria-hidden="true">{qr.landing ? `${here.floor}–${here.floor + 1}` : here.floor}</span>
       <div className="banner-text">
         <strong>{t('hereTitle')}</strong>
         <span className="here-where">
           {data.building.sampleData && <span className="sample-badge">{t('sampleData')}</span>}
-          {t('hereWhere', { n: here.floor, place: qrLabel(qr, lang) })}
+          {qr.landing ? t('hereLanding', { a: here.floor, b: here.floor + 1 }) : t('hereWhere', { n: here.floor, place: qrLabel(qr, lang) })}
         </span>
         <span className="here-turned">{t('hereTurned')}</span>
         <span className="here-turned">{t('herePoster')}</span>

@@ -42,8 +42,11 @@ export const outputSchema = {
 let system: string | undefined
 export const systemBlock = (): string => (system ??= systemText(data, faq))
 
+/** A stairs-landing board sits half a floor above the floor it is filed under. */
+const landingNote = (qrId: string, floor: number): string => (data.qrPoints.find((q) => q.id === qrId)?.landing ? ` (on the stairs landing between floors ${floor} and ${floor + 1})` : '')
+
 export function buildParams(req: ChatRequest): Anthropic.MessageCreateParamsNonStreaming {
-  const note = [`UI language: ${req.lang}.`, req.here ? `Current place: QR point ${req.here.qrId} on floor ${req.here.floor}.` : 'Current place: unknown.'].join(' ')
+  const note = [`UI language: ${req.lang}.`, req.here ? `Current place: QR point ${req.here.qrId} on floor ${req.here.floor}${landingNote(req.here.qrId, req.here.floor)}.` : 'Current place: unknown.'].join(' ')
   const last = req.messages.length - 1
   const messages: Anthropic.MessageParam[] = req.messages.map((m, i) =>
     // The note sits after the question, outside the cached system block.

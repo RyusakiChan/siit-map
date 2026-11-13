@@ -26,6 +26,8 @@ export type Step = StepBase &
      * (degrees clockwise from north). `beside` means the lift or stairs are right next to the scanner (no turn).
      */
     | { type: 'orient'; qrId: string; turn: Turn | 'beside'; bearing: number; place: { kind: 'lifts' | 'stairs' | 'room'; roomId?: string } }
+    /** Landing QR starts only, first step: take the stairs half a floor up (to `toFloor`, where the route starts) or down. No compass turn. */
+    | { type: 'landing'; qrId: string; direction: 'up' | 'down'; toFloor: number }
   )
 
 export interface RoutePlan {
@@ -39,6 +41,15 @@ export interface RoutePlan {
   minutes: number
   usesStairs: boolean
   usesLift: boolean
+}
+
+/** First step for a landing QR: up to the next floor when the route starts there, else down to the landing's own floor. */
+function landingStep(qrId: string, legs: Leg[], data: BuildingData): Step | null {
+  const qr = data.qrPoints.find((q) => q.id === qrId)
+  const first = legs[0]
+  if (!qr?.landing || !first) return null
+  const up = first.floor > qr.floor
+  return { type: 'landing', qrId, direction: up ? 'up' : 'down', toFloor: first.floor, floor: first.floor, leg: 0, point: qr.position }
 }
 
 /** "Face the map poster, then turn and walk": toward the lift or stairs the route leaves by, or toward the room on one floor. */
@@ -65,7 +76,7 @@ function buildSteps(from: RouteEnd, legs: Leg[], toId: string, meters: number, a
   const lastLeg = legs[legs.length - 1]!
   const endRoom = data.rooms.find((r) => r.id === toId)!
   const endPoint = polygonCentroid(endRoom.polygon)
-  const orient = from.kind === 'qr' ? orientStep(from.id, legs, toId, data) : null
+  const orient = from.kind === 'qr' ? (landingStep(from.id, legs, data) ?? orientStep(from.id, legs, toId, data)) : null
   if (first.floor === lastLeg.floor) {
     return [...(orient ? [orient] : []), { type: 'follow', roomId: toId, meters, floor: first.floor, leg: 0, point: endPoint }]
   }

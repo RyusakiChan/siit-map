@@ -38,6 +38,8 @@ const center = { x: (bounds.minX + bounds.maxX) / 2, z: (bounds.minZ + bounds.ma
 // Floors are drawn further apart than their real height so the stack reads clearly.
 const STACK_SPREAD = 1.75
 const elevationOf = (level: number) => (data.floors.find((f) => f.level === level)?.elevation ?? 0) * STACK_SPREAD
+/** A stairs-landing board is half a floor above its floor: half the scene spacing to the next floor. */
+const landingLift = (here: { floor: number; landing?: boolean } | null) => (here?.landing ? (elevationOf(here.floor + 1) - elevationOf(here.floor)) / 2 : 0)
 const topElevation = Math.max(...data.floors.map((f) => elevationOf(f.level)))
 
 // The shape lives in the XY plane. After rotating -90deg about X, shape y maps
@@ -586,7 +588,7 @@ function HerePin() {
       const f = floorState.get(here.floor)
       const g = f?.g ?? 0
       group.current.visible = g > 0.01
-      group.current.position.y = elevationOf(here.floor) + 0.15 + (f?.offset ?? 0)
+      group.current.position.y = elevationOf(here.floor) + landingLift(here) + 0.15 + (f?.offset ?? 0)
       group.current.scale.setScalar(Math.max(g, 0.001))
     }
     if (!halo.current) return
@@ -602,7 +604,7 @@ function HerePin() {
   })
   if (!here || !geo) return null
   return (
-    <group ref={group} position={[here.x, elevationOf(here.floor) + 0.15, here.z]}>
+    <group ref={group} position={[here.x, elevationOf(here.floor) + landingLift(here) + 0.15, here.z]}>
       {showCone && (
         <group ref={coneTurn}>
           <mesh geometry={geo.cone} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={5}>
@@ -706,13 +708,13 @@ function HerePoster() {
     const f = floorState.get(here.floor)
     const g = f?.g ?? 0
     group.current.visible = g > 0.01
-    group.current.position.y = elevationOf(here.floor) + (f?.offset ?? 0)
+    group.current.position.y = elevationOf(here.floor) + landingLift(here) + (f?.offset ?? 0)
     group.current.scale.setScalar(Math.max(g, 0.001))
   })
   if (!here || !spot) return null
   const layer = (n: number) => ({ polygonOffset: true, polygonOffsetFactor: -n, polygonOffsetUnits: -n })
   return (
-    <group ref={group} position={[here.x, elevationOf(here.floor), here.z]}>
+    <group ref={group} position={[here.x, elevationOf(here.floor) + landingLift(here), here.z]}>
       <group position={[spot.x - here.x, POSTER_BOTTOM + POSTER_H / 2, spot.z - here.z]} rotation={[0, -THREE.MathUtils.degToRad(here.facingDeg), 0]}>
         <mesh geometry={assets.outer}>
           <meshBasicMaterial color={tokens.ink} toneMapped={false} side={THREE.DoubleSide} {...layer(1)} />
@@ -1034,21 +1036,21 @@ const HERE_AHEAD = 7 // the camera aims this far ahead of the pin, so most of th
 const HERE_TOP = 216 // below the banner, until the banner itself can be measured
 
 /** The camera for a QR spot: behind the pin, looking the way the scanner faces, centred a little ahead of it. */
-function herePose(here: { x: number; z: number; floor: number; facingDeg: number }, w: number, h: number, rect: Rect) {
+function herePose(here: { x: number; z: number; floor: number; facingDeg: number; landing?: boolean }, w: number, h: number, rect: Rect) {
   const f = THREE.MathUtils.degToRad(here.facingDeg)
   // The banner grows with a long place name or Thai text, so the picture starts under where it really ends.
   const banner = document.querySelector('.here-banner')?.getBoundingClientRect().bottom
   const top = Math.min(Math.max(rect.top, banner !== undefined ? banner + 12 : HERE_TOP), rect.bottom - 120)
   const tx = here.x + Math.sin(f) * HERE_AHEAD
   const tz = here.z - Math.cos(f) * HERE_AHEAD
-  const ty = elevationOf(here.floor) + 1
+  const ty = elevationOf(here.floor) + landingLift(here) + 1
   // The picture shifts so the pin sits in the lower part of the free area (the view ahead above it).
   fitCam.aspect = w / h
   fitCam.updateProjectionMatrix()
   fitCam.position.set(tx + HERE_DIST * Math.sin(HERE_POLAR) * Math.sin(-f), ty + HERE_DIST * Math.cos(HERE_POLAR), tz + HERE_DIST * Math.sin(HERE_POLAR) * Math.cos(-f))
   fitCam.lookAt(tx, ty, tz)
   fitCam.updateMatrixWorld()
-  fitPoint.set(here.x, elevationOf(here.floor), here.z).project(fitCam)
+  fitPoint.set(here.x, elevationOf(here.floor) + landingLift(here), here.z).project(fitCam)
   const px = ((fitPoint.x + 1) / 2) * w
   const py = ((1 - fitPoint.y) / 2) * h
   return {

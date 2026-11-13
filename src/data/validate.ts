@@ -127,7 +127,13 @@ export function validate(data: BuildingData): Problem[] {
       if (roomIds.has(q.id) || amenityIds.has(q.id)) add({ code: 'qr-id-taken', message: `QR id ${q.id} is already a room or amenity id.`, floor: q.floor, at, ids: [q.id] })
       if (!reserved.has(q.id)) add({ code: 'qr-id-unreserved', severity: 'warning', message: `QR id ${q.id} is not in usedIds, so it could be reused after a delete.`, floor: q.floor, at, ids: [q.id] })
     }
-    if (!q.sample && levels.has(q.floor) && inOutline(q.position, building.outline)) {
+    if (q.landing) {
+      // A landing board hangs on the stairs between two floors: inside a stairs room, with a floor above it.
+      if (!levels.has(q.floor + 1)) add({ code: 'qr-landing-floor', message: `Landing point ${q.id}: floor ${q.floor + 1} (above it) does not exist.`, floor: q.floor, at, ids: [q.id] })
+      if (levels.has(q.floor) && !roomsOn(q.floor).some((r) => r.type === 'stairs' && r.polygon.length >= 3 && pointInPolygon(q.position, r.polygon))) {
+        add({ code: 'qr-landing-stairs', message: `Landing point ${q.id} must be inside a stairs room on floor ${q.floor}.`, floor: q.floor, at, ids: [q.id] })
+      }
+    } else if (!q.sample && levels.has(q.floor) && inOutline(q.position, building.outline)) {
       const room = roomsOn(q.floor).find((r) => r.polygon.length >= 3 && pointInPolygon(q.position, r.polygon) && boundaryDistance(q.position, r.polygon) > 0.05)
       if (room) add({ code: 'qr-in-room', message: `QR point ${q.id} is inside room ${room.number ?? room.id}; put it in the corridor.`, floor: q.floor, at, ids: [q.id, room.id] })
       if (voidsOn(q.floor).some((v) => v.length >= 3 && pointInPolygon(q.position, v))) add({ code: 'qr-in-void', message: `QR point ${q.id} is inside the open atrium.`, floor: q.floor, at, ids: [q.id] })

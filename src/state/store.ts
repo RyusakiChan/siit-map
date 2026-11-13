@@ -28,6 +28,8 @@ export interface HerePin {
   x: number
   z: number
   facingDeg: number
+  /** A stairs-landing board: the person stands half a floor above `floor`. */
+  landing?: boolean
 }
 
 export type NoticeKey = 'roomGone' | 'deptGone' | 'linkCopied' | 'routeNone' | 'qrGone'
@@ -155,10 +157,19 @@ function hereFocus(qr: { position: [number, number]; floor: number; facingDeg: n
   return { tick: ++tick, x: qr.position[0], z: qr.position[1], floor: qr.floor, azimuth: (-qr.facingDeg * Math.PI) / 180, here: true }
 }
 
+/**
+ * The camera for a route step. A poster-facing step shows the QR view; so does a landing step that goes down (the landing's own floor).
+ * A landing step that goes up starts on the floor above, where the pin is not shown, so it looks at the stairs there.
+ */
+function stepFocus(step: { type: string; floor: number; point: [number, number]; direction?: string }, qr: { position: [number, number]; floor: number; facingDeg: number } | undefined): Focus {
+  if (qr && (step.type === 'orient' || (step.type === 'landing' && step.direction === 'down'))) return hereFocus(qr)
+  return { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor }
+}
+
 /** The pin for a QR spot, or null when the id is not on the map. */
 function pinOf(id: string): HerePin | null {
   const qr = data.qrPoints.find((q) => q.id === id)
-  return qr ? { id: qr.id, floor: qr.floor, x: qr.position[0], z: qr.position[1], facingDeg: qr.facingDeg } : null
+  return qr ? { id: qr.id, floor: qr.floor, x: qr.position[0], z: qr.position[1], facingDeg: qr.facingDeg, ...(qr.landing ? { landing: true } : {}) } : null
 }
 
 function loadLang(): Lang {
@@ -343,7 +354,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       previousFloor: null,
       highlightDeptId: null,
       view: step.floor,
-      focus: step.type === 'orient' && qr ? hereFocus(qr) : { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
+      focus: stepFocus(step, qr),
     })
     return true
   },
@@ -353,11 +364,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (!route) return
     const i = Math.max(0, Math.min(route.plan.steps.length - 1, index))
     const step = route.plan.steps[i]!
-    const qr = step.type === 'orient' ? data.qrPoints.find((q) => q.id === step.qrId) : undefined
+    const qr = step.type === 'orient' || step.type === 'landing' ? data.qrPoints.find((q) => q.id === step.qrId) : undefined
     set({
       route: { ...route, step: i },
       view: step.floor,
-      focus: qr ? hereFocus(qr) : { tick: ++tick, x: step.point[0], z: step.point[1], floor: step.floor },
+      focus: stepFocus(step, qr),
     })
   },
 

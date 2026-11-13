@@ -133,6 +133,9 @@ export function scaleBar(x, y, seg, n, label) {
 
 /** The 3D map's floor stack in miniature: one slab per floor, this floor in pink. */
 export function floorStack(topFloor, x, y, here) {
+  // `here` is one floor, or a list of floors (a stair landing lights both floors it sits between).
+  const lit = Array.isArray(here) ? here : [here]
+  const highest = Math.max(...lit)
   const w = 28
   const h = 8
   const gap = 4.9
@@ -140,11 +143,11 @@ export function floorStack(topFloor, x, y, here) {
   let g = ''
   for (let f = 1; f <= topFloor; f++) {
     const yy = y + (topFloor - f) * gap
-    const on = f === here
+    const on = lit.includes(f)
     const top = `M${x} ${yy + h / 2}L${x + w / 2} ${yy}L${x + w} ${yy + h / 2}L${x + w / 2} ${yy + h}Z`
     const side = `M${x} ${yy + h / 2}L${x + w / 2} ${yy + h}L${x + w} ${yy + h / 2}V${yy + h / 2 + t}L${x + w / 2} ${yy + h + t}L${x} ${yy + h / 2 + t}Z`
     g += `<path d="${side}" fill="${on ? '#C21E78' : C.lilacDot}" stroke="${C.ink}" stroke-width="0.45" stroke-linejoin="round"/>
-      <path d="${top}" fill="${on ? C.pink : f > here ? '#F5EFFC' : C.lilac}" stroke="${C.ink}" stroke-width="0.45" stroke-linejoin="round"/>
+      <path d="${top}" fill="${on ? C.pink : f > highest ? '#F5EFFC' : C.lilac}" stroke="${C.ink}" stroke-width="0.45" stroke-linejoin="round"/>
       <text x="${x + w + 3}" y="${yy + h / 2 + 2.6}" font-family="Kanit" font-weight="${on ? 800 : 500}" font-size="${on ? 6.4 : 4.2}" fill="${on ? C.ink : C.muted}">${f}</text>`
   }
   return g

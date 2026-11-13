@@ -93,6 +93,11 @@ export interface QrPoint {
   labelTh: string
   /** A sample point: kept working for tests and old links, never printed. */
   sample?: boolean
+  /**
+   * A notice board on the half landing between `floor` and `floor + 1`. `position` is the stairs' footprint on the lower floor;
+   * the person is really half a floor higher.
+   */
+  landing?: boolean
 }
 
 /** IMDF amenity categories (OGC 20-094) used so far. */

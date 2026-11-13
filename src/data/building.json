@@ -3639,6 +3639,66 @@
       "facingDeg": 90,
       "label": "Corridor, east",
       "labelTh": "ทางเดินฝั่งตะวันออก"
+    },
+    {
+      "id": "f2-landing-s",
+      "floor": 2,
+      "position": [
+        -11.9,
+        22.4
+      ],
+      "facingDeg": 180,
+      "label": "South stairs landing",
+      "labelTh": "ชานพักบันไดฝั่งใต้",
+      "landing": true
+    },
+    {
+      "id": "f3-landing-s",
+      "floor": 3,
+      "position": [
+        -11.9,
+        22.4
+      ],
+      "facingDeg": 180,
+      "label": "South stairs landing",
+      "labelTh": "ชานพักบันไดฝั่งใต้",
+      "landing": true
+    },
+    {
+      "id": "f4-landing-s",
+      "floor": 4,
+      "position": [
+        -11.9,
+        22.4
+      ],
+      "facingDeg": 180,
+      "label": "South stairs landing",
+      "labelTh": "ชานพักบันไดฝั่งใต้",
+      "landing": true
+    },
+    {
+      "id": "f2-landing-w",
+      "floor": 2,
+      "position": [
+        4.7,
+        -19.6
+      ],
+      "facingDeg": 0,
+      "label": "North stairs landing",
+      "labelTh": "ชานพักบันไดฝั่งเหนือ",
+      "landing": true
+    },
+    {
+      "id": "f3-landing-w",
+      "floor": 3,
+      "position": [
+        4.7,
+        -19.6
+      ],
+      "facingDeg": 0,
+      "label": "North stairs landing",
+      "labelTh": "ชานพักบันไดฝั่งเหนือ",
+      "landing": true
     }
   ],
   "amenities": [],
@@ -6555,6 +6615,11 @@
     "f1-tao-bin",
     "f1-d-tao-bin",
     "f1-atm",
-    "f1-d-atm"
+    "f1-d-atm",
+    "f2-landing-s",
+    "f3-landing-s",
+    "f4-landing-s",
+    "f2-landing-w",
+    "f3-landing-w"
   ]
 }

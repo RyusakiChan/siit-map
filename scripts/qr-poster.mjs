@@ -18,7 +18,14 @@ const configured = /groupName:\s*'([^']*)'/.exec(readFileSync(join(root, 'src/co
 const groupName = configured && configured !== PLACEHOLDER ? configured : '[GROUP NAME]'
 if (configured === undefined) console.warn("warning: could not read groupName from src/config.ts (expected groupName: '...'), printing [GROUP NAME]")
 
-const points = data.qrPoints.filter((q) => !q.sample).sort((a, b) => a.floor - b.floor || a.id.localeCompare(b.id))
+// ONLY=f2-landing-s,f3-landing  prints just those ids, or ids starting with a listed prefix.
+const only = (process.env.ONLY ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+const points = data.qrPoints
+  .filter((q) => !q.sample && (only.length === 0 || only.some((o) => q.id === o || q.id.startsWith(o))))
+  .sort((a, b) => a.floor - b.floor || a.id.localeCompare(b.id))
+// A landing point sits half a floor up, between its floor and the next.
+const floorsEn = (q) => (q.landing ? `Floors ${q.floor}–${q.floor + 1}` : `Floor ${q.floor}`)
+const floorsTh = (q) => (q.landing ? `ชั้น ${q.floor}–${q.floor + 1}` : `ชั้น ${q.floor}`)
 const floors = data.floors.map((f) => f.level ?? f.floor ?? f.number).filter((n) => typeof n === 'number')
 const topFloor = floors.length ? Math.max(...floors) : 5
 // The page is drawn on an A4 grid in mm and scaled to the paper: A3 is the A4 design at 1.414x.
@@ -127,9 +134,9 @@ function poster(q) {
   <!-- Where this poster is. -->
   <g class="place">
     <rect x="22" y="239" width="166" height="32" rx="6" fill="#fff" stroke="${C.ink}" stroke-width="0.7"/>
-    ${floorStack(29, 240.6, q.floor)}
-    <text x="76" y="253" class="place-en" font-family="Kanit" font-weight="800" font-size="10" fill="${C.ink}">Floor ${q.floor} · ${esc(q.label)}</text>
-    <text x="76" y="265" class="place-th" font-family="Kanit" font-weight="500" font-size="8.4" fill="${C.ink}">ชั้น ${q.floor} · ${esc(q.labelTh)}</text>
+    ${floorStack(29, 240.6, q.landing ? [q.floor, q.floor + 1] : q.floor)}
+    <text x="76" y="253" class="place-en" font-family="Kanit" font-weight="800" font-size="10" fill="${C.ink}">${floorsEn(q)} · ${esc(q.label)}</text>
+    <text x="76" y="265" class="place-th" font-family="Kanit" font-weight="500" font-size="8.4" fill="${C.ink}">${floorsTh(q)} · ${esc(q.labelTh)}</text>
   </g>
 
   <!-- Footer and the id for whoever puts the poster up. -->

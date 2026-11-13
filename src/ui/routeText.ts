@@ -26,6 +26,8 @@ export function stepText(step: Step, t: T, lang: Lang, heading: number | null = 
       if (turn === 'ahead') return t(live ? 'stepLiveAhead' : 'stepOrientAhead', { place })
       return t(live ? 'stepLiveTurn' : 'stepOrientTurn', { side: t(turn === 'left' ? 'sideLeft' : 'sideRight'), place })
     }
+    case 'landing':
+      return t(step.direction === 'up' ? 'stepLandingUp' : 'stepLandingDown', { n: step.toFloor })
     case 'follow':
       return t('stepFollow', { room: placeName(step.roomId, lang), m: Math.max(5, Math.round(step.meters / 5) * 5) })
   }
@@ -38,6 +40,8 @@ export function stepGlyph(step: Step, heading: number | null = null): string {
       return step.toFloor > step.floor ? '⇧' : '⇩'
     case 'find':
       return '⚑'
+    case 'landing':
+      return step.direction === 'up' ? '⇧' : '⇩'
     case 'follow':
       return '↑'
     case 'orient': {

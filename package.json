@@ -23,6 +23,7 @@
     "intro-poster": "node scripts/intro-poster.mjs",
     "intro-poster:check": "node scripts/intro-poster-check.mjs",
     "slides-template": "node scripts/slides-template.mjs",
+    "progress-slides": "node scripts/progress-slides.mjs",
     "slides-template:check": "node scripts/slides-template-check.mjs"
   },
   "dependencies": {

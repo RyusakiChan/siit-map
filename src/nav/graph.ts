@@ -1,5 +1,5 @@
 import { buildingData } from '../data'
-import { polygonCentroid } from '../data/geometry'
+import { pointInPolygon, polygonCentroid } from '../data/geometry'
 import type { BuildingData, Point, Room } from '../data/types'
 
 /** Walking pace used for "about N min": 1.3 m/s, so one metre of cost is about 0.77 s. */
@@ -167,6 +167,19 @@ export function qrEntry(g: Graph, qrId: string): { node: string; floor: number; 
   return qr && node ? { node, floor: qr.floor, position: qr.position, walk: dist(qr.position, g.pos.get(node)!) } : null
 }
 
+/**
+ * A landing board hangs half a floor above its `floor`. When the destination is on the floor above or higher, the walk
+ * starts at the door of that stairs room on the upper floor; otherwise (and for any other QR point) null, so the lower floor stands.
+ */
+function landingStart(g: Graph, qrId: string, destFloor: number): Resolved | null {
+  const qr = g.data.qrPoints.find((q) => q.id === qrId)
+  if (!qr?.landing || destFloor <= qr.floor) return null
+  const stairs = g.data.rooms.find((r) => r.floor === qr.floor && r.type === 'stairs' && r.door && pointInPolygon(qr.position, r.polygon))
+  const shaft = stairs && g.data.walkways.connectors.find((c) => c.nodes[qr.floor] === stairs.door)
+  const node = shaft?.nodes[qr.floor + 1]
+  return node ? { node, floor: qr.floor + 1, anchor: qr.position, roomId: null } : null
+}
+
 export interface RouteGeometry {
   legs: Leg[]
   /** Cost in metre-equivalents: walking plus the lift or stairs. */
@@ -182,8 +195,9 @@ function dedupe(points: Point[]): Point[] {
 /** Shortest route between two ends, split into one leg per floor. Null when there is none. */
 export function findRoute(from: RouteEnd, toRoomId: string, opts: PlanOptions = {}, data: BuildingData = buildingData): RouteGeometry | null {
   const g = buildGraph(data)
-  const a = resolve(g, from)
+  let a = resolve(g, from)
   const b = resolve(g, { kind: 'room', id: toRoomId })
+  if (a && b && from.kind === 'qr') a = landingStart(g, from.id, b.floor) ?? a
   if (!a || !b || (a.roomId && a.roomId === b.roomId)) return null
   const path = shortestPath(g, a.node, b.node, opts)
   if (!path) return null

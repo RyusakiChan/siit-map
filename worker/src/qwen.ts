@@ -1,4 +1,4 @@
-import { checkedAnswer, contextNote, outputSchema, SORRY, systemBlock } from './chat'
+import { checkedAnswer, contextNote, SORRY, systemBlock } from './chat'
 import type { ChatRequest, ChatResponse, Env } from './types'
 
 export const DEFAULT_QWEN_BASE_URL = 'https://gateway.9arm.co/v1'
@@ -8,7 +8,8 @@ export const DEFAULT_QWEN_MODEL = 'qwen3.8-27b-fp8'
  * about 150, so the shared 600 could cut a Thai answer mid-string (which becomes the apology).
  */
 export const QWEN_MAX_TOKENS = 800
-export const QWEN_TIMEOUT_MS = 20_000
+/** Under the app's 25 s wait, so a slow answer still gets the Worker's error reply. */
+export const QWEN_TIMEOUT_MS = 22_000
 
 /** A non-2xx answer from the gateway. Carries the status code only, never the body. */
 export class QwenHttpError extends Error {
@@ -21,10 +22,13 @@ export class QwenHttpError extends Error {
 export const jsonShapeText = (): string =>
   [
     'OUTPUT FORMAT',
-    'Reply with exactly one JSON object and nothing else: no markdown, no code fence, no text before or after it.',
-    'It must match this JSON Schema. Every property is required; use null for unused fields of an action.',
-    JSON.stringify(outputSchema),
-    'Example: {"reply":"The lobby is on floor 1.","actions":[{"type":"show_room","roomId":"<id from DATA>","deptId":null,"fromId":null,"toId":null,"url":null}]}',
+    'Reply with exactly one JSON object on a single line, with no spaces or line breaks between tokens: no markdown, no code fence, no text before or after it.',
+    'Shape: {"reply":"<one or two short sentences>","actions":[...]}. Use "actions":[] when none apply.',
+    'Each action has only the fields it needs:',
+    '{"type":"show_room","roomId":"<room id from DATA>"}',
+    '{"type":"show_dept","deptId":"<department id from DATA>"}',
+    '{"type":"show_route","fromId":"<room id from DATA, or null>","toId":"<room id from DATA>"}',
+    '{"type":"source","url":"<the FAQ entry\'s source url>"}',
   ].join('\n')
 
 export function buildQwenBody(req: ChatRequest, env: Env): Record<string, unknown> {

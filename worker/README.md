@@ -1,6 +1,6 @@
 # Ask assistant Worker
 
-A small Cloudflare Worker that answers questions for the SIIT Map "Ask" button. It holds the Anthropic API key, so the key never reaches the page. It answers from `src/data/building.json` plus the group FAQ in `src/data/faq.json`, using Claude Haiku 5.5 (`claude-haiku-5-5`, low effort).
+A small Cloudflare Worker that answers questions for the SIIT Map "Ask" button. It holds the model API key, so the key never reaches the page. It answers from `src/data/building.json` plus the group FAQ in `src/data/faq.json`. The model is chosen by `PROVIDER` in `wrangler.toml`: `qwen` (the shipped setting) calls Qwen through an OpenAI-compatible gateway; `anthropic` calls Claude Haiku 5.5 (`claude-haiku-5-5`, low effort). The code default when `PROVIDER` is unset is `anthropic`.
 
 `POST /chat` takes `{messages, lang, here?}` and returns `{reply, actions[]}`. Actions are `show_room`, `show_dept`, `show_route` and `source`. The Worker checks that every room, department and link exists before returning it.
 
@@ -10,9 +10,23 @@ A small Cloudflare Worker that answers questions for the SIIT Map "Ask" button. 
 - It never accepts a call from another website: CORS and a check of the `Origin` header allow only `https://ryusakichan.github.io`.
 - It limits each question to 300 characters, sends at most the last 10 messages, and caps the answer at 600 tokens.
 
+## Choosing the provider
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `PROVIDER` | `anthropic` in code, `qwen` in `wrangler.toml` | `qwen` or `anthropic` |
+| `QWEN_BASE_URL` | `https://gateway.9arm.co/v1` | OpenAI-compatible gateway, no trailing slash |
+| `QWEN_MODEL` | `qwen3.8-27b-fp8` | Model name at the gateway |
+| `QWEN_API_KEY` (secret) | none | Gateway key; surrounding whitespace and line breaks are trimmed |
+| `ANTHROPIC_API_KEY` (secret) | none | Anthropic key |
+
+To switch: edit `PROVIDER` in `wrangler.toml` and deploy again. To set or change the Qwen key: `npx wrangler secret put QWEN_API_KEY --config worker/wrangler.toml`, then deploy. If the key of the selected provider is missing the Worker runs in mock mode (`GET /` shows `"mock":true`). The Qwen call sends a custom `user-agent: siit-map-ask` because the gateway refused a default client, asks for a JSON object with thinking turned off, caps the answer at 800 tokens (Thai needs more tokens than English), and gives up after 20 seconds.
+
+**Privacy:** each question, the last turns of the chat and the building data are sent to the configured gateway (Qwen) or to Anthropic, depending on `PROVIDER`. Nothing is logged by the Worker except status codes.
+
 ## Run it locally (no key, no account)
 
-With no `ANTHROPIC_API_KEY` the Worker is in **mock mode** and returns canned answers built from the same data.
+With no key for the selected provider the Worker is in **mock mode** and returns canned answers built from the same data.
 
 ```bash
 npm run worker:dev
@@ -37,11 +51,12 @@ You create the accounts and the key. Nobody else should handle the key.
    ```bash
    npx wrangler login
    ```
-3. **Anthropic account and key:** at https://console.anthropic.com create an API key for this project only.
-4. **Set a monthly spend cap** in the Anthropic console (Settings, Limits). Pick an amount you are happy to lose, for example 5 USD. Do this before step 5.
+3. **Provider key:** for Qwen, get the key from the gateway owner. For Anthropic, create an API key for this project only at https://console.anthropic.com.
+4. **Set a monthly spend cap** at the provider (for Anthropic: console, Settings, Limits). Pick an amount you are happy to lose, for example 5 USD. Do this before step 5.
 5. **Store the key as a secret** (it is asked for on the screen and never written to a file):
    ```bash
-   npx wrangler secret put ANTHROPIC_API_KEY --config worker/wrangler.toml
+   npx wrangler secret put QWEN_API_KEY --config worker/wrangler.toml
+   # or, with PROVIDER = "anthropic":  npx wrangler secret put ANTHROPIC_API_KEY --config worker/wrangler.toml
    ```
 6. **Deploy:**
    ```bash

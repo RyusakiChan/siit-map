@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { askClaude, type MessagesClient } from './chat'
 import { CAMPUS_KEY, clientKey, parseCampusIps } from './limits'
 import { mockChat } from './mock'
+import { askQwen, QwenHttpError } from './qwen'
 import type { Env } from './types'
 import { parseRequest } from './validate'
 
@@ -24,7 +25,10 @@ function json(body: unknown, status: number, origin: string | null): Response {
   return new Response(JSON.stringify(body), { status, headers })
 }
 
-export const isMock = (env: Env): boolean => env.MOCK === '1' || !env.ANTHROPIC_API_KEY
+export const provider = (env: Env): 'qwen' | 'anthropic' => (env.PROVIDER === 'qwen' ? 'qwen' : 'anthropic')
+
+/** Mock when forced, or when the key of the selected provider is missing. */
+export const isMock = (env: Env): boolean => env.MOCK === '1' || !(provider(env) === 'qwen' ? env.QWEN_API_KEY?.trim() : env.ANTHROPIC_API_KEY)
 
 /**
  * Limits: a minute window first, then the daily counter, so a minute-limited request does not
@@ -52,7 +56,7 @@ async function limited(env: Env, ip: string): Promise<boolean> {
   return false
 }
 
-export async function handle(request: Request, env: Env, client?: MessagesClient): Promise<Response> {
+export async function handle(request: Request, env: Env, client?: MessagesClient, qwenFetch?: typeof fetch): Promise<Response> {
   const url = new URL(request.url)
   const origin = allowedOrigin(request.headers.get('origin'), env)
 
@@ -91,12 +95,14 @@ export async function handle(request: Request, env: Env, client?: MessagesClient
   if (await limited(env, request.headers.get('cf-connecting-ip') ?? 'unknown')) return json({ error: 'rate_limited' }, 429, origin)
 
   try {
+    if (provider(env) === 'qwen') return json(await askQwen(parsed.value, env, qwenFetch), 200, origin)
     const c = client ?? new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, maxRetries: 1 })
     return json(await askClaude(parsed.value, c), 200, origin)
   } catch (err) {
-    // Log the error class only, never the message text.
-    console.error('upstream error', err instanceof Anthropic.APIError ? err.status : 'unknown')
-    const rateLimited = err instanceof Anthropic.RateLimitError
+    // Log the status code only, never the message text or the key.
+    const status = err instanceof Anthropic.APIError || err instanceof QwenHttpError ? err.status : 'unknown'
+    console.error('upstream error', status)
+    const rateLimited = err instanceof Anthropic.RateLimitError || (err instanceof QwenHttpError && err.status === 429)
     return json({ error: rateLimited ? 'rate_limited' : 'upstream' }, rateLimited ? 429 : 502, origin)
   }
 }

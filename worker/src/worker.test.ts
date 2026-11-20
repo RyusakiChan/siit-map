@@ -3,7 +3,8 @@ import type Anthropic from '@anthropic-ai/sdk'
 import { askClaude, buildParams, MODEL, systemBlock, type MessagesClient } from './chat'
 import { DailyCounterLogic } from './counter'
 import { fakeSql } from './fake-sql'
-import { handle } from './index'
+import { handle, isMock } from './index'
+import { buildQwenBody, cleanQwenText, QWEN_MAX_TOKENS } from './qwen'
 import { clientKey, parseCampusIps } from './limits'
 import { mockChat } from './mock'
 import { buildingContext } from './prompt'
@@ -24,7 +25,7 @@ function fakeCounterNs(): NonNullable<Env['COUNTER']> {
   return { idFromName: (n) => n, get: () => ({ check: async (k: string) => logic.check(k) }) }
 }
 
-const post = (body: unknown, env: Env = {}, origin: string | null = ORIGIN, client?: MessagesClient, ip?: string) =>
+const post = (body: unknown, env: Env = {}, origin: string | null = ORIGIN, client?: MessagesClient, ip?: string, qwenFetch?: typeof fetch) =>
   handle(
     new Request('https://worker.test/chat', {
       method: 'POST',
@@ -33,6 +34,7 @@ const post = (body: unknown, env: Env = {}, origin: string | null = ORIGIN, clie
     }),
     env,
     client,
+    qwenFetch,
   )
 
 const ask = (content: string) => ({ lang: 'en', messages: [{ role: 'user', content }] })
@@ -319,6 +321,207 @@ describe('handler', () => {
     expect(JSON.stringify(spy.mock.calls)).not.toContain('secret')
     expect(await res.text()).not.toContain('secret')
     spy.mockRestore()
+  })
+})
+
+/** A fake gateway: records each call and answers with the given status and body. */
+function fakeGateway(content: unknown, opts: { status?: number; finish?: string; raw?: string } = {}) {
+  const fn = vi.fn<(url: string | URL | Request, init?: RequestInit) => Promise<Response>>(async () => {
+    if (opts.raw !== undefined) return new Response(opts.raw, { status: opts.status ?? 200 })
+    return new Response(JSON.stringify({ choices: [{ message: { role: 'assistant', content }, finish_reason: opts.finish ?? 'stop' }] }), { status: opts.status ?? 200 })
+  })
+  return { fetchFn: fn as unknown as typeof fetch, fn }
+}
+
+describe('Qwen provider', () => {
+  const qenv: Env = { PROVIDER: 'qwen', QWEN_API_KEY: 'qk-test' }
+  const room = data.rooms[0]?.id as string
+  const good = JSON.stringify({ reply: 'Try the lobby.', actions: [{ type: 'show_room', roomId: room, deptId: null, fromId: null, toId: null, url: null }] })
+  const qpost = (fetchFn: typeof fetch, env: Env = qenv, body: unknown = ask('hi')) => post(body, env, ORIGIN, undefined, undefined, fetchFn)
+
+  it('sends an OpenAI-style request with the key, user agent and JSON mode', async () => {
+    const { fetchFn, fn } = fakeGateway(good)
+    const body = { lang: 'th', messages: [{ role: 'user', content: 'ห้องน้ำ' }], here: { qrId: 'sample-f2-lift', floor: 2 } }
+    await qpost(fetchFn, qenv, body)
+    const [url, init] = fn.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('https://gateway.9arm.co/v1/chat/completions')
+    expect(init.method).toBe('POST')
+    const h = init.headers as Record<string, string>
+    expect(h.authorization).toBe('Bearer qk-test')
+    expect(h['content-type']).toBe('application/json')
+    expect(h['user-agent']).toBe('siit-map-ask')
+    expect(init.signal).toBeInstanceOf(AbortSignal)
+    const sent = JSON.parse(init.body as string)
+    expect(sent.model).toBe('qwen3.8-27b-fp8')
+    expect(sent.max_tokens).toBe(QWEN_MAX_TOKENS)
+    expect(sent.max_tokens).toBeLessThanOrEqual(1000)
+    expect(sent.temperature).toBe(0.2)
+    expect(sent.response_format).toEqual({ type: 'json_object' })
+    expect(sent.chat_template_kwargs).toEqual({ enable_thinking: false })
+    expect(sent.messages[0].role).toBe('system')
+    expect(sent.messages[0].content).toContain(systemBlock())
+    expect(sent.messages[0].content).toContain('"required":["reply","actions"]')
+    expect(sent.messages[0].content).toContain('null')
+    expect(sent.messages[1].role).toBe('user')
+    expect(sent.messages[1].content).toContain('ห้องน้ำ')
+    expect(sent.messages[1].content).toContain('UI language: th.')
+    expect(sent.messages[1].content).toContain('floor 2')
+    expect(sent.messages).toHaveLength(2)
+  })
+
+  it('trims the key (a secret piped from PowerShell can end in CR/LF) and treats a blank key as missing', async () => {
+    const { fetchFn, fn } = fakeGateway(good)
+    await qpost(fetchFn, { ...qenv, QWEN_API_KEY: '  qk-test\r\n' })
+    const init = fn.mock.calls[0]?.[1] as RequestInit
+    expect((init.headers as Record<string, string>).authorization).toBe('Bearer qk-test')
+    expect(isMock({ PROVIDER: 'qwen', QWEN_API_KEY: ' \r\n' })).toBe(true)
+    expect(isMock({ PROVIDER: 'qwen', QWEN_API_KEY: 'qk-test\r\n' })).toBe(false)
+  })
+
+  it('honours QWEN_BASE_URL and QWEN_MODEL and trims a trailing slash', async () => {
+    const { fetchFn, fn } = fakeGateway(good)
+    await qpost(fetchFn, { ...qenv, QWEN_BASE_URL: 'https://example.test/v1/', QWEN_MODEL: 'other-model' })
+    const [url, init] = fn.mock.calls[0] as [string, RequestInit]
+    expect(url).toBe('https://example.test/v1/chat/completions')
+    expect(JSON.parse(init.body as string).model).toBe('other-model')
+  })
+
+  it('returns a checked answer from a good JSON reply', async () => {
+    const { fetchFn } = fakeGateway(good)
+    const res = await qpost(fetchFn)
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ reply: 'Try the lobby.', actions: [{ type: 'show_room', roomId: room }] })
+  })
+
+  it('drops invented ids and cuts a long reply', async () => {
+    const long = JSON.stringify({ reply: 'x'.repeat(5000), actions: [{ type: 'show_room', roomId: 'invented', deptId: null, fromId: null, toId: null, url: null }] })
+    const { fetchFn } = fakeGateway(long)
+    const out = (await (await qpost(fetchFn)).json()) as { reply: string; actions: unknown[] }
+    expect(out.reply).toHaveLength(1200)
+    expect(out.actions).toEqual([])
+  })
+
+  it('accepts fenced and think-wrapped JSON', async () => {
+    for (const content of ['```json\n' + good + '\n```', '```\n' + good + '\n```', '<think>\nlet me see\n</think>\n\n' + good, '<think></think>```json\n' + good + '```', '  ' + good + '\n']) {
+      const { fetchFn } = fakeGateway(content)
+      const out = (await (await qpost(fetchFn)).json()) as { reply: string }
+      expect(out.reply).toBe('Try the lobby.')
+    }
+    expect(cleanQwenText('<think>a</think>{"a":1}')).toBe('{"a":1}')
+  })
+
+  it('gives the apology when the answer was cut off, is not JSON, or is empty', async () => {
+    const cases: ReturnType<typeof fakeGateway>[] = [
+      fakeGateway('{"reply":"cut', { finish: 'length' }),
+      fakeGateway(good, { finish: 'length' }),
+      fakeGateway('not json at all'),
+      fakeGateway('<think>never closed ' + good),
+      fakeGateway(JSON.stringify({ reply: '  ', actions: [] })),
+      fakeGateway('null'),
+      fakeGateway(null),
+      fakeGateway('', { raw: '{"choices":[]}' }),
+      fakeGateway('', { raw: 'not json' }),
+    ]
+    for (const { fetchFn } of cases) {
+      const res = await qpost(fetchFn)
+      expect(res.status).toBe(200)
+      const out = (await res.json()) as { reply: string; actions: unknown[] }
+      expect(out.reply).toContain('siit.tu.ac.th')
+      expect(out.actions).toEqual([])
+    }
+  })
+
+  it('answers the Thai apology in Thai', async () => {
+    const { fetchFn } = fakeGateway('nope')
+    const out = (await (await qpost(fetchFn, qenv, { lang: 'th', messages: [{ role: 'user', content: 'x' }] })).json()) as { reply: string }
+    expect(out.reply).toContain('ขออภัย')
+  })
+
+  it('maps HTTP 429 to the rate-limited response', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { fetchFn } = fakeGateway('', { status: 429, raw: 'secret question text' })
+    const res = await qpost(fetchFn)
+    expect(res.status).toBe(429)
+    expect(await res.json()).toEqual({ error: 'rate_limited' })
+    expect(spy).toHaveBeenCalledWith('upstream error', 429)
+    spy.mockRestore()
+  })
+
+  it('maps 403, 500, network failure and timeout to the upstream error without leaking text or key', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const failing: typeof fetch[] = [
+      fakeGateway('', { status: 500, raw: 'secret question text qk-test' }).fetchFn,
+      fakeGateway('', { status: 403, raw: 'forbidden' }).fetchFn,
+      (async () => {
+        throw new TypeError('network down: secret question text qk-test')
+      }) as unknown as typeof fetch,
+      (async () => {
+        throw new DOMException('The operation timed out: secret question text', 'TimeoutError')
+      }) as unknown as typeof fetch,
+    ]
+    for (const fetchFn of failing) {
+      const res = await qpost(fetchFn, qenv, ask('secret question text'))
+      expect(res.status).toBe(502)
+      const text = await res.text()
+      expect(text).toBe(JSON.stringify({ error: 'upstream' }))
+    }
+    const logged = JSON.stringify(spy.mock.calls)
+    expect(logged).not.toContain('secret')
+    expect(logged).not.toContain('qk-test')
+    expect(logged).toContain('500')
+    spy.mockRestore()
+  })
+
+  it('still applies the per-minute limit before calling the gateway', async () => {
+    const { fetchFn, fn } = fakeGateway(good)
+    const res = await post(ask('hi'), { ...qenv, MINUTE_LIMIT: { limit: async () => ({ success: false }) } }, ORIGIN, undefined, undefined, fetchFn)
+    expect(res.status).toBe(429)
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('does not call the gateway in mock mode', async () => {
+    const { fetchFn, fn } = fakeGateway(good)
+    expect((await qpost(fetchFn, { PROVIDER: 'qwen' })).status).toBe(200)
+    expect((await qpost(fetchFn, { ...qenv, MOCK: '1' })).status).toBe(200)
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('builds the same note and conversation for several turns', () => {
+    const b = buildQwenBody({ lang: 'en', messages: [{ role: 'user', content: 'a' }, { role: 'assistant', content: 'b' }, { role: 'user', content: 'c' }] }, {}) as { messages: { role: string; content: string }[] }
+    expect(b.messages.map((m) => m.role)).toEqual(['system', 'user', 'assistant', 'user'])
+    expect(b.messages[1]?.content).toBe('a')
+    expect(b.messages[3]?.content).toContain('Current place: unknown.')
+  })
+})
+
+describe('provider switch', () => {
+  it('isMock follows the key of the selected provider', () => {
+    expect(isMock({})).toBe(true)
+    expect(isMock({ ANTHROPIC_API_KEY: 'a' })).toBe(false)
+    expect(isMock({ QWEN_API_KEY: 'q' })).toBe(true)
+    expect(isMock({ PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'a' })).toBe(false)
+    expect(isMock({ PROVIDER: 'anthropic', QWEN_API_KEY: 'q' })).toBe(true)
+    expect(isMock({ PROVIDER: 'qwen', QWEN_API_KEY: 'q' })).toBe(false)
+    expect(isMock({ PROVIDER: 'qwen', ANTHROPIC_API_KEY: 'a' })).toBe(true)
+    expect(isMock({ PROVIDER: 'qwen', QWEN_API_KEY: 'q', MOCK: '1' })).toBe(true)
+    expect(isMock({ PROVIDER: 'anything-else', ANTHROPIC_API_KEY: 'a' })).toBe(false)
+  })
+
+  it('reports mock status on the health route per provider', async () => {
+    const get = async (env: Env) => (await (await handle(new Request('https://worker.test/'), env)).json()) as { mock: boolean }
+    expect((await get({ PROVIDER: 'qwen', QWEN_API_KEY: 'q' })).mock).toBe(false)
+    expect((await get({ PROVIDER: 'qwen', ANTHROPIC_API_KEY: 'a' })).mock).toBe(true)
+  })
+
+  it('PROVIDER=anthropic (and unset) still uses the Anthropic client, not fetch', async () => {
+    const fetchFn = vi.fn() as unknown as typeof fetch
+    for (const env of [{ ANTHROPIC_API_KEY: 'a' }, { PROVIDER: 'anthropic', ANTHROPIC_API_KEY: 'a', QWEN_API_KEY: 'q' }] as Env[]) {
+      const { client, create } = fakeClient(JSON.stringify({ reply: 'from claude', actions: [] }))
+      const res = await post(ask('hi'), env, ORIGIN, client, undefined, fetchFn)
+      expect(((await res.json()) as { reply: string }).reply).toBe('from claude')
+      expect(create).toHaveBeenCalledTimes(1)
+    }
+    expect(fetchFn).not.toHaveBeenCalled()
   })
 })
 

@@ -2,13 +2,19 @@ name = "siit-map-ask"
 main = "src/entry.ts"
 compatibility_date = "2026-10-01"
 
-# No key here. The owner stores it as a secret:  npx wrangler secret put ANTHROPIC_API_KEY
-# With no key the Worker runs in mock mode (canned answers).
+# No key here. The owner stores the key of the chosen provider as a secret:
+#   npx wrangler secret put QWEN_API_KEY        (PROVIDER = "qwen")
+#   npx wrangler secret put ANTHROPIC_API_KEY   (PROVIDER = "anthropic")
+# With no key for the chosen provider the Worker runs in mock mode (canned answers).
+# PROVIDER, QWEN_BASE_URL and QWEN_MODEL are plain variables, not secrets.
 
 # Shared campus Wi-Fi exit address(es), comma-separated. Requests from these share one
 # bigger allowance (key "campus"). The address is dynamic and can change: update it here.
 [vars]
 CAMPUS_IPS = "183.88.238.226"
+PROVIDER = "qwen"
+QWEN_BASE_URL = "https://gateway.9arm.co/v1"
+QWEN_MODEL = "qwen3.8-27b-fp8"
 
 # Per-client rate limit: 30 requests a minute. The owner can change the numbers.
 [[ratelimits]]

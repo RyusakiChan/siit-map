@@ -4,6 +4,14 @@ import type { Lang } from '../../src/i18n/strings'
 export interface Env {
   /** Secret: `wrangler secret put ANTHROPIC_API_KEY`. Without it the Worker answers in mock mode. */
   ANTHROPIC_API_KEY?: string
+  /** Which model answers: "qwen" or "anthropic". Unset means "anthropic". */
+  PROVIDER?: string
+  /** Secret: `wrangler secret put QWEN_API_KEY`. Used when PROVIDER is "qwen"; without it the Worker answers in mock mode. */
+  QWEN_API_KEY?: string
+  /** OpenAI-compatible gateway, no trailing slash. Default https://gateway.9arm.co/v1 */
+  QWEN_BASE_URL?: string
+  /** Model name at the gateway. Default qwen3.8-27b-fp8 */
+  QWEN_MODEL?: string
   /** "1" forces mock mode even when a key is set. */
   MOCK?: string
   /** "1" also allows http://localhost origins. Used by `npm run worker:dev` only. */

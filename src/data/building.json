@@ -376,7 +376,12 @@
           18.75
         ]
       ],
-      "door": "f2-d1"
+      "door": "f2-d1",
+      "aliases": [
+        "Library",
+        "Library and Information Services Center"
+      ],
+      "description": "The SIIT Library is on two floors: floor 1 and floor 2."
     },
     {
       "id": "f2-1-208",
@@ -2538,7 +2543,8 @@
           12.39
         ]
       ],
-      "door": "f1-d1"
+      "door": "f1-d1",
+      "description": "The SIIT Library is on two floors: floor 1 and floor 2."
     },
     {
       "id": "f1-cafe-amazon",

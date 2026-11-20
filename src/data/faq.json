@@ -32,13 +32,6 @@
     "url": "https://www.siit.tu.ac.th/"
   },
   {
-    "id": "faq-it-help",
-    "task": "Get IT help (Wi-Fi, accounts)",
-    "taskTh": "ขอความช่วยเหลือด้านไอที (ไวไฟ บัญชีผู้ใช้)",
-    "answer": "Sample IT Help Desk fixes sample Wi-Fi and account problems. Dummy text.",
-    "url": "https://www.siit.tu.ac.th/"
-  },
-  {
     "id": "faq-lost-and-found",
     "task": "Report or collect a lost item",
     "taskTh": "แจ้งของหายหรือรับของที่ตกหล่น",
@@ -50,15 +43,8 @@
     "id": "faq-library",
     "task": "Borrow books or study quietly",
     "taskTh": "ยืมหนังสือหรือนั่งอ่านเงียบ ๆ",
-    "answer": "Sample answer about borrowing books. Dummy text; the SIIT Library itself is on floor 2.",
-    "roomId": "f2-library",
-    "url": "https://www.siit.tu.ac.th/"
-  },
-  {
-    "id": "faq-advising",
-    "task": "Talk to an academic advisor",
-    "taskTh": "พบอาจารย์ที่ปรึกษา",
-    "answer": "Sample Advising Office books sample advisor visits. Dummy text.",
+    "answer": "The SIIT Library (Library and Information Services Center) is on floors 1 and 2 of this building. Borrow books or study quietly there. Opening hours are on the SIIT website.",
+    "roomId": "f1-library",
     "url": "https://www.siit.tu.ac.th/"
   }
 ]
